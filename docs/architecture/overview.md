@@ -1,6 +1,6 @@
 # Website architecture
 
-Updated 29 October 2026. Target architecture for the SoloDesk website. Current implementation is a minimal Next.js App Router starter; database, auth, design-system components and business services remain to be implemented.
+Updated 29 October 2026. Target architecture for the SoloDesk website. The account/profile slice now uses pooled Neon PostgreSQL, Managed Better Auth, shared shadcn components and Realtime. Workspace authorization and business services remain to be implemented. See [integration evidence](../development/neon-setup.md).
 
 ## Binding technology and priorities
 

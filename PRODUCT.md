@@ -1,23 +1,60 @@
 # SoloDesk product scope
 
-Updated 29 October 2026. SoloDesk is a responsive **website** for freelance software engineers and small teams. Next.js App Router is the current application foundation. The current checkout is a starter, not an implemented business platform.
+<!-- impeccable:product-schema 1 -->
 
-## Binding priorities
+## Platform
 
-shadcn/ui is the primary component foundation. A coherent, accessible design system, scalability, security and appropriate design patterns are primary engineering requirements. Neon PostgreSQL is the selected database; Better Auth is the selected authentication/session system. These choices replace the earlier desktop runtime and backend recommendations. [Decisions](docs/planning/decisions.md) records the change and remaining gates.
+web
 
-## Product capabilities
+## Users
 
-Plan clients and sales, projects and tasks, recoverable time tracking, configurable invoices/payments/corrections, reports and knowledge. Later slices add approved provider integrations, deterministic automation and a client portal within the website. Preserve exact financial arithmetic, immutable issued records, permission-scoped sharing and recoverable operations.
+Freelance software engineers, independent technical consultants, and small boutique software teams managing multiple client contracts, billable hours, and project deliveries.
 
-Freelancers and small teams use required cloud accounts and isolated workspaces. English and Arabic, full RTL, light/dark/System themes, keyboard access and responsive phone/tablet/wide-screen layouts apply to each release. The existing visual proposal remains a proposal until applied and verified through shared shadcn/ui components.
+## Product Purpose
 
-## Connectivity and trust
+Eliminate administrative overhead and billing drag for independent technical operators. SoloDesk combines client relationship tracking, recoverable timer workflows, project milestone management, and compliant multi-currency invoicing into a single, cohesive web operating system.
 
-Server authority governs identity, memberships, accepted revisions, billing and external effects. Invoice finalization is online only. Retain the offline-drafting goal for eligible work, but adapt it to reviewed browser storage, quotas, eviction and explicit key/recovery limits; no native secret store or installed-app background process is assumed. Protected persistent drafts stay disabled until their security proof passes. A release claiming offline drafting must satisfy that gate; ordinary in-memory input is not durable storage.
+## Positioning
 
-## Scope boundaries
+The craft-focused, privacy-first operating system for solo devs and boutique engineering agencies: fast, recoverable time & invoice tracking with zero bloat, deterministic reliability, and mathematical precision.
 
-No AI product features, native installers, native mobile app, employee surveillance, unrestricted scripts, raw-card collection, automatic legal/tax certification or first-release self-hosted edition. Website hosting, private object storage, email delivery, regions, costs, recovery objectives and financial jurisdiction profiles still require selection. Neon is the database choice; Better Auth is the identity choice, not automatic workspace authorization.
+## Operating Context
 
-The [roadmap](docs/planning/roadmap.md) separates a core pilot from advanced and connected slices. Documentation is a specification, not evidence that a capability is implemented. Historical desktop records remain labeled as superseded.
+- Used alongside code editors, terminals, and communication tools during billable work sessions.
+- Browser-based across desktop (wide displays), laptops, and mobile/tablet devices for on-the-go review.
+- Rapid keyboard-driven workflows (command palette, shortcuts) for tracking time without disrupting engineering focus.
+- Multilingual environments requiring simultaneous support for English and Arabic (RTL).
+
+## Capabilities and Constraints
+
+- **Capabilities**: Client & lead pipeline, project & task boards, recoverable time tracking with honest network sync, customizable invoice generation with tax/discount calculations, client payment tracking, and financial analytics.
+- **Constraints**:
+  - Web platform built on Next.js App Router, shadcn/ui, Neon PostgreSQL, and Better Auth.
+  - Server-authoritative for identity, tenant boundaries, finalized billing, and immutable invoices.
+  - No native desktop wrappers or invasive background tracking; drafts use audited browser storage within quota boundaries.
+  - Strictly no speculative AI gimmicks, no employee surveillance tools, and no raw credit card storage.
+
+## Brand Commitments
+
+- **Visual Identity**: User-selected monochrome Light/Dark theme with black/white actions, neutral surfaces, Rugis for English headings, Sahabah for Arabic headings, Geist body text and Geist Mono for code/data, an 8px base radius and compact soft shadows. Amber/blue are chart colors; semantic tokens in `app/globals.css` and `DESIGN.md` replace the earlier mint/emerald direction.
+- **Voice & Tone**: Precise, understated, technical, and confident. Built for developers who value performance and craftsmanship.
+
+## Evidence on Hand
+
+- Architectural specifications and security catalogue in `docs/architecture/` and `docs/security/`.
+- Concrete roadmap separating core pilot from extended connected slices in `docs/planning/roadmap.md`.
+- Token specification in `docs/design/tokens.json`.
+
+## Product Principles
+
+1. **Mathematical & Financial Exactness**: Invoices, tax rates, currency rounding, and billable time entries are strictly immutable once issued and mathematically validated.
+2. **Speed & Low Cognitive Load**: Interactions feel instant, workflows are keyboard-accessible, and information hierarchy is calm and scannable.
+3. **Resilient & Transparent State**: The user always knows whether changes are locally buffered or server-acknowledged. No silent data loss.
+4. **Tenant Security & Data Sovereignty**: Strict multi-tenant isolation at every database and service boundary, server-only secret custody, and zero untrusted data leaks.
+
+## Accessibility & Inclusion
+
+- Compliance with WCAG 2.2 Level AA.
+- Full native keyboard navigation across all interactive tables, sheets, and dialogs.
+- First-class Arabic (RTL) localization with logical CSS geometry and isolated mixed-language identifiers.
+- Complete support for user motion preferences (`prefers-reduced-motion`) and system contrast modes.

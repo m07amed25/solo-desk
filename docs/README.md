@@ -1,6 +1,6 @@
 # SoloDesk website documentation
 
-Updated 29 October 2026. SoloDesk is a responsive Next.js website for freelancers and small teams. This checkout contains a minimal starter; the business platform is specified, not implemented.
+Updated 29 October 2026. SoloDesk is a responsive Next.js website for freelancers and small teams. This checkout implements a Neon-connected account/profile slice with Google/GitHub sign-in and live profile updates; the business platform remains specified, not implemented. See [Neon setup and verification](development/neon-setup.md).
 
 ## Binding priorities
 

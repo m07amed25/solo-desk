@@ -46,3 +46,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.neon
+
+# Generated output and local editor files
+/dist/
+*.log
+*.tmp
+*.swp
+Thumbs.db
+
+# Local browser verification captures
+/.impeccable/review/
