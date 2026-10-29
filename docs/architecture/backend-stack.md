@@ -1,6 +1,6 @@
 # Selected backend: Neon and Better Auth
 
-Updated 29 October 2026. **Confirmed choices:** Neon PostgreSQL for the database and Better Auth for authentication/session management. These replace the previous Supabase recommendation. They are not yet installed, configured or provisioned in this checkout.
+Updated 29 October 2026. **Confirmed choices:** Neon PostgreSQL and Better Auth replace the previous Supabase recommendation. The user requested Managed Neon Auth (managed Better Auth) and Realtime on the production branch. The account/profile integration is installed and provisioned; [setup and evidence](../development/neon-setup.md) records its scope and remaining release gates.
 
 ## Responsibilities
 
@@ -8,7 +8,7 @@ Updated 29 October 2026. **Confirmed choices:** Neon PostgreSQL for the database
 | --- | --- | --- |
 | Website/server | Next.js App Router, TypeScript application services | Read installed Next.js guides before implementing |
 | Database | Neon PostgreSQL, server-only access | Region, least-privilege roles, driver and transaction proof |
-| Authentication | Better Auth using a supported PostgreSQL adapter against Neon | Reviewed schema/migrations, sessions, origins, email/recovery and chosen factors/providers |
+| Authentication | Neon Managed Better Auth through the Next.js SDK | Sessions, origins, email/recovery and chosen factors/providers; Neon owns managed auth migrations |
 | Components | shadcn/ui first, shared tokens and Tailwind | Component setup and accessible responsive English/Arabic evidence |
 | Files | Private object storage with scoped upload/download | Provider, scanning, retention, quotas and independent backup remain open |
 | Email | Transactional auth and business-delivery adapter | Provider, verified sender, limits and delivery/retry proof remain open |
@@ -24,7 +24,7 @@ Neon pooling uses transaction mode, so do not rely on session variables, session
 
 ## Better Auth integration
 
-Mount Better Auth's supported Next.js handler at `/api/auth/[...all]`. Read the session from trusted request context on the server, then enforce current membership/resource grants for business operations. Use a supported PostgreSQL adapter and review generated auth/plugin migrations. Keep auth tables outside ordinary business serialization and restrict their access. See [Next.js integration](https://better-auth.com/docs/integrations/next) and [PostgreSQL adapter](https://better-auth.com/docs/adapters/postgresql).
+Managed Better Auth is mounted at `/api/auth/[...path]` through Neon's Next.js SDK; Neon owns its schema and credential handling. The `/auth/callback` proxy completes the OAuth verifier exchange before returning to `/`. The server verifies the upstream session for protected operations and returns only the user's profile ID/name. Business operations must additionally enforce current workspace/resource grants. See [Neon's Next.js integration](https://neon.com/docs/auth/quick-start/nextjs-api-only). A future move to self-managed Better Auth requires a separate migration decision.
 
 Keep production session cookies HttpOnly and Secure with deliberate SameSite/domain/path settings. Set explicit trusted origins and validated redirect destinations. Retain built-in origin/CSRF protections and separately protect application mutation endpoints. Review session expiry, revocation and any cache delay against permission-change requirements. See [Better Auth security](https://better-auth.com/docs/reference/security).
 

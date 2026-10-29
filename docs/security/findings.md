@@ -35,6 +35,14 @@ npm audit --json --ignore-scripts --fetch-retries=0 --fetch-timeout=15000
 
 It exited 1 with an audit-endpoint error; that exit is not interpreted as a count or proof of vulnerabilities. No dependency, lockfile, auth configuration, database or remote deployment was changed. The error summary above is sufficient evidence of this failed attempt; raw temporary tool output is not a retained report or later successful scan.
 
+## Dependency installation recheck — 29 October 2026
+
+Applicable controls: SEC-049, SEC-050, SEC-051 and SEC-055. `npm install --ignore-scripts --no-audit --no-fund` completed with all declared packages already up to date; manifest and lockfile are unchanged. `npm ls --depth=0` and `tsc --noEmit` passed. Install scripts were not executed.
+
+The initial registry audit failed with `EAI_AGAIN`; a retry with network access returned a valid assessment, superseding SEC-GAP-001 for this lockfile: three low-severity package entries, zero moderate/high/critical entries. The affected chain is `shadcn@4.23.0` → `@shadcn/registry@0.2.1` → `deepmerge@4.3.1`, with shadcn also depending directly on deepmerge. All three entries arise from [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4), which lists affected deepmerge versions 4.2.0–4.3.1 and no patched version. This is one underlying advisory, not three independent flaws. npm proposes downgrading shadcn to 1.0.0; no forced fix or downgrade was applied. **Open, reachability unassessed**; maintainer ownership and remediation remain pending. SEC-GAP-002 and SEC-GAP-003 remain open.
+
+Application/config ESLint completed with zero errors and one existing unused-import warning. Repository-wide `npm run lint` failed with 17 errors in agent-skill scripts and 35 warnings. `npm run build` failed both before and after an access retry because Turbopack could not bind a local worker port (`Operation not permitted`); production build verification remains unavailable. These results do not pass the release gate or establish deployed-artifact security.
+
 ## Finding record template
 
 Copy for an actual finding; never fill unknown fields with invented success:

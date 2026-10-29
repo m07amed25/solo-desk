@@ -1,5 +1,11 @@
 # SoloDesk website design documentation
 
+The user-selected monochrome Light/Dark theme in [DESIGN.md](../../DESIGN.md) and
+[app/globals.css](../../app/globals.css) supersedes earlier mint/emerald, General Sans and universal
+pill styling in the recipes/reference below. The running showcase at `/design-system`
+and [token metadata](tokens.json) reflect the new theme; older imagery and visual values remain
+historical inputs, not the current color/type authority.
+
 Updated 29 October 2026. A coherent scalable design system and **shadcn/ui-first components** are primary requirements. The running checkout remains a Next.js starter; the design specification and standalone specimen do not implement business features, Neon or Better Auth.
 
 Start with [DESIGN.md](../../DESIGN.md), then [components](components-and-interactions.md), [visual recipes](component-visual-specs.md) and [screens](screens.md). Preserve the spacious productivity direction, light/dark/System themes and English/Arabic RTL. Adapt every surface to phone/tablet/wide-screen browsers and standard website navigation.

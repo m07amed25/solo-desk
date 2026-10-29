@@ -77,3 +77,7 @@ The 29 October website decision replaces native lifecycle, preload/IPC, SQLite/O
 Single-user/local-only/no-account operation is superseded by D-10/D-11. Full-payment-only billing is superseded by D-12. Optional basic team/sync architecture is superseded by mandatory P01 team/sync foundations. Unrestricted offline finalization is excluded by D-13. AI exploration is excluded by D-16. The old small first-version limits do not govern this expanded roadmap.
 
 For each future change record date, decision maker, rationale, impacted requirement IDs, schema/API compatibility, migration and test consequences. A decision being documented never marks its implementation complete.
+
+## Neon account foundation — 29 October 2026
+
+The user explicitly requested Postgres, Auth and Realtime on Neon project `old-darkness-38592897`, branch `production`, followed by Google/GitHub sign-in. This selects Neon Managed Better Auth for the account slice while preserving Better Auth as the identity technology. Neon owns its auth schema and provider credentials; Next.js owns same-origin SDK routes, the OAuth callback, authorized profile reads/actions and live query sealing. No previous auth implementation or business schema existed to migrate. This does not decide workspace policy, hosting, production SMTP, recovery or other business features. See [implementation and test evidence](../development/neon-setup.md).

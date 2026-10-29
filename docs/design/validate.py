@@ -51,13 +51,24 @@ def main():
     assert tokens['componentSizes']['buttonStandard']['minHeight'] == tokens['geometry']['primaryControlHeight']
     assert tokens['componentSizes']['input']['minHeight'] == tokens['geometry']['controlHeight']
     assert tokens['componentSizes']['table']['rowMinHeight'] == tokens['geometry']['tableRowMin']
+    css = (ROOT / 'app/globals.css').read_text()
+    for mode, selector in [('light', ':root'), ('dark', '.dark')]:
+        block = re.search(re.escape(selector) + r'(?:,\s*\.light)?\s*\{([^}]+)\}', css).group(1)
+        actual = dict(re.findall(r'--([\w-]+):\s*([^;]+);', block))
+        for name, value in tokens['cssVariables'][mode].items():
+            if name in ['font-sans', 'font-mono']:
+                assert 'var(--font-geist-' in actual[name], (mode, name)
+            else:
+                assert actual[name].strip() == value, (mode, name, 'CSS/token drift')
     pairs = []
+    gaps = []
     for mode, colors in tokens['themes'].items():
         for role, value in colors.items():
             assert re.fullmatch(r'#[0-9A-Fa-f]{6}', value), (role, value)
         for p in tokens['contrastPairs']:
             value = contrast(colors[p['foreground']], colors[p['background']])
-            assert value >= p['minimum'], (mode, p, value)
+            if value < p['minimum']:
+                gaps.append((mode, p['foreground'], p['background'], value, p['minimum']))
             pairs.append((mode, p['foreground'], p['background'], value, p['minimum']))
     screen_doc = (DESIGN / 'screens.md').read_text()
     screen_ids = re.findall(r'^\| (UI-\d{3}) ', screen_doc, re.M)
@@ -114,24 +125,30 @@ def main():
     # Parse without executing browser logic or installing a tool.
     subprocess.run(['node', '-e', "new (require('node:vm').Script)(require('node:fs').readFileSync(0,'utf8'));"], input=match[1], text=True, check=True, cwd=ROOT)
     assert (ROOT / 'public/solodesk_no_bg_no_text.png').exists()
-    summary = (f'{len(pairs)} declared contrast pairs pass; {len(tokens["componentSizes"])} component size '
+    summary = (f'{len(pairs) - len(gaps)}/{len(pairs)} declared contrast pairs pass; {len(gaps)} contrast gaps; '
+               f'{len(tokens["componentSizes"])} component size '
                f'recipes and {len(tokens["componentPaints"])} appearance recipes consistent; '
                f'{len(screen_ids)} screen families; {len(phase_ids)} retained feature references with native '
                f'entries superseded/retired; {len(definitions)} requirements match coverage; '
                f'{checked_links} current local links; {historical_count} historical notices; reference JavaScript syntax valid.')
     print(summary)
+    for mode, fg, bg, value, minimum in gaps:
+        print(f'GAP {mode}: {fg} on {bg}: {value:.2f}:1 < {minimum}:1')
     if args.write:
         report = '# Current website documentation validation\n\n'
         report += 'Checked 29 October 2026. Scope: current documentation, token recipes, requirement coverage and reference script syntax. This is not application, browser-interaction or security test evidence.\n\n'
         report += 'Run `python3 docs/design/validate.py` from the repository root. `--write` refreshes this report using only executed source checks; it never rewrites [historical validation](validation.md). Uses Python standard library and Node script parsing without installing packages or contacting services.\n\n'
         report += summary + '\n\n'
-        report += 'Local links in active Markdown and current historical notices are checked. Original absent-source references inside historical records are preserved and excluded; these are not current navigation/setup instructions. Feature counts retain stable references and do not claim implementation. HTML/token values are illustrative proposals.\n\n'
+        report += 'Local links in active Markdown and current historical notices are checked. Original absent-source references inside historical records are preserved and excluded; these are not current navigation/setup instructions. Feature counts retain stable references and do not claim implementation. Runtime CSS owns the current theme; the old HTML reference is historical. Contrast gaps remain release-review evidence.\n\n'
         report += 'Not run: website/business tests, live Neon/Better Auth integration, browser interaction/screenshots, screen readers, fluent Arabic review, PDF output, load/deployment or service recovery. No integration was installed/provisioned. Historical screenshots and results do not satisfy these gates.\n\n'
-        report += '## Declared contrast pairs\n\nNamed role pairs only; full-precision WCAG luminance comparison, rounded display. This does not certify all website accessibility.\n\n'
+        report += '## Declared contrast pairs\n\nNamed role pairs only; WCAG luminance comparison of rounded sRGB token mirrors, rounded display. Alpha compositing is not simulated. This does not certify all website accessibility.\n\n'
         report += '| Theme | Foreground | Background | Ratio | Required |\n| --- | --- | --- | --- | --- |\n'
         report += ''.join(f'| {mode} | `{fg}` | `{bg}` | {value:.2f}:1 | {minimum}:1 |\n'
                           for mode, fg, bg, value, minimum in pairs)
         (DESIGN / 'current-validation.md').write_text(report)
+
+    if gaps:
+        raise SystemExit(1)
 
 if __name__ == '__main__':
     main()

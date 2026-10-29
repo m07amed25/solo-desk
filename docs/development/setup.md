@@ -4,7 +4,7 @@ Updated 29 October 2026. This checkout contains a minimal Next.js App Router web
 
 ## Current stack and commands
 
-Current dependencies are Next.js, React and React DOM; development tooling includes TypeScript, ESLint and Tailwind-related packages. shadcn/ui, Neon connectivity and Better Auth are selected requirements, not installed integrations. No database migrations, auth handler or business workflow is implemented here.
+Current dependencies include Next.js, React, shadcn/Base UI components, pooled node-postgres, Neon's Managed Better Auth SDK and Realtime SDKs. TypeScript, ESLint and Tailwind/PostCSS provide development tooling. The account/profile flow is implemented; workspace and business workflows remain planned. Follow [Neon setup](neon-setup.md) for service linking, environment names, testing and known release gaps.
 
 Use a Node version supported by the installed Next.js package and the repository lockfile. On a clean checkout:
 
@@ -22,6 +22,7 @@ Tailwind source detection in `app/globals.css` explicitly scans `app/`, `compone
 | `npm run dev` | Next.js development server |
 | `npm run lint` | ESLint |
 | `npm run build` | Production build |
+| `npm run test:neon` | Production service integration test with temporary synthetic identities |
 | `npm start` | Serve an existing production build |
 | `python3 docs/design/validate.py` | Documentation links/coverage and design token/reference checks |
 
@@ -33,7 +34,11 @@ For agent-assisted work, use [skill routing](agent-skills.md) and the [installed
 
 Follow [AGENTS.md](../../AGENTS.md). Before writing Next.js code, read the relevant guides inside `node_modules/next/dist/docs/`, especially App Router structure, Server/Client Components, data security, mutations, route handlers and deployment. Installed documentation takes precedence over remembered older APIs.
 
-## Planned integrations
+## Account integration
+
+Google and GitHub sign-in use Managed Better Auth through same-origin SDK routes. The app reads its own profile from PostgreSQL and subscribes to a session-scoped Realtime query. No business schema migration or ORM was needed. `npm run build` uses Webpack because Turbopack's build worker could not bind a local port in this execution environment; Tailwind uses the standard PostCSS plugin for both bundlers. Development still uses Turbopack.
+
+The following paragraphs describe future business/platform integration work; the [Neon integration guide](neon-setup.md) supersedes their self-managed-auth environment proposal for the implemented account slice.
 
 Configure shadcn/ui in the existing Next.js application with shared `components/ui`, consistent aliases, semantic tokens and Tailwind. Add individual components as needed. Select one compatible primitive family, review generated source/dependencies and preserve its accessibility contracts. See [design system](../../DESIGN.md).
 
