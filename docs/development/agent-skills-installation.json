@@ -1,0 +1,1205 @@
+{
+  "verified_on": "2026-10-29",
+  "scope": "Local Codex user directory; project and plugin copies preserved",
+  "total": 115,
+  "installed": 114,
+  "already_present": 1,
+  "verification": "Manifest existence, unique canonical name and SHA-256 checked; scripts and runtime dependencies not executed",
+  "skills": [
+    {
+      "name": "agentic-actions-auditor",
+      "repo": "trailofbits/skills",
+      "path": "plugins/agentic-actions-auditor/skills/agentic-actions-auditor/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "b2bdb88d559bc37e6c2c8314e28e7a2eb47e7cdd9da51e77da347d3517326dc0",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/agentic-actions-auditor"
+    },
+    {
+      "name": "api-design-reviewer",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/api-design-reviewer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a4e61a67981d7cab02f479f959b9e83d032e705c17b72e763d07ef9a3247bf54",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/api-design-reviewer"
+    },
+    {
+      "name": "api-test-suite-builder",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/api-test-suite-builder/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a0db3fd9004317097c1c9c7ef7da6276a98d205a1c2af79fbbddd72fab976d42",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/api-test-suite-builder"
+    },
+    {
+      "name": "audit-context-building",
+      "repo": "trailofbits/skills",
+      "path": "plugins/audit-context-building/skills/audit-context-building/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "33fa693dc6e166cfa4919e4373cb6578c009d296234c2ae7cb3cd4e79b443765",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/audit-context-building"
+    },
+    {
+      "name": "better-auth-best-practices",
+      "repo": "better-auth/skills",
+      "path": "better-auth/best-practices/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a5337f186300d187fea2c8f7af339e091afdd130d36c070d0a2dcb8ca04dd413",
+      "source_commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "install_directory": "/home/mohamed-s/.codex/skills/better-auth-best-practices"
+    },
+    {
+      "name": "better-auth-security-best-practices",
+      "repo": "better-auth/skills",
+      "path": "security/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "042f01c76b63b436c71797c8a1b84470c5b6e0c7cd2400aa0928f733da96facf",
+      "source_commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "install_directory": "/home/mohamed-s/.codex/skills/better-auth-security-best-practices"
+    },
+    {
+      "name": "brainstorming",
+      "repo": "obra/superpowers",
+      "path": "skills/brainstorming/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "61a7ef918652108c76a3fd01e02dd92d39996c6b46d4cb2819cbd03f6c45e46a",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/brainstorming"
+    },
+    {
+      "name": "canvas-design",
+      "repo": "anthropics/skills",
+      "path": "skills/canvas-design/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a1f288079624402f30682753c1d43920b6664785698d21d3e7aa197450a6448b",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/canvas-design"
+    },
+    {
+      "name": "ci-cd-pipeline-builder",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/ci-cd-pipeline-builder/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "b9628224a9fe77caca4aedda49a72938147000ab275da92ebccf190c3ba8f161",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/ci-cd-pipeline-builder"
+    },
+    {
+      "name": "cli-creator",
+      "repo": "openai/skills",
+      "path": "skills/.curated/cli-creator/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "24058eabf0aafce6def3fb937ac93cbe3fa341c653c658dc589edb77f73d6152",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/cli-creator"
+    },
+    {
+      "name": "cloudflare-deploy",
+      "repo": "openai/skills",
+      "path": "skills/.curated/cloudflare-deploy/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "d7632537cf19be17cf33d2c696b9d9c2ea3ee51026030e9b203d5b9255e75b15",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/cloudflare-deploy"
+    },
+    {
+      "name": "code-reviewer",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/code-reviewer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "405fe797b4ff1be76148de2cf9cb9584705279da59803c9a9c1ea78e0e93bc9c",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/code-reviewer"
+    },
+    {
+      "name": "codebase-onboarding",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/codebase-onboarding/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "70261b95a8855d422b0d7538e138ef7434f032a953bd646507ac09a8379e6b7c",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/codebase-onboarding"
+    },
+    {
+      "name": "codeql",
+      "repo": "trailofbits/skills",
+      "path": "plugins/static-analysis/skills/codeql/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "1a6d919ff80f83b262daf650552af6eb6d2c32b19d0c529b70efe0c116b675cf",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/codeql"
+    },
+    {
+      "name": "create-auth",
+      "repo": "better-auth/skills",
+      "path": "better-auth/create-auth/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "e3f24141de734690c803c577cc30f19aa0b7a6e408def0d0de7f8e1b6780c5fc",
+      "source_commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "install_directory": "/home/mohamed-s/.codex/skills/create-auth"
+    },
+    {
+      "name": "database-designer",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/database-designer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "3729790a4e29e45ea0e9cb0bbb220d2162fea0e954d32f2abf8728aa8ef41ad1",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/database-designer"
+    },
+    {
+      "name": "database-schema-designer",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/database-schema-designer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "0a964937e39dc65462ad5b3e36e30ebd08f17eea6503e0f7d0b2dbe86fbe35fc",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/database-schema-designer"
+    },
+    {
+      "name": "dependency-auditor",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/dependency-auditor/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "4bde5bd43d14b39a9c282f1ab74b202d102b070b99a5083724e84526bc5e2f0a",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/dependency-auditor"
+    },
+    {
+      "name": "deploy-to-vercel",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/deploy-to-vercel/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "418ca2a60d35c551e6cb645f4e82c1b704a8335486ffe74b1b3d0617a17504e5",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/deploy-to-vercel"
+    },
+    {
+      "name": "diagnosing-superpowers",
+      "repo": "obra/superpowers",
+      "path": "skills/diagnosing-superpowers/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "3143de8695c5a2d63e8b1675f33837578076f464deb127c2ebdd0b46fceef886",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/diagnosing-superpowers"
+    },
+    {
+      "name": "differential-review",
+      "repo": "trailofbits/skills",
+      "path": "plugins/differential-review/skills/differential-review/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "f9af6a8193fc1a9f8ca3c54bb8d19095a5f20c9472ca6d014488bbde50b67da0",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/differential-review"
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "repo": "obra/superpowers",
+      "path": "skills/dispatching-parallel-agents/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "1968923066f3b707eb01d1992cdf4c42284c3855f70253b9cd5000ff45fca13c",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/dispatching-parallel-agents"
+    },
+    {
+      "name": "doc-coauthoring",
+      "repo": "anthropics/skills",
+      "path": "skills/doc-coauthoring/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "2e47d78846faeea4a56e9809c52700087a15a2155a3f293a3efbaded81398ef4",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/doc-coauthoring"
+    },
+    {
+      "name": "email-and-password-best-practices",
+      "repo": "better-auth/skills",
+      "path": "better-auth/emailAndPassword/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "70591495def0161b5adec5c697dd7740b75e80b16526654beff51f5611098e0a",
+      "source_commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "install_directory": "/home/mohamed-s/.codex/skills/email-and-password-best-practices"
+    },
+    {
+      "name": "executing-plans",
+      "repo": "obra/superpowers",
+      "path": "skills/executing-plans/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "e4649e59880ef2643d1da128e3d607e87e3f969410d72095a5bf65811b6036dc",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/executing-plans"
+    },
+    {
+      "name": "figma",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "5b11f7c8d0ce4c047b401323e7b8fe6559bd3162a3397bf5248634a5444609d5",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma"
+    },
+    {
+      "name": "figma-code-connect-components",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma-code-connect-components/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "0f19edad8aed28063a3517c419fbcbef5421d024f189fd02a17fae25093ec69d",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma-code-connect-components"
+    },
+    {
+      "name": "figma-create-design-system-rules",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma-create-design-system-rules/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "1f4d7e16ba5325a80da32e2e6bde0ea850ba9287f35f4675d51d55d2f0dc6e2a",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma-create-design-system-rules"
+    },
+    {
+      "name": "figma-generate-design",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma-generate-design/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "45d2b97103bdeb31cb2744fca2c79bcefb659c88faca626bea30ec2f9342dcc9",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma-generate-design"
+    },
+    {
+      "name": "figma-generate-library",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma-generate-library/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "7f42103c59fc181d7081404a56545f321c458d97f5ee7f7a0ab2af75ea69a85f",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma-generate-library"
+    },
+    {
+      "name": "figma-implement-design",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma-implement-design/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "63f3d12d444547bbf68c10a12982b1f42e0f6e26fc074324564a13184d4b15ad",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma-implement-design"
+    },
+    {
+      "name": "figma-use",
+      "repo": "openai/skills",
+      "path": "skills/.curated/figma-use/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "afa9c4ae068a18b93e4914b2d224180ace113db7713dd66f4df397f16ba9c4b4",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/figma-use"
+    },
+    {
+      "name": "find-skills",
+      "repo": "vercel-labs/skills",
+      "path": "skills/find-skills/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "c00eeea0e13e74fe4a9d84ba0a8542205a1b736d65f13134fe1a6647eb14976f",
+      "source_commit": "92a9a34ac3bf88e695e468b90c7bf32f163d32c8",
+      "install_directory": "/home/mohamed-s/.codex/skills/find-skills"
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "repo": "obra/superpowers",
+      "path": "skills/finishing-a-development-branch/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "8db5a922b242dd4e1bf824cb91c13b3e8d8e8a86d6ceaf7f0774eb9cce909d65",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/finishing-a-development-branch"
+    },
+    {
+      "name": "frontend-design",
+      "repo": "anthropics/skills",
+      "path": "skills/frontend-design/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/frontend-design"
+    },
+    {
+      "name": "gh-address-comments",
+      "repo": "openai/skills",
+      "path": "skills/.curated/gh-address-comments/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "77389eefd3fb6584210668ca8e43f4b8de87e7722ddd953474bc9e24cdfaaedd",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/gh-address-comments"
+    },
+    {
+      "name": "gh-fix-ci",
+      "repo": "openai/skills",
+      "path": "skills/.curated/gh-fix-ci/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "7b326b4a2f0f5f85122144628ec02077e48841e0e0e82efce88b3415bcfb7c26",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/gh-fix-ci"
+    },
+    {
+      "name": "impeccable",
+      "repo": "pbakaus/impeccable",
+      "path": ".agents/skills/impeccable/SKILL.md",
+      "status": "already-present",
+      "manifest_sha256": "58c0252bca04521de87007aeb495f7ec99dc4c7341bc890fe82b6d577573af91",
+      "source_commit": null,
+      "install_directory": "/home/mohamed-s/.codex/skills/impeccable"
+    },
+    {
+      "name": "linear",
+      "repo": "openai/skills",
+      "path": "skills/.curated/linear/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "ce0f39c95b6c9190f8ea33614393cdb556b2684dd8388ded394e9cb915f42601",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/linear"
+    },
+    {
+      "name": "mcp-builder",
+      "repo": "anthropics/skills",
+      "path": "skills/mcp-builder/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "b483b56d6673134497e45489c317f26ae0f1429c194db0297e43073e17e6748c",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/mcp-builder"
+    },
+    {
+      "name": "migrate-radix-to-base",
+      "repo": "shadcn-ui/ui",
+      "path": "skills/migrate-radix-to-base/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "64c879f6f1eab0decc306ca52ad32d41327c05c4d2fb7e708335e956c61dadf8",
+      "source_commit": "96da9cc7f1aa10580a3741664e2a77c721206c00",
+      "install_directory": "/home/mohamed-s/.codex/skills/migrate-radix-to-base"
+    },
+    {
+      "name": "migration-architect",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/migration-architect/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "b262c3b4eea8389b4fb65016734a092a99e096a226662c37efc89bc93c69a77a",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/migration-architect"
+    },
+    {
+      "name": "mutation-testing",
+      "repo": "trailofbits/skills",
+      "path": "plugins/mutation-testing/skills/mutation-testing/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "20e6ee2b6cec91bad7572dea966b5fce1e50f9ef8d4bf2e4ba69ac9b679792ff",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/mutation-testing"
+    },
+    {
+      "name": "neon",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "00f56679dfd274a257e7fef1472206aafd9f8c8f1b8146bb989d1dcb94d13996",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon"
+    },
+    {
+      "name": "neon-auth",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-auth/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "5f91f328235382f3e9afef449729e304a531848a90c02b40c4fd1192709e0319",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-auth"
+    },
+    {
+      "name": "neon-functions",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-functions/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "d75b5a9a096bb1751f7ebfb5bceac48b7b24bdaa5fcfb769f99eb9b706760108",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-functions"
+    },
+    {
+      "name": "neon-object-storage",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-object-storage/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "45da029d33f4dd3e2775232d44f831e433fb641e27e9f00c9091a86cd1410d6f",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-object-storage"
+    },
+    {
+      "name": "neon-postgres",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-postgres/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "efb692c6ba4c7d454e177eceb3aa8ef2ff02a0b6353d491037214afe49e48e9d",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-postgres"
+    },
+    {
+      "name": "neon-postgres-branches",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-postgres-branches/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "9f47d5a49553a465837c1e8b2d90a90aac72a5313a996c081027290f259a8d71",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-postgres-branches"
+    },
+    {
+      "name": "neon-postgres-egress-optimizer",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-postgres-egress-optimizer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "d7536270b6dd59a66fa5daf1578cc55a5b761d7163f6f6b1596662481b8d5d9b",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-postgres-egress-optimizer"
+    },
+    {
+      "name": "neon-realtime",
+      "repo": "neondatabase/agent-skills",
+      "path": "skills/neon-realtime/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "fb23ec04c6301c661d52e8733fb6186f3fa8d8bf287675ea1ff4180e221d181a",
+      "source_commit": "9df568a3f88a361ea33db00453ff754d07b3b3e1",
+      "install_directory": "/home/mohamed-s/.codex/skills/neon-realtime"
+    },
+    {
+      "name": "netlify-deploy",
+      "repo": "openai/skills",
+      "path": "skills/.curated/netlify-deploy/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "bb2c29bf599a043cade932f60cc64f632ca100e8767ccdfa2ba1a42c8d43958f",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/netlify-deploy"
+    },
+    {
+      "name": "next-bundle-optimizer",
+      "repo": "vercel/next.js",
+      "path": "skills/next-bundle-optimizer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a0cba357640fdba9077e529547a512062db50665e456485bc234bf096589edda",
+      "source_commit": "5a2d24ea5b4154319f9efa6dbb271eedc5183b73",
+      "install_directory": "/home/mohamed-s/.codex/skills/next-bundle-optimizer"
+    },
+    {
+      "name": "next-cache-components-adoption",
+      "repo": "vercel/next.js",
+      "path": "skills/next-cache-components-adoption/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "20bd3022e370fff23f3c3956c7f02e79edcee451a6533aa8d98f7e0fce40e35e",
+      "source_commit": "5a2d24ea5b4154319f9efa6dbb271eedc5183b73",
+      "install_directory": "/home/mohamed-s/.codex/skills/next-cache-components-adoption"
+    },
+    {
+      "name": "next-cache-components-optimizer",
+      "repo": "vercel/next.js",
+      "path": "skills/next-cache-components-optimizer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "3d0e8eb9d922538de71def2e75ebfc1e1d5ec86e5eeaf0b3b51f22cc38a29f99",
+      "source_commit": "5a2d24ea5b4154319f9efa6dbb271eedc5183b73",
+      "install_directory": "/home/mohamed-s/.codex/skills/next-cache-components-optimizer"
+    },
+    {
+      "name": "next-dev-loop",
+      "repo": "vercel/next.js",
+      "path": "skills/next-dev-loop/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "ca45c937ae77b2dc39399ffbe5afbfabcc1862056a62fd50c76342a32e6f8375",
+      "source_commit": "5a2d24ea5b4154319f9efa6dbb271eedc5183b73",
+      "install_directory": "/home/mohamed-s/.codex/skills/next-dev-loop"
+    },
+    {
+      "name": "next-partial-prefetching-adoption",
+      "repo": "vercel/next.js",
+      "path": "skills/next-partial-prefetching-adoption/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "258989169e683a33512ce0c7078314a82cd0ad6aa721f0207753773088d8902b",
+      "source_commit": "5a2d24ea5b4154319f9efa6dbb271eedc5183b73",
+      "install_directory": "/home/mohamed-s/.codex/skills/next-partial-prefetching-adoption"
+    },
+    {
+      "name": "next-partial-prefetching-optimizer",
+      "repo": "vercel/next.js",
+      "path": "skills/next-partial-prefetching-optimizer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "876634c57c5cfbace95edcbe6c7e9bdea199fa53c09cd177990dc936876db345",
+      "source_commit": "5a2d24ea5b4154319f9efa6dbb271eedc5183b73",
+      "install_directory": "/home/mohamed-s/.codex/skills/next-partial-prefetching-optimizer"
+    },
+    {
+      "name": "notion-spec-to-implementation",
+      "repo": "openai/skills",
+      "path": "skills/.curated/notion-spec-to-implementation/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "6e22c4c6df441e849fa6b4b825371b579c9bb4896f97bedca5f8536020427a81",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/notion-spec-to-implementation"
+    },
+    {
+      "name": "observability-designer",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/observability-designer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "70ab54164e3cb58f30f4f4e1500bd54361c67f6ecbde954b13596dc2902fe2ac",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/observability-designer"
+    },
+    {
+      "name": "organization-best-practices",
+      "repo": "better-auth/skills",
+      "path": "better-auth/organization/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "d0450769aab02fbddfddca5c17257dca451233ac8ae7c6b395fa6a3bad104d27",
+      "source_commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "install_directory": "/home/mohamed-s/.codex/skills/organization-best-practices"
+    },
+    {
+      "name": "performance-profiler",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/performance-profiler/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "953948b591db0afc4dac8ff4e84d65a2c34fa62b7b579e3ba6cf3398e79ec18b",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/performance-profiler"
+    },
+    {
+      "name": "playwright",
+      "repo": "openai/skills",
+      "path": "skills/.curated/playwright/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/playwright"
+    },
+    {
+      "name": "playwright-interactive",
+      "repo": "openai/skills",
+      "path": "skills/.curated/playwright-interactive/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "f6c1155d923e6ae3ccc12abfef2266f119f8e9546df2ddeee1f5eb369845a0a1",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/playwright-interactive"
+    },
+    {
+      "name": "post-patch-validation",
+      "repo": "trailofbits/skills",
+      "path": "plugins/post-patch-validation/skills/post-patch-validation/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "33b604f4d7d62eab393d710edb98b18505fcbe079c07c9428daa018f29439b54",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/post-patch-validation"
+    },
+    {
+      "name": "property-based-testing",
+      "repo": "trailofbits/skills",
+      "path": "plugins/property-based-testing/skills/property-based-testing/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "9448cacb65c6237a7c22dc59602667177ecae405524079ae9ff92240590b995a",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/property-based-testing"
+    },
+    {
+      "name": "receiving-code-review",
+      "repo": "obra/superpowers",
+      "path": "skills/receiving-code-review/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "091df1629510af1b92fc4abd6f96732ebedb4cb2c0f3457e8f2740b0504a2438",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/receiving-code-review"
+    },
+    {
+      "name": "render-deploy",
+      "repo": "openai/skills",
+      "path": "skills/.curated/render-deploy/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "c17c75adeb1834ed5cee1e440a651ae476c4101cd63762fcd9a58eada917552d",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/render-deploy"
+    },
+    {
+      "name": "requesting-code-review",
+      "repo": "obra/superpowers",
+      "path": "skills/requesting-code-review/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "2180e14a448e9410bec88e6646a2d1f0ce7fdd58de27388c1e052e929679d2bc",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/requesting-code-review"
+    },
+    {
+      "name": "sarif-parsing",
+      "repo": "trailofbits/skills",
+      "path": "plugins/static-analysis/skills/sarif-parsing/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "cc5f008f40ffb8a1ae03ebd32d7234de43e828293955a0bc251b76ba249554fa",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/sarif-parsing"
+    },
+    {
+      "name": "screenshot",
+      "repo": "openai/skills",
+      "path": "skills/.curated/screenshot/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "081935a6a163277537d46365f49d6b4a3cb40b4748347e7e88759c5927fa8cf5",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/screenshot"
+    },
+    {
+      "name": "security-best-practices",
+      "repo": "openai/skills",
+      "path": "skills/.curated/security-best-practices/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "7b3dae1ffc5434d890f3c65c8f552af52d0307fab3b35dec13013c9ca3844c4f",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/security-best-practices"
+    },
+    {
+      "name": "security-ownership-map",
+      "repo": "openai/skills",
+      "path": "skills/.curated/security-ownership-map/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "f06c1a59247569326702c945f397af163ea96cf2ecfdf2dde280605bf89a3ec8",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/security-ownership-map"
+    },
+    {
+      "name": "security-threat-model",
+      "repo": "openai/skills",
+      "path": "skills/.curated/security-threat-model/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "1283c0dd62a8104d9edda4583569b5d8510b4ddaa45120687c999250fd96bad2",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/security-threat-model"
+    },
+    {
+      "name": "semgrep",
+      "repo": "trailofbits/skills",
+      "path": "plugins/static-analysis/skills/semgrep/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "52162605593f871cf45f48f9cf00b7c2d7e0759ccb7507981088442b7cc5d76c",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/semgrep"
+    },
+    {
+      "name": "senior-architect",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-architect/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "559d402c361591423b22de37485ad3900b3aba8c437bed1ebf70aa4e828e0e22",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-architect"
+    },
+    {
+      "name": "senior-backend",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-backend/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "89e8fee211cda23ef963e6d1662f93de815047450e4b2d05e601784c61fbf047",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-backend"
+    },
+    {
+      "name": "senior-devops",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-devops/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "6eaeee798f2ffc82496c5d8dffb9a111a98e911284daa6886be3107a41917979",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-devops"
+    },
+    {
+      "name": "senior-frontend",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-frontend/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "74b2f38824c4372dafd55c076e093e63d2ed457f199d905a18a50b38d1cb3eeb",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-frontend"
+    },
+    {
+      "name": "senior-fullstack",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-fullstack/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a4e25f570c43a8d33d5a48c1fc92082299ad4cdaccc04eb668d88c84bf6acd51",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-fullstack"
+    },
+    {
+      "name": "senior-qa",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-qa/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "8662ded94b1ea51e88f04e9767d8a4c2359501b29073a1dfa3410eea35a34277",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-qa"
+    },
+    {
+      "name": "senior-secops",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-secops/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "b43ed4b293e45a25f07cd1d3cc58b4b948c1780207d0f462e9b70a72dc6cf81c",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-secops"
+    },
+    {
+      "name": "senior-security",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/senior-security/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "454188e4f0188d3e0219f58c70dc666e0a9e98383d53a7437a027b13db68643a",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/senior-security"
+    },
+    {
+      "name": "sentry",
+      "repo": "openai/skills",
+      "path": "skills/.curated/sentry/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "508c6f5c100586c81a34397d30f00f4b8771b66d698a7ac1836998df925dd007",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/sentry"
+    },
+    {
+      "name": "shadcn",
+      "repo": "shadcn-ui/ui",
+      "path": "skills/shadcn/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "93951e5e83f616a3e046491c00d770bd54c0a64164706cd1191822a233d27592",
+      "source_commit": "96da9cc7f1aa10580a3741664e2a77c721206c00",
+      "install_directory": "/home/mohamed-s/.codex/skills/shadcn"
+    },
+    {
+      "name": "sharp-edges",
+      "repo": "trailofbits/skills",
+      "path": "plugins/sharp-edges/skills/sharp-edges/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "3b69a709c2f8f0cfcf57d40a3186e166f307865cc8ed924be4098e549a121e9c",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/sharp-edges"
+    },
+    {
+      "name": "skill-security-auditor",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/skill-security-auditor/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "8281b2a45e2ab66d21d45910fa47e02158113e319391d51c60215d39090db686",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/skill-security-auditor"
+    },
+    {
+      "name": "subagent-driven-development",
+      "repo": "obra/superpowers",
+      "path": "skills/subagent-driven-development/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "ba41f697136cba88a7962d60c8e2f97488ba04a8688b1d0fbeb27f6953808e75",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/subagent-driven-development"
+    },
+    {
+      "name": "supply-chain-risk-auditor",
+      "repo": "trailofbits/skills",
+      "path": "plugins/supply-chain-risk-auditor/skills/supply-chain-risk-auditor/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a1254b7f8d3a1731a9a7e1f9cd6c67b59cf84ed6ef7c7fb455db9a14c528ceb4",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/supply-chain-risk-auditor"
+    },
+    {
+      "name": "systematic-debugging",
+      "repo": "obra/superpowers",
+      "path": "skills/systematic-debugging/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "51c6435d98c83c42c96ba7c35725a0b2c376cd487fb1a4e6bd0ddbe7e33ef202",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/systematic-debugging"
+    },
+    {
+      "name": "tdd-guide",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering-team/skills/tdd-guide/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "b12e75f376db6a72d0f5a9971c720c04546d02f0ecf68f40fd0efde22e46aa6d",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/tdd-guide"
+    },
+    {
+      "name": "tech-debt-tracker",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "engineering/skills/tech-debt-tracker/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "8e7492db76ae8bc2827f3e265a2061a8e656c4eac155a37340d13da077f6687e",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/tech-debt-tracker"
+    },
+    {
+      "name": "test-driven-development",
+      "repo": "obra/superpowers",
+      "path": "skills/test-driven-development/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "64b03fce4aee5a97a93160cea8111f3ba13a17b7c001db4bd5836d67fd10705d",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/test-driven-development"
+    },
+    {
+      "name": "theme-factory",
+      "repo": "anthropics/skills",
+      "path": "skills/theme-factory/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "c35893e221e28895c52143cc11bf30e41a44817796b39d4b15727dadc9796552",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/theme-factory"
+    },
+    {
+      "name": "two-factor-authentication-best-practices",
+      "repo": "better-auth/skills",
+      "path": "better-auth/twoFactor/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a9d80a07fcedb8298277356f8dcc2ea4f1bddfc8341075edee675f886ea57d5b",
+      "source_commit": "20c9e88a5c007461a703f1c213572b073196113e",
+      "install_directory": "/home/mohamed-s/.codex/skills/two-factor-authentication-best-practices"
+    },
+    {
+      "name": "ui-design-system",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "product-team/skills/ui-design-system/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "7f8c1714af2602bcd2b3b49b6aaf0f53351fb739b26062d548f6a9c8c1b10e8d",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/ui-design-system"
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "path": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "ea087c341bfb5b23195c7302027268ede86da802554c18a5c4896a6017b439f9",
+      "source_commit": "28b3b8dee8c976df4fa3e94aed4e092ad43fcb03",
+      "install_directory": "/home/mohamed-s/.codex/skills/ui-ux-pro-max"
+    },
+    {
+      "name": "using-git-worktrees",
+      "repo": "obra/superpowers",
+      "path": "skills/using-git-worktrees/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "8cfb86f121269e8f7f12361e6795c4f6738828340e28964c9229d365666c9edd",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/using-git-worktrees"
+    },
+    {
+      "name": "using-superpowers",
+      "repo": "obra/superpowers",
+      "path": "skills/using-superpowers/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "82c5c8866ad7f5dd4440ce66bd7806ba48a2f13771beae5cf112e53f08fe36ba",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/using-superpowers"
+    },
+    {
+      "name": "ux-researcher-designer",
+      "repo": "alirezarezvani/claude-skills",
+      "path": "product-team/skills/ux-researcher-designer/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "e19ce820e246bf34834e99ea361afcf93fb780ffbb2a4248b32a9947ae4a43ca",
+      "source_commit": "0496583603e56cdd5022dd61c823bd784a80a752",
+      "install_directory": "/home/mohamed-s/.codex/skills/ux-researcher-designer"
+    },
+    {
+      "name": "variant-analysis",
+      "repo": "trailofbits/skills",
+      "path": "plugins/variant-analysis/skills/variant-analysis/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "7b6b78e499bcb88d05c68254ffc91ebc28edabf4e9808adcc40e2628ebb9407e",
+      "source_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+      "install_directory": "/home/mohamed-s/.codex/skills/variant-analysis"
+    },
+    {
+      "name": "vercel-cli-with-tokens",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/vercel-cli-with-tokens/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "c06bea99e75eab07fde4fae26069baa002f82f39b53f07981704c2901551dd4c",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-cli-with-tokens"
+    },
+    {
+      "name": "vercel-composition-patterns",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/composition-patterns/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "e38e0eaa609316b10423a9a138ed95e35099accd3f735585295c8a8f165c28a3",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-composition-patterns"
+    },
+    {
+      "name": "vercel-deploy",
+      "repo": "openai/skills",
+      "path": "skills/.curated/vercel-deploy/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "f4a6cbfbb378a320fae179a79f727a881d19677e9b3db96ed49d2dc02a74fa46",
+      "source_commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-deploy"
+    },
+    {
+      "name": "vercel-optimize",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/vercel-optimize/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "95ae2683b30d892d165af92a350c5628b68106f395a59b448857b654e306ed91",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-optimize"
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/react-best-practices/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "71ed7794962fa6e803ee83030517b5b93a9f70fbfeb431ec4535c5480a8d8355",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-react-best-practices"
+    },
+    {
+      "name": "vercel-react-native-skills",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/react-native-skills/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "4012750a5ccbe064ca04af3835d5d1b011979d2d09d9b6df1c8128fac58e0a66",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-react-native-skills"
+    },
+    {
+      "name": "vercel-react-view-transitions",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/react-view-transitions/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "693acbddd1d2dcf774286867efbc9a5c09dce2da6f21f8e12618187a92f2106a",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/vercel-react-view-transitions"
+    },
+    {
+      "name": "verification-before-completion",
+      "repo": "obra/superpowers",
+      "path": "skills/verification-before-completion/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/verification-before-completion"
+    },
+    {
+      "name": "web-artifacts-builder",
+      "repo": "anthropics/skills",
+      "path": "skills/web-artifacts-builder/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "81c5002c6643b0de7b8710b00e7a9038daa6fb9b68d59870ee6adb12da8d10f8",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/web-artifacts-builder"
+    },
+    {
+      "name": "web-design-guidelines",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/web-design-guidelines/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "f4647ca866a3accf763777f83e7682954f0187cd6bea7eea0399796652414e8f",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/web-design-guidelines"
+    },
+    {
+      "name": "webapp-testing",
+      "repo": "anthropics/skills",
+      "path": "skills/webapp-testing/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "51b7349e77ec63b7744a6f63647e7566a0b4d2e301121cc10e8c2113af6556a2",
+      "source_commit": "ca45fc496a3436251f191354091d557da31c15b5",
+      "install_directory": "/home/mohamed-s/.codex/skills/webapp-testing"
+    },
+    {
+      "name": "writing-guidelines",
+      "repo": "vercel-labs/agent-skills",
+      "path": "skills/writing-guidelines/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "89a5f581193289b80af58b980090aeed535047c8df2b55ccbaae0de40283a99d",
+      "source_commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "install_directory": "/home/mohamed-s/.codex/skills/writing-guidelines"
+    },
+    {
+      "name": "writing-plans",
+      "repo": "obra/superpowers",
+      "path": "skills/writing-plans/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/writing-plans"
+    },
+    {
+      "name": "writing-skills",
+      "repo": "obra/superpowers",
+      "path": "skills/writing-skills/SKILL.md",
+      "status": "installed",
+      "manifest_sha256": "8cb3ac68c6d8c4bb46886b998b09af7989643cab8bd0e46ee86dd62e64546bbe",
+      "source_commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+      "install_directory": "/home/mohamed-s/.codex/skills/writing-skills"
+    }
+  ],
+  "trailofbits_plugins": {
+    "verified_on": "2026-10-29",
+    "marketplace": "trailofbits",
+    "source": "https://github.com/trailofbits/skills.git",
+    "marketplace_commit": "2be6433b39e009cd2b6fd3be1895f6b1faa5af9a",
+    "installed_and_enabled": 10,
+    "bundled_skill_manifests": 12,
+    "duplicates_existing_catalogued_names": true,
+    "pre_install_check": {
+      "method": "Local static pattern scanner on 10 package trees and 12 skill directories, followed by manual triage of flagged locations",
+      "triage": [
+        "Package-root missing-SKILL warnings reflect plugins containing nested skill directories.",
+        "Security examples, rejected-command test vectors and syntax-only compile tests were pattern false positives.",
+        "Zero-width characters were Markdown fence formatting and emoji joiners.",
+        "Recursive deletion targets temporary directories created by the validation runner.",
+        "HTTP request helper supports advisory queries, including dependency names/versions sent to OSV."
+      ],
+      "limits": "No full security certification, live advisory lookup, scanner runtime or patch-validation workflow was performed."
+    },
+    "plugins": [
+      {
+        "plugin_id": "agentic-actions-auditor@trailofbits",
+        "version": "1.3.2",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/agentic-actions-auditor/1.3.2",
+        "manifests": [
+          {
+            "path": "skills/agentic-actions-auditor/SKILL.md",
+            "sha256": "b2bdb88d559bc37e6c2c8314e28e7a2eb47e7cdd9da51e77da347d3517326dc0"
+          }
+        ]
+      },
+      {
+        "plugin_id": "audit-context-building@trailofbits",
+        "version": "2.0.2",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/audit-context-building/2.0.2",
+        "manifests": [
+          {
+            "path": "skills/audit-context-building/SKILL.md",
+            "sha256": "33fa693dc6e166cfa4919e4373cb6578c009d296234c2ae7cb3cd4e79b443765"
+          }
+        ]
+      },
+      {
+        "plugin_id": "differential-review@trailofbits",
+        "version": "1.1.4",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/differential-review/1.1.4",
+        "manifests": [
+          {
+            "path": "skills/differential-review/SKILL.md",
+            "sha256": "f9af6a8193fc1a9f8ca3c54bb8d19095a5f20c9472ca6d014488bbde50b67da0"
+          }
+        ]
+      },
+      {
+        "plugin_id": "mutation-testing@trailofbits",
+        "version": "1.9.2",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/mutation-testing/1.9.2",
+        "manifests": [
+          {
+            "path": "skills/mutation-testing/SKILL.md",
+            "sha256": "20e6ee2b6cec91bad7572dea966b5fce1e50f9ef8d4bf2e4ba69ac9b679792ff"
+          }
+        ]
+      },
+      {
+        "plugin_id": "post-patch-validation@trailofbits",
+        "version": "0.2.2",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/post-patch-validation/0.2.2",
+        "manifests": [
+          {
+            "path": "skills/post-patch-validation/SKILL.md",
+            "sha256": "33b604f4d7d62eab393d710edb98b18505fcbe079c07c9428daa018f29439b54"
+          }
+        ]
+      },
+      {
+        "plugin_id": "property-based-testing@trailofbits",
+        "version": "1.2.2",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/property-based-testing/1.2.2",
+        "manifests": [
+          {
+            "path": "skills/property-based-testing/SKILL.md",
+            "sha256": "9448cacb65c6237a7c22dc59602667177ecae405524079ae9ff92240590b995a"
+          }
+        ]
+      },
+      {
+        "plugin_id": "sharp-edges@trailofbits",
+        "version": "1.1.3",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/sharp-edges/1.1.3",
+        "manifests": [
+          {
+            "path": "skills/sharp-edges/SKILL.md",
+            "sha256": "3b69a709c2f8f0cfcf57d40a3186e166f307865cc8ed924be4098e549a121e9c"
+          }
+        ]
+      },
+      {
+        "plugin_id": "static-analysis@trailofbits",
+        "version": "1.5.1",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/static-analysis/1.5.1",
+        "manifests": [
+          {
+            "path": "skills/codeql/SKILL.md",
+            "sha256": "1a6d919ff80f83b262daf650552af6eb6d2c32b19d0c529b70efe0c116b675cf"
+          },
+          {
+            "path": "skills/sarif-parsing/SKILL.md",
+            "sha256": "cc5f008f40ffb8a1ae03ebd32d7234de43e828293955a0bc251b76ba249554fa"
+          },
+          {
+            "path": "skills/semgrep/SKILL.md",
+            "sha256": "52162605593f871cf45f48f9cf00b7c2d7e0759ccb7507981088442b7cc5d76c"
+          }
+        ]
+      },
+      {
+        "plugin_id": "supply-chain-risk-auditor@trailofbits",
+        "version": "2.0.4",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/supply-chain-risk-auditor/2.0.4",
+        "manifests": [
+          {
+            "path": "skills/supply-chain-risk-auditor/SKILL.md",
+            "sha256": "a1254b7f8d3a1731a9a7e1f9cd6c67b59cf84ed6ef7c7fb455db9a14c528ceb4"
+          }
+        ]
+      },
+      {
+        "plugin_id": "variant-analysis@trailofbits",
+        "version": "2.0.4",
+        "installed": true,
+        "enabled": true,
+        "installed_path": "/home/mohamed-s/.codex/plugins/cache/trailofbits/variant-analysis/2.0.4",
+        "manifests": [
+          {
+            "path": "skills/variant-analysis/SKILL.md",
+            "sha256": "7b6b78e499bcb88d05c68254ffc91ebc28edabf4e9808adcc40e2628ebb9407e"
+          }
+        ]
+      }
+    ]
+  }
+}
