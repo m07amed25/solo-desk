@@ -22,11 +22,16 @@ Tailwind source detection in `app/globals.css` explicitly scans `app/`, `compone
 | `npm run dev` | Next.js development server |
 | `npm run lint` | ESLint |
 | `npm run build` | Production build |
+| `npm test` | Local site/profile tests and isolated email tests; no live database or SMTP connection |
+| `npm run test:full` | ESLint, generated Next.js types, TypeScript checks, translation parity, all local tests and a production build; stops on the first failure |
+| `npm run test:email` | Isolated contact, email template and auth webhook tests |
 | `npm run test:neon` | Production service integration test with temporary synthetic identities |
 | `npm start` | Serve an existing production build |
 | `python3 docs/design/validate.py` | Documentation links/coverage and design token/reference checks |
 
 No `setup:electron`, `test:desktop`, `db:reset:hosted`, `ui:info` or historical feature test script exists in the current manifest. Do not use archived commands as current setup instructions.
+
+Run `npm run test:full` for the complete local check sequence. The build uses the same environment and prerequisites as `npm run build`. Server-dependent checks are separate: `TEST_BASE_URL=http://localhost:3000 node scripts/test-site-http.mjs` requires a running local app, and `npm run test:neon` requires an independently verified isolated service target and `SOLODESK_TEST_ENV=isolated` (see [Neon setup](neon-setup.md)). These integration checks and dependency/advisory scans are not included in `test:full`.
 
 ## Read version-specific guides
 

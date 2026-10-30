@@ -1,6 +1,6 @@
 # Phased delivery roadmap
 
-Status: full documentation roadmap, 29 October 2026. Only a minimal Next.js website starter exists. No phase below is marked implemented. Estimates/dates require team capacity, budget, and resolved gates; none are invented here.
+Status: full documentation roadmap. The current checkout includes the website/account/profile foundation described in [Neon integration evidence](../development/neon-setup.md); business phases below remain planned. The [full application implementation plan](../../plan.md), prepared 30 October 2026, expands these phases into ordered work packages, dependencies and acceptance gates. Estimates/dates require team capacity, budget, and resolved gates; none are invented here.
 
 ## Phase map
 

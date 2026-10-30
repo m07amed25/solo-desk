@@ -6,7 +6,7 @@ Updated 29 October 2026. SoloDesk is a responsive Next.js website for freelancer
 
 **shadcn/ui is the primary UI foundation. Design-system quality, scalability, security and appropriate design patterns are primary requirements. Neon PostgreSQL is the selected database. Better Auth is the selected authentication/session system.** These choices replace the earlier Electron and Supabase direction. English/Arabic RTL, exact financial history, scoped team access and eligible offline-drafting goals remain, adapted to browser limits.
 
-Read [product scope](../PRODUCT.md), [decisions](planning/decisions.md), [roadmap](planning/roadmap.md) and [architecture](architecture/overview.md). [Setup](development/setup.md) distinguishes actual dependencies/commands from planned integrations. This update does not install the selected integrations or provision services.
+Read [product scope](../PRODUCT.md), [decisions](planning/decisions.md), [roadmap](planning/roadmap.md), the [full application implementation plan](../plan.md) and [architecture](architecture/overview.md). [Setup](development/setup.md) distinguishes actual dependencies/commands from planned integrations. This update does not install the selected integrations or provision services.
 
 ## Documentation map
 
@@ -24,6 +24,8 @@ Read [product scope](../PRODUCT.md), [decisions](planning/decisions.md), [roadma
 | Historical records | [Feature history](features/README.md), [QA history](qa/README.md), [old visual review](design/review.md), [old validation](design/validation.md), [captures](design/previews/README.md)                                                                                                         |
 
 ## Security checks
+
+Email setup: [Gmail SMTP, React Email previews, contact copies and managed Auth activation](development/email.md).
 
 The dedicated [security directory](security/README.md) contains the threat model, 64-control vulnerability catalogue, stack-specific checks, CVE/dependency process, testing/release gates, findings and incident response. It covers known weakness classes and ongoing advisory review; it does not claim to enumerate every CVE or certify the website. [Current scan status](security/findings.md) distinguishes an unavailable audit from a clean result.
 

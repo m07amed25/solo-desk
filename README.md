@@ -20,7 +20,7 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Use `npm run lint` and `npm run build` for the checks currently defined in `package.json`; `npm start` serves a production build. See [setup](docs/development/setup.md).
+Open [localhost:3000](http://localhost:3000). Run `npm run test:full` for lint, type checks, translation validation, all local tests and a production build, or `npm test` for local tests only. `npm start` serves a production build. See [setup](docs/development/setup.md) for server-dependent integration checks.
 
 shadcn/ui, Neon and Better Auth are selected requirements, not installed integrations. This documentation update does not provision services or implement them. Older feature/QA records are [historical](docs/features/README.md) and cannot establish website readiness.
 
