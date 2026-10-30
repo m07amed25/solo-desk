@@ -18,7 +18,7 @@ OWN-WORLD: User-selected monochrome semantic Light/Dark/System surfaces, Geist a
 
 STORY: Understand work → time → invoice; recognize that business tools are planned; create an account or return to an existing profile without marketing-page authentication forms.
 
-FIRST VIEWPORT: Compact 96px header, generous centered two-line hero at up to 92px, short explanation, paired account/features actions, then a large readable project preview. Signature motion: one short preview arrival, disabled for reduced motion. No critical information depends on imagery.
+FIRST VIEWPORT: Compact 96px header, generous centered two-line hero at up to 92px, short explanation, paired account/features actions, then a large readable project preview. Signature motion: GSAP character entrance (words in Arabic), then a perspective desk preview that settles as the visitor scrolls. Headings and content travel at different depths between sections; the workflow steps receive a bounded stagger. Compact screens reduce distances, and reduced motion restores static content. FAQ answers and contact controls stay stationary. No critical information depends on imagery.
 
 FORM: User-pinned reference composition; code-led build, established world. No concept lottery: page structure and brand are already specified. Seed reference: none (user-pinned direction).
 

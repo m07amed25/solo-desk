@@ -262,10 +262,10 @@
   a, summary { text-underline-offset: 4px; }
   a:focus-visible, summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
   h1, h2, h3 { text-wrap: balance; }
-  [id] { scroll-margin-top: 2rem; }
+  [id] { scroll-margin-top: 5.5rem; }
 }
 .site-container { width: min(100% - 3rem, 1120px); margin-inline: auto; }
-.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 96px; position: relative; z-index: 10; }
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; position: relative; }
 .brand-link { display: inline-flex; align-items: center; gap: .6rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -.025em; }
 .brand-link svg { width: 1.6rem; height: 1.6rem; }
 .site-header nav > a:not([class]), .site-footer nav a { color: var(--muted-foreground); font-size: .875rem; }
@@ -311,9 +311,8 @@
 .workflow-copy h3 { white-space: pre-line; font-size: clamp(1.75rem, 3vw, 2.75rem); line-height: 1.2; font-weight: 500; letter-spacing: -.025em; }
 :lang(ar) .workflow-copy h3 { line-height: 1.4; letter-spacing: 0; }
 .workflow-copy p { color: var(--muted-foreground); line-height: 1.8; }
-.workflow-preview { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2rem; min-width: 0; box-shadow: var(--shadow-md); }
-.closing { display: flex; flex-direction: column; gap: 1.75rem; align-items: center; text-align: center; padding-block: 9rem 7rem; }
-.closing > p { max-width: 460px; color: var(--muted-foreground); line-height: 1.8; }
+.closing { display: flex; flex-direction: column; align-items: center; text-align: center; padding-block: 5.5rem 3.5rem; border-top: 1px solid color-mix(in oklch, var(--border) 60%, transparent); }
+.closing > p { max-width: 440px; color: var(--muted-foreground); line-height: 1.7; }
 .site-footer { border-top: 1px solid var(--border); padding-block: 2.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
 .site-footer p { color: var(--muted-foreground); font-size: .75rem; margin-top: .75rem; }
 .site-footer nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
@@ -345,7 +344,7 @@
   .workflow-row { grid-template-columns: 1fr; gap: 2rem; margin-top: 3rem; }
   .workflow-reverse .workflow-copy { order: 0; }
   .workflow-preview { padding: 1.5rem; }
-  .closing { padding-block: 6rem 4rem; }
+  .closing { padding-block: 4rem 2.5rem; }
   .account-layout { grid-template-columns: 1fr; gap: 1rem; padding-top: 2rem; }
   .account-art { display: none; }
   .account-intro { display: none; }

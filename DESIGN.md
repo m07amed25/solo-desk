@@ -125,8 +125,12 @@ The public header uses the supplied transparent SoloDesk wordmark unchanged, dis
 Google and GitHub entry actions use the supplied public SVGs as currentColor masks.
 Language and theme controls stay visible outside the mobile navigation disclosure, with
 localized accessible labels; the disclosure contains navigation only. The project, task and
-invoice previews are labelled synthetic HTML examples. Their short arrival motion is disabled
-by reduced-motion preferences; no new sourced or generated imagery is part of this surface.
+invoice previews are labelled synthetic HTML examples. The landing page uses GSAP for a
+character entrance in the English hero (whole words in Arabic to preserve shaping), a
+scroll-linked perspective preview, and different heading/content parallax speeds. The
+headline returns to its original markup after entry. Compact screens use smaller movement;
+reduced motion restores the static layout. FAQ answers and contact controls stay stationary.
+No new sourced or generated imagery is part of this surface. See [motion verification](docs/design/motion-validation.md).
 
 ## Do's and Don'ts
 

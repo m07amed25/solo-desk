@@ -13,6 +13,12 @@
     "label": "Main navigation",
     "features": "Features",
     "how": "How it works",
+    "tour": "Tour",
+    "why": "Principles",
+    "security": "Security",
+    "roadmap": "Roadmap",
+    "faq": "FAQ",
+    "contact": "Contact",
     "signIn": "Sign in",
     "signUp": "Sign up",
     "menu": "Menu",
@@ -74,7 +80,298 @@
     "closingBody": "Create your SoloDesk account. Your projects, time, and invoices are the next chapter.",
     "footer": "A home for independent work.",
     "accountAvailable": "Account access is available. Business tools are planned.",
-    "rights": "SoloDesk · Work with clarity."
+    "rights": "SoloDesk · Work with clarity.",
+    "highlights": {
+      "multiCurrencyTitle": "Multi-Currency Architecture",
+      "multiCurrencyDesc": "Handle USD, EUR, GBP, and AED with exact mathematical precision.",
+      "recoverableTimeTitle": "Recoverable Hours",
+      "recoverableTimeDesc": "Focused time tracking directly connected to approved deliverables.",
+      "bilingualTitle": "Bilingual from Day One",
+      "bilingualDesc": "Native English and Arabic RTL design with tailored typography."
+    },
+    "tour": {
+      "heading": "Comprehensive Capability Tour",
+      "description": "Explore the 5 core modules designed to streamline your freelance engineering workflow from client intake to invoice payment.",
+      "statusAvailable": "Available",
+      "statusInDevelopment": "In development",
+      "statusPlanned": "Planned",
+      "clients": {
+        "title": "Clients & Relationships",
+        "outcome": "One clean directory for client details, default currencies, active work, and billing terms.",
+        "details": [
+          "Organized client directory with contact and billing metadata",
+          "Default currency and payment term presets per client",
+          "Seamless link between clients, active projects, and invoices",
+          "Historical revenue and outstanding balance overviews"
+        ]
+      },
+      "projects": {
+        "title": "Projects & Tasks",
+        "outcome": "Keep scopes, deliverables, and actionable tasks aligned without noisy project management overhead.",
+        "details": [
+          "Milestones and scoped deliverables defined with precision",
+          "Integrated task checklists with progress states",
+          "Project-scoped hourly rates or fixed milestone budgets",
+          "Zero clutter: fast, keyboard-friendly task tracking"
+        ]
+      },
+      "time": {
+        "title": "Time Tracking",
+        "outcome": "Capture focused hours with a persistent timer or manual log entries tied directly to deliverables.",
+        "details": [
+          "One-click start/stop floating timer",
+          "Manual duration logging with exact second accuracy",
+          "Billable versus non-billable categorization",
+          "Instant aggregation into client invoice drafts"
+        ]
+      },
+      "invoices": {
+        "title": "Invoices & Payments",
+        "outcome": "Transform approved time and milestones into clean, mathematically exact invoices.",
+        "details": [
+          "Itemized hours and fixed deliverable line items",
+          "Multi-currency support with exact integer minor units",
+          "Configurable taxes, discounts, and payment instructions",
+          "Downloadable PDF snapshots and payment status tracking"
+        ]
+      },
+      "insights": {
+        "title": "Insights & Cashflow",
+        "outcome": "Real-time visibility into billable utilization, pipeline health, and monthly revenue trends.",
+        "details": [
+          "Monthly billable ratio and focused hours metrics",
+          "Revenue projections based on active project hours",
+          "Aged receivables and outstanding payment alerts",
+          "Privacy-first: local metrics with zero external trackers"
+        ]
+      }
+    },
+    "features": {
+      "heading": "Engineered for speed, precision, and focus.",
+      "description": "Every detail built for independent professionals who demand craft and reliability.",
+      "items": {
+        "shortcuts": {
+          "title": "Command Palette & Shortcuts",
+          "description": "Navigate anywhere and trigger actions with rapid keyboard shortcuts."
+        },
+        "timer": {
+          "title": "Persistent Timer",
+          "description": "Unobtrusive floating timer tracking focus without interrupting your workflow."
+        },
+        "saveStatus": {
+          "title": "Transparent Save State",
+          "description": "Real-time indicators showing whether changes are local, saving, or safely committed."
+        },
+        "multiCurrency": {
+          "title": "Multi-Currency Architecture",
+          "description": "Store and bill in USD, EUR, GBP, AED, and more with exact decimal precision."
+        },
+        "taxDiscount": {
+          "title": "Configurable Taxes & Discounts",
+          "description": "Apply compliant percentage or fixed adjustments to line items or totals."
+        },
+        "workspaces": {
+          "title": "Team & Client Workspaces",
+          "description": "Isolate client projects and invite collaborators with granular action grants."
+        },
+        "bilingual": {
+          "title": "Full Bilingual Arabic & English",
+          "description": "Native right-to-left layout and localized typography designed from day one."
+        },
+        "themes": {
+          "title": "Crafted Dark & Light Themes",
+          "description": "High-contrast dark, crisp light, and system-adaptive visual themes."
+        }
+      }
+    },
+    "howItWorks": {
+      "heading": "From first setup to paid invoice in 4 steps.",
+      "description": "SoloDesk gets out of your way so you can focus on billable engineering.",
+      "steps": {
+        "account": {
+          "step": "1",
+          "title": "Create your account",
+          "description": "Sign in securely with Google or GitHub. Set your currency and workspace preferences in seconds."
+        },
+        "setup": {
+          "step": "2",
+          "title": "Add client & project",
+          "description": "Define your client terms, hourly rate or fixed milestone budget, and outline key deliverables."
+        },
+        "track": {
+          "step": "3",
+          "title": "Track focused time",
+          "description": "Log hours with the one-click timer or manual entries. All work links directly to project tasks."
+        },
+        "invoice": {
+          "step": "4",
+          "title": "Generate & send invoice",
+          "description": "Convert approved hours into an exact invoice draft. Send professional invoices and track receipt."
+        }
+      }
+    },
+    "whySoloDesk": {
+      "heading": "Why independent engineers choose SoloDesk.",
+      "description": "Built around principles that respect your craft, your data, and your time.",
+      "principles": {
+        "exactness": {
+          "title": "Exact Financial Handling",
+          "description": "No binary floating-point math or rounded guesswork. Monetary amounts are tracked in exact integer minor units with verifiable revision snapshots."
+        },
+        "speed": {
+          "title": "Speed & Low Cognitive Load",
+          "description": "Zero bloat, instant page transitions, and complete keyboard shortcuts. Get in, record your work, and get back to writing code."
+        },
+        "transparency": {
+          "title": "Transparent Save State",
+          "description": "Never wonder whether your time or task was saved. Unambiguous status indicators distinguish local drafts, saving state, and verified server commitments."
+        },
+        "privacy": {
+          "title": "Privacy & Data Isolation",
+          "description": "No third-party trackers, no surveillance scripts, and strictly isolated workspace data. Your clients, rates, and hours belong solely to you."
+        }
+      }
+    },
+    "security": {
+      "heading": "Security & privacy commitments.",
+      "description": "Plain-language assurances of how your information is safeguarded.",
+      "commitments": {
+        "noTrackersTitle": "No Advertising Trackers",
+        "noTrackersDesc": "We do not sell data, load cross-site ad networks, or run invasive tracking scripts.",
+        "tenantIsolationTitle": "Strict Tenant Isolation",
+        "tenantIsolationDesc": "All queries and actions require verified session authority and workspace access grants.",
+        "encryptionTitle": "Encrypted in Transit & at Rest",
+        "encryptionDesc": "All network connections enforce TLS 1.3 encryption, and database backups are encrypted at rest.",
+        "disclaimerTitle": "Honest Transparency",
+        "disclaimerDesc": "SoloDesk is an evolving platform; we make no unverified compliance badges or speculative uptime certifications."
+      }
+    },
+    "audience": {
+      "heading": "Tailored for technical independence.",
+      "description": "Whether you bill hourly or ship fixed deliverables, SoloDesk scales with your practice.",
+      "profiles": {
+        "freelance": {
+          "title": "Freelance Software Engineer",
+          "description": "Track multiple client repos, log billable hours with precision, and issue professional invoices without administrative friction."
+        },
+        "consultant": {
+          "title": "Independent Technical Consultant",
+          "description": "Manage advisory retainers, client milestone sign-offs, and multi-currency billing for international enterprise clients."
+        },
+        "agency": {
+          "title": "Boutique Engineering Agency",
+          "description": "Coordinate work across small engineering squads with workspace isolation, client access controls, and transparent deliverables."
+        }
+      }
+    },
+    "roadmap": {
+      "heading": "Product Roadmap & Availability",
+      "description": "An honest, date-free overview of what is ready today, what is actively in development, and what is planned next.",
+      "columns": {
+        "available": "Available Now",
+        "inDevelopment": "In Development",
+        "planned": "Planned Next"
+      },
+      "columnsDesc": {
+        "available": "Production-ready capabilities you can use right now.",
+        "inDevelopment": "Under active construction with core functionality in progress.",
+        "planned": "Scheduled architectural features on our delivery track."
+      }
+    },
+    "faq": {
+      "heading": "Frequently Asked Questions",
+      "description": "Everything you need to know about SoloDesk capabilities, data ownership, and availability.",
+      "questions": {
+        "availability": {
+          "q": "What features are available today?",
+          "a": "Account registration and authentication via Google and GitHub are live. Core business modules (Clients, Projects, Time Tracking, and Invoices) are actively in development, with foundational UI previews available to explore."
+        },
+        "dataOwnership": {
+          "q": "Who owns my data and client records?",
+          "a": "You own 100% of your data. SoloDesk never claims ownership of your client lists, project details, logged hours, or financial records, and provides export capabilities for complete portability."
+        },
+        "privacy": {
+          "q": "Does SoloDesk use third-party analytics or advertising trackers?",
+          "a": "No. SoloDesk operates strictly without third-party advertising trackers or invasive behavioral tracking. Any product analytics are strictly opt-in and privacy-preserving."
+        },
+        "languages": {
+          "q": "How does bilingual Arabic and English support work?",
+          "a": "SoloDesk is architected natively for both English and Arabic with complete right-to-left (RTL) layout switching, dedicated typography (Geist and Sahabah), and bidirectional number isolation."
+        },
+        "devices": {
+          "q": "Which devices and screen sizes are supported?",
+          "a": "The application is fully responsive across desktop, tablet, and mobile viewports, tested down to 320 CSS pixels reflow and 200% browser zoom with zero horizontal scrolling."
+        },
+        "teams": {
+          "q": "Can I use SoloDesk with a team or agency?",
+          "a": "SoloDesk is designed for freelancers and small teams. Multi-user workspace isolation and granular permission grants are currently planned on our architectural roadmap."
+        },
+        "pricing": {
+          "q": "What is the pricing model for SoloDesk?",
+          "a": "Pricing tiers and subscription details have not yet been announced. Early account access during our development phase is provided to explore our platform foundation."
+        },
+        "auth": {
+          "q": "How is my account secured?",
+          "a": "Authentication is powered by modern cryptographic session management via Better Auth, supporting verified OAuth providers (Google and GitHub) without storing plaintext passwords."
+        }
+      }
+    },
+    "contact": {
+      "heading": "Get in touch with the team",
+      "description": "Have questions about team use, custom contracts, or our roadmap? Send us a message directly.",
+      "form": {
+        "nameLabel": "Your Name",
+        "namePlaceholder": "e.g. Alex Mercer",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "alex@example.com",
+        "topicLabel": "Topic",
+        "topicGeneral": "General Inquiry",
+        "topicTeam": "Team & Agency Workspaces",
+        "topicBilling": "Billing & Invoicing",
+        "topicSecurity": "Security & Privacy",
+        "topicFeedback": "Feedback & Suggestions",
+        "messageLabel": "Your Message",
+        "messagePlaceholder": "Tell us how we can help...",
+        "consentLabel": "I agree that SoloDesk may process my submitted contact details to respond to this inquiry. No marketing spam.",
+        "submitButton": "Send Message",
+        "submitting": "Sending message...",
+        "successTitle": "Message Received",
+        "successMessage": "Thank you for reaching out. We received your message and sent a copy to your email. We will review your inquiry shortly.",
+        "sendAnother": "Send another message",
+        "rateLimited": "Too many requests. Please wait before submitting another inquiry.",
+        "unavailable": "The contact service is temporarily unavailable. Please try again later.",
+        "privacyNotice": "We use your contact details to respond to your inquiry and email you a copy. Your email is never sold or added to promotional lists.",
+        "errors": {
+          "nameRequired": "Please enter your name (1-100 characters).",
+          "emailInvalid": "Please enter a valid email address.",
+          "topicInvalid": "Please select an inquiry topic.",
+          "messageLength": "Message must be between 10 and 2000 characters.",
+          "consentRequired": "You must consent to data processing for inquiry response.",
+          "generic": "Validation failed. Please check the highlighted fields."
+        }
+      }
+    },
+    "nav": {
+      "hero": "Overview",
+      "tour": "Tour",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "whySoloDesk": "Principles",
+      "security": "Security",
+      "audience": "Audience",
+      "roadmap": "Roadmap",
+      "faq": "FAQ",
+      "contact": "Contact"
+    },
+    "footerNav": {
+      "product": "Product",
+      "company": "Company",
+      "account": "Account",
+      "preferences": "Preferences",
+      "legal": "Legal & Privacy",
+      "allRights": "All rights reserved.",
+      "disclaimer": "SoloDesk is an independent project. Capabilities marked as in development or planned are subject to change."
+    }
   },
   "Auth": {
     "signInTitle": "Welcome back.",
