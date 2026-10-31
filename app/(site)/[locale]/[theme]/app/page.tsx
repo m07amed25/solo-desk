@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { LiveProfile } from "@/components/live-profile";
+import { ProfileSkeleton } from "@/components/auth-skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { loadProfile } from "@/lib/profile";
 
@@ -50,7 +51,7 @@ export default async function AccountPage() {
         className="mx-auto flex min-h-[70svh] w-full max-w-lg flex-col justify-center gap-8 px-6 py-12"
       >
         <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <Suspense fallback={<p role="status">{t("checking")}</p>}>
+        <Suspense fallback={<ProfileSkeleton statusText={t("checking")} />}>
           <Account />
         </Suspense>
       </main>

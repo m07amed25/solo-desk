@@ -199,3 +199,105 @@ export function AuthPageSkeleton({
     </main>
   );
 }
+
+export interface ProfileSkeletonProps {
+  statusText?: string;
+  className?: string;
+}
+
+/**
+ * Skeleton for the account / profile page.
+ * Used as a Suspense fallback and during revalidation / checking state,
+ * preventing layout shift and empty-screen flashing after sign in.
+ */
+export function ProfileSkeleton({
+  statusText = "Checking your account…",
+  className,
+}: ProfileSkeletonProps) {
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className={cn("flex flex-col gap-6 w-full", className)}
+    >
+      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+        <span className="relative flex size-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40 opacity-75" />
+          <span className="relative inline-flex size-2 rounded-full bg-primary/80" />
+        </span>
+        <span className="font-medium text-foreground/80">{statusText}</span>
+      </div>
+
+      <div aria-hidden="true" className="flex flex-col gap-6">
+        {/* Welcome title & live status indicator skeleton */}
+        <div className="flex flex-col gap-2.5">
+          <Skeleton className="h-7 w-48 max-w-[280px] rounded-md" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="size-2 rounded-full" />
+            <Skeleton className="h-4 w-60 rounded" />
+          </div>
+        </div>
+
+        {/* Form fields skeleton */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-4 w-28 rounded" />
+            <Skeleton className="h-11 w-full rounded-lg" />
+          </div>
+          <Skeleton className="h-11 w-32 rounded-lg" />
+        </div>
+
+        {/* Memory disclaimer footnote skeleton */}
+        <Skeleton className="h-3 w-4/5 max-w-[360px] rounded mt-1" />
+
+        {/* Sign out button skeleton */}
+        <Skeleton className="h-11 w-28 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Full page skeleton representing the account page layout.
+ * Used for route-level loading.tsx on /app.
+ */
+export function AccountPageSkeleton({
+  statusText = "Checking your account…",
+  className,
+}: ProfileSkeletonProps) {
+  return (
+    <div className={cn("min-h-screen flex flex-col", className)}>
+      {/* Top site header skeleton bar */}
+      <header className="w-full border-b border-border/40 bg-background/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          <Skeleton className="h-8 w-32 rounded-md" />
+          <div className="hidden lg:flex items-center gap-6">
+            <Skeleton className="h-4 w-12 rounded" />
+            <Skeleton className="h-4 w-16 rounded" />
+            <Skeleton className="h-4 w-20 rounded" />
+            <Skeleton className="h-4 w-16 rounded" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-28 rounded-md" />
+            <Skeleton className="size-8 rounded-full" />
+          </div>
+        </div>
+      </header>
+
+      {/* Main content skeleton */}
+      <main
+        className="mx-auto flex min-h-[70svh] w-full max-w-lg flex-col justify-center gap-8 px-6 py-12"
+        role="status"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <span className="sr-only">{statusText}</span>
+        <div aria-hidden="true" className="flex flex-col gap-8">
+          <Skeleton className="h-9 w-44 rounded-md" />
+          <ProfileSkeleton statusText={statusText} />
+        </div>
+      </main>
+    </div>
+  );
+}
