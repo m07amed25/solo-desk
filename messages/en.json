@@ -1,4 +1,15 @@
 {
+  "NotFound": {
+    "title": "Page not found.",
+    "description": "We couldn’t find the page you’re looking for. The link may have changed, or the address may be incorrect.",
+    "destinations": "Choose a destination",
+    "skip": "Skip to content",
+    "home": "Back to home",
+    "signIn": "Sign in",
+    "contact": "Get in touch",
+    "heading": "This page is off the desk."
+  },
+
   "Common": {
     "brand": "SoloDesk",
     "getStarted": "Get started",

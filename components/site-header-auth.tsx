@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LayoutDashboard, LogOut } from "lucide-react";
 
 export type AuthUser = {
@@ -50,9 +51,23 @@ export function HeaderDesktopAuth({
   initialUser = null,
 }: HeaderAuthProps) {
   const router = useRouter();
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user ?? initialUser;
   const isAuthenticated = Boolean(user);
+
+  if (isPending && !user) {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading authentication state"
+        className="hidden items-center gap-3 lg:flex"
+      >
+        <Skeleton className="h-9 w-28 rounded-md" />
+        <Skeleton className="size-8 rounded-full" />
+      </div>
+    );
+  }
 
   if (isAuthenticated && user) {
     return (
@@ -161,9 +176,26 @@ export function HeaderMobileAuth({
   initialUser = null,
 }: HeaderAuthProps) {
   const router = useRouter();
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user ?? initialUser;
   const isAuthenticated = Boolean(user);
+
+  if (isPending && !user) {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading authentication state"
+        className="my-2 border-t border-border pt-2 flex flex-col gap-2"
+      >
+        <div className="flex items-center gap-2.5 h-11 px-3 rounded-lg border border-border/50">
+          <Skeleton className="size-6 rounded-full" />
+          <Skeleton className="h-4 w-24 rounded" />
+        </div>
+        <Skeleton className="h-11 w-full rounded-md" />
+      </div>
+    );
+  }
 
   if (isAuthenticated && user) {
     return (

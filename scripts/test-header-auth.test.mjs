@@ -144,6 +144,15 @@ test("HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication
       }),
   };
 
+  const skeletonModule = {
+    Skeleton: ({ className, ...props }) =>
+      React.createElement("div", {
+        "data-slot": "skeleton",
+        className: `skeleton ${className || ""}`,
+        ...props,
+      }),
+  };
+
   const authNav = loadModule("../components/site-header-auth.tsx", {
     "@/lib/auth/client": {
       authClient: {
@@ -154,9 +163,61 @@ test("HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication
     "@/components/ui/button": buttonModule,
     "@/components/ui/avatar": avatarModule,
     "@/components/ui/dropdown-menu": dropdownMenuModule,
+    "@/components/ui/skeleton": skeletonModule,
   });
 
   const { HeaderDesktopAuth, HeaderMobileAuth } = authNav;
+
+  await t.test(
+    "Pending session: shows skeleton placeholder while loading auth state",
+    () => {
+      sessionState = { data: null, isPending: true };
+
+      const desktopHtml = ReactDOMServer.renderToString(
+        React.createElement(HeaderDesktopAuth, {
+          signInLabel: "Sign in",
+          signUpLabel: "Sign up",
+          workspaceLabel: "Workspace",
+        }),
+      );
+      assert.ok(
+        desktopHtml.includes("skeleton"),
+        "Desktop must show skeleton while session is pending",
+      );
+      assert.ok(
+        desktopHtml.includes("rounded-full"),
+        "Desktop photo skeleton must be circle (rounded-full)",
+      );
+      assert.ok(
+        !desktopHtml.includes("Sign in"),
+        "Desktop must NOT show Sign in while pending",
+      );
+      assert.ok(
+        !desktopHtml.includes("Workspace"),
+        "Desktop must NOT show Workspace while pending",
+      );
+
+      const mobileHtml = ReactDOMServer.renderToString(
+        React.createElement(HeaderMobileAuth, {
+          signInLabel: "Sign in",
+          signUpLabel: "Sign up",
+          workspaceLabel: "Workspace",
+        }),
+      );
+      assert.ok(
+        mobileHtml.includes("skeleton"),
+        "Mobile must show skeleton while session is pending",
+      );
+      assert.ok(
+        mobileHtml.includes("rounded-full"),
+        "Mobile photo skeleton must be circle (rounded-full)",
+      );
+      assert.ok(
+        !mobileHtml.includes("Sign in"),
+        "Mobile must NOT show Sign in while pending",
+      );
+    },
+  );
 
   await t.test(
     "Unauthenticated: shows Sign in and Sign up buttons, hides avatar and workspace",

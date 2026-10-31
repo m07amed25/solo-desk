@@ -10,11 +10,11 @@
 
 **Specification:** [Product](PRODUCT.md), [requirements](docs/product/requirements.md), [coverage register](docs/planning/coverage.md), [roadmap](docs/planning/roadmap.md), [architecture](docs/architecture/overview.md), [design system](DESIGN.md), and the linked domain specifications. These retain authority over detailed fields and rules. This plan adds implementation order and reviewable work packages while preserving P00–P09 and all 143 requirement IDs.
 
-**Updated:** 31 October 2026; repository inventory refreshed for this working tree. Status: planning only; no business phase is complete. Estimates require confirmed capacity and decisions; this document makes no delivery-date commitment.
+**Updated:** 1 November 2026; implementation status refreshed from current source and local checks. No business phase is complete. Estimates require confirmed capacity and decisions; this document makes no delivery-date commitment.
 
 **Feature scope:** This is the full product plan, including existing specified functionality and relevant expansion options, with one stable tracked feature ID per leaf. Start with the [feature tree](#9-complete-feature-catalogue), then use the [phase sequence](#2-release-sequence-and-dependencies) and [implementation packages](#4-phased-implementation) to build it. The 143 existing requirements are the baseline; proposed extensions below broaden that baseline without silently changing confirmed product decisions.
 
-**Quick navigation:** [What is built](#inspected-implementation-inventory--31-october-2026) · [Compatibility rules](#tree-and-compatibility-contract) · [Build sequence](#2-release-sequence-and-dependencies) · [Next six tasks](#81-immediate-continuation-from-the-inspected-checkout) · [Full feature tree](#9-complete-feature-catalogue) · [Open decisions](#5-decisions-and-external-prerequisites) · [Release gates](#6-security-and-verification-matrix).
+**Quick navigation:** [What is built](#inspected-implementation-inventory--1-november-2026) · [Done features](#implementation-completion-ledger--1-november-2026) · [Compatibility rules](#tree-and-compatibility-contract) · [Build sequence](#2-release-sequence-and-dependencies) · [Next six tasks](#81-immediate-continuation-from-the-inspected-checkout) · [Full feature tree](#9-complete-feature-catalogue) · [Open decisions](#5-decisions-and-external-prerequisites) · [Release gates](#6-security-and-verification-matrix).
 
 ## 1. Current baseline and scope
 
@@ -24,11 +24,11 @@ Workspace authorization, business schemas/migrations, clients, projects, tasks, 
 
 Previously recorded release gaps to revalidate include the privileged database connection role, development Google credentials, production email/recovery setup, interactive GitHub return verification, tenant policy, comprehensive accessibility, load and restore evidence. Dependency findings also need fresh exact-version assessment; earlier scan counts are dated results.
 
-The current working tree contains substantial landing/auth/email/profile edits, the `003-enhance-auth-pages` specification, added UI primitives and a deletion of the previous root plan. This file replaces that deleted plan while retaining its 550 stable feature IDs and all feature deliverables/acceptance contracts. Preserve unrelated work; no application changes are part of this planning update.
+This status review preserves current uncommitted profile/account/callback/header/loading changes and all 550 stable feature IDs. Only `plan.md` is edited; unrelated application work is retained.
 
-### Inspected implementation inventory — 31 October 2026
+### Inspected implementation inventory — 1 November 2026
 
-Status is based on source inspection, not a fresh runtime/deployment test. `CODE` means the implementation exists in this checkout; `PARTIAL` means only a slice exists; `GATED` means remote/policy evidence is unresolved; `PLANNED` means no business implementation was found. Catalogue checkboxes remain acceptance tasks, even where code exists.
+Status is based on current source inspection plus the local tests recorded below. `CODE` means implementation exists; `PARTIAL` means only a slice exists; `GATED` means required remote/policy evidence is unresolved; `PLANNED` means no business implementation was found. A checked feature means its stated implementation is complete for the current checkout; it does not certify deployment or security acceptance. Partial features stay open with checked implemented subtasks and an explicit remaining item. Future consumers must still satisfy the same feature contracts.
 
 | Area                                             | Observed files                                                                                                                                  | Status and work remaining                                                                                                                                                                                                     |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -41,10 +41,24 @@ Status is based on source inspection, not a fresh runtime/deployment test. `CODE
 | Contact and transactional email                  | `app/api/contact/route.ts`, `lib/contact.ts`, `lib/request-body.ts`, `lib/email.tsx`, `emails/`                                                 | CODE/GATED: contact route checks `SOLODESK_CONTACT_ENABLED`; transport/production ingress and distributed abuse controls need proof. Current in-memory limiting is not cross-instance protection.                             |
 | Auth email webhook and receipt schema            | `app/api/webhooks/neon-auth/route.tsx`, `lib/auth/email-webhook.ts`, `migrations/001-email-deliveries.sql`                                      | CODE/GATED: deduplication/signature handlers and one migration exist; isolated migration application, callback registration and real inbox delivery remain unverified here. No business schema was found.                     |
 | Footer newsletter                                | `components/footer-newsletter-form.tsx`                                                                                                         | MOCK: uses `setTimeout` to simulate success, with no subscription backend. It must be removed, clearly labeled or connected with truthful consent/delivery before being advertised as working.                                |
-| Local and integration test harnesses             | `scripts/*.test.mjs`, `scripts/test-auth-flows.mjs`, `scripts/test-neon.mjs`, `scripts/test-site-http.mjs`, `tests/email.test.mjs`              | CODE: harnesses exist. No application tests, live database tests, browser matrix or human studies were rerun for this document. Production-target refusal is a GAP, never an integration pass.                                |
+| Local and integration test harnesses             | `scripts/*.test.mjs`, `scripts/test-auth-flows.mjs`, `scripts/test-neon.mjs`, `scripts/test-site-http.mjs`, `tests/email.test.mjs`              | CODE: `npm test` passed (four Node test-file results and six synthetic email tests); `node scripts/check-translations.mjs` passed (324 matching key/structure entries). Hosted/database/browser/human acceptance was not rerun. A refused production target remains a GAP.                                |
 | Workspace/business platform                      | No workspace/client/project/task/time/invoice business service or schema in `app/`, `lib/` or `migrations/`                                     | PLANNED: all corresponding business features below remain unchecked. Earlier native/Electron/Supabase records do not count.                                                                                                   |
 
 The `003` evidence file contains conflicting gate labels and broad browser/human/performance claims alongside open isolated-environment gates. Reconcile raw artifacts and actual execution before carrying any claim forward; task checkmarks and written summaries alone do not establish acceptance.
+
+### Implementation completion ledger — 1 November 2026
+
+The feature tree now records **3 complete implemented features, 27 completed implementation subtasks inside 23 partial features, and 547 open feature parents**. Completed subtasks do not inflate the 550-feature total. No P00–P09 business phase or security release gate is marked complete by this review.
+
+| Done feature | Inspected implementation | Remaining release checks |
+| --- | --- | --- |
+| [x] [F01.01 — Public landing page](#f01-01) | Composed localized public site, status/disclosure copy, public account links | Actual browser/layout/accessibility acceptance |
+| [x] [F01.02 — Account entry pages](#f01-02) | Responsive account entry, loading skeletons, generic failure/retry and return navigation | Hosted identity and Q-08 activation remain under F02.01–F02.04 |
+| [x] [F04.05 — Theme and language preferences](#f04-05) | Existing English/Arabic/RTL and Light/Dark/System controls plus bounded preference handling | Visual/browser acceptance and integration into future workspace screens |
+
+**Local evidence:** `npm test` exited 0: four Node test-file results and six synthetic email tests passed. `node scripts/check-translations.mjs` exited 0: 324 key/structure entries matched. The suites use mocked SDK/session/database/mail behavior where applicable; these results do not establish real hosted integration, full browser behavior or a clean security release. Current source also contains hardcoded labels and documented contrast gaps, so the complete localization/accessibility gates remain open.
+
+The full-feature parent stays unchecked where only client UI/SDK code, a provider avatar, one email migration or one auth webhook exists. Check its nested progress items to reuse that finished work; do not rebuild it. Workspace/client/project/task/time/finance modules still have no business implementation in the inspected application paths.
 
 ### Tree and compatibility contract
 
@@ -370,7 +384,7 @@ Start in this order:
 4. **P01.3/P01.4:** Reuse the revision/receipt/audit foundation and add browser-draft proof. Demonstrate lost-response replay and revoked-member denial before feature breadth.
 5. **P02.1 → P03.1/2 → P04 core → P05 core:** Deliver the first real client-to-payment journey, with P09 evidence and restore work progressing throughout.
 
-This expansion modifies only `plan.md`; existing roadmap/docs links already point here. It introduces no application code, dependencies, database changes or external actions. Documentation verification checks links, phase/requirement coverage and diff hygiene; runtime tests and fresh advisory scans belong to the subsequent implementation/release work and are not claimed here.
+This expansion modifies only `plan.md`; existing roadmap/docs links already point here. It introduces no application code, dependencies, database changes or external actions. Verification for this status review includes source/feature mapping, local `npm test`, translation parity, feature/dependency/link coverage and diff hygiene. Hosted/runtime acceptance and fresh advisory scans remain unperformed.
 
 ### 8.1 Immediate continuation from the inspected checkout
 
@@ -395,7 +409,7 @@ When implementing a node, record its forward impact: which dependent leaves cons
 
 ## 9. Complete feature catalogue
 
-Read this as `SoloDesk → product area → feature → deliverable/flow/constraints/acceptance`. The top-level outline is followed by the complete nested tree, with 550 stable leaf IDs retained from the prior plan. `Requires` links are explicit implementation prerequisites and were checked for missing references and cycles. They do not prove runtime interoperability. Every feature remains unchecked until its own acceptance evidence passes; see the source inventory for partial implementations.
+Read this as `SoloDesk → product area → feature → deliverable/flow/constraints/acceptance`. The top-level outline is followed by the complete nested tree, with 550 stable leaf IDs retained from the prior plan. `Requires` links are explicit implementation prerequisites and were checked for missing references and cycles. They do not prove runtime interoperability. Feature checkboxes track complete current implementation; partial features retain open parents and checked implemented subtasks. Hosted/policy/accessibility/release gates remain separately open where noted; see the source inventory and completion ledger.
 
 **Scope:** `S` = existing specified/supporting capability; `E` = proposed optional expansion, requiring a focused specification and product decision before commitment. Parent and child IDs never overwrite the existing PLT/CRM/WRK/TIM/FIN/INS/INT/NFR requirements. No budget, timeline, service purchase or deployment is approved by this inventory.
 
@@ -467,13 +481,13 @@ SoloDesk
 
 - **F01 — Public website, discovery and conversion**
 
-  - [ ] <a id="f01-01"></a>**F01.01 — Public landing page** · `S`
+  - [x] <a id="f01-01"></a>**F01.01 — Public landing page** · `S`
 
     **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
     **Deliver:** Public product landing page with accurate capability descriptions, language/theme controls and account entry points.
 
-    **Inspected source status:** CODE: landing source exists; current release acceptance is pending.
+    **Inspected source status:** DONE — implemented: the composed landing page, localized capability/status copy, synthetic preview disclosure and public account links exist in `components/landing-page.tsx`, `components/landing/`, `lib/site-content.ts` and the two message catalogs. Browser/layout and production acceptance remain separate.
 
     **Flow and records:** Visitors read truthful capability descriptions and reach localized account entry; synthetic previews are labeled separately from real workspace content.
 
@@ -483,13 +497,13 @@ SoloDesk
 
     **Docs basis:** Documented parent requirement/contract: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
-  - [ ] <a id="f01-02"></a>**F01.02 — Account entry pages** · `S`
+  - [x] <a id="f01-02"></a>**F01.02 — Account entry pages** · `S`
 
     **Requires:** [F02.01](#f02-01)
 
     **Deliver:** Responsive sign-in/sign-up entry pages, authentication-error states and clear return navigation.
 
-    **Inspected source status:** CODE/GATED: entry pages and loading states exist; verify the auth capability gates.
+    **Inspected source status:** DONE — implemented: sign-in/sign-up routes, loading skeletons, bounded error normalization, retry/home links and account-entry navigation exist in `components/auth-entry-page.tsx`, `components/auth-interactive-panel.tsx`, `components/auth-skeleton.tsx` and the localized account routes. Hosted identity activation remains gated under F02.01–F02.04.
 
     **Flow and records:** Account entry preserves the allowed destination and displays provider/callback failures with an actionable recovery path.
 
@@ -541,6 +555,11 @@ SoloDesk
 
     **Accept:** Moving from demo to account cannot carry sample invoices into the customer's workspace.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Localized synthetic tour tabs and sample work previews are implemented in `components/product-tour.tsx`, `components/landing/tour-section.tsx` and `components/landing/work-preview.tsx`.
+    - [ ] A separate interactive sample workspace/demo remains unbuilt; landing previews do not complete that scope.
+
     **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
   - [ ] <a id="f01-06"></a>**F01.06 — Pricing comparison** · `E`
@@ -570,6 +589,11 @@ SoloDesk
     **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
     **Accept:** Guidance distinguishes browser save, server acceptance and recovery-required states.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Public FAQ and contact/help entry points are implemented in `components/landing/faq-section.tsx`, `components/landing/contact-section.tsx` and `components/landing/footer-section.tsx`.
+    - [ ] Getting-started guides, documentation search and full in-app help remain unbuilt.
 
     **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
@@ -615,6 +639,11 @@ SoloDesk
 
     **Accept:** A public sitemap or page preview contains no tenant-specific title or URL.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Localized page titles/metadata are implemented by the existing site/account route metadata exports.
+    - [ ] The complete canonical/share-metadata, sitemap and robots policy remains unbuilt or unverified.
+
     **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
 
   - [ ] <a id="f01-11"></a>**F01.11 — Contact and waitlist forms** · `E`
@@ -630,6 +659,11 @@ SoloDesk
     **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
 
     **Accept:** Invalid or failed submission shows a recovery action without falsely recording successful delivery.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Contact form, consent fields, validation, bounded request handling and switched server delivery path are implemented in `components/contact-form.tsx`, `app/api/contact/route.ts`, `lib/contact.ts` and `lib/email.tsx`; synthetic email tests passed.
+    - [ ] Demo/waitlist subscription persistence and cross-instance abuse protection remain pending. `components/footer-newsletter-form.tsx` still simulates subscription success.
 
     **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
@@ -687,6 +721,12 @@ SoloDesk
 
     **Accept:** A successful approved sign-in yields the intended account; an unverified disallowed identity cannot enter protected services.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Email registration/password sign-in UI and Managed Better Auth SDK calls are implemented in `components/auth-email-form.tsx`; mocked transport contract tests passed.
+    - [x] Google/GitHub initiation and shared in-flight controls are implemented in `components/sign-in.tsx` and `components/auth-interactive-panel.tsx`; mocked initiation contracts passed.
+    - [ ] Q-08 policy approval and isolated hosted registration/sign-in/provider-return acceptance remain open; client calls alone do not complete that gate.
+
     **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
   - [ ] <a id="f02-02"></a>**F02.02 — Identity verification** · `S`
@@ -702,6 +742,12 @@ SoloDesk
     **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
     **Accept:** Wrong-account, expired and reused verification proof all fail without changing the active identity.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Six-digit verification entry, resend/cooldown/error handling and SDK requests are implemented in `components/auth-email-form.tsx`; leading-zero transport checks passed.
+    - [x] Verified, fresh, unexpired own-session checks are implemented in `lib/auth/server.ts` and `lib/profile.ts`; mocked denied-session/profile tests passed.
+    - [ ] Real hosted expiry, consumed-code, wrong-account and delivery invariants remain unverified.
 
     **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
@@ -719,6 +765,11 @@ SoloDesk
 
     **Accept:** A consumed reset cannot be reused and reset responses disclose no account membership.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Forgot-password request, resend and code-plus-new-password submission are implemented in `components/auth-email-form.tsx`; mocked SDK transport tests passed.
+    - [ ] Real single-use reset, anti-enumeration, social-only identity behavior, all-session revocation and Q-08 policy approval remain open.
+
     **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
   - [ ] <a id="f02-04"></a>**F02.04 — OAuth callbacks and failure recovery** · `S`
@@ -734,6 +785,11 @@ SoloDesk
     **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
     **Accept:** A hostile return URL is rejected and provider cancellation does not strand the user.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Fixed same-origin callback/error destinations, query normalization, callback-session checks and generic retry markers are implemented in `components/sign-in.tsx`, `lib/site.ts` and `app/(utility)/auth/callback/page.tsx`; local destination/transport tests passed.
+    - [ ] Live Google/GitHub cancellation/return and actual managed trusted-origin configuration still need isolated/deployed acceptance.
 
     **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
@@ -765,6 +821,11 @@ SoloDesk
 
     **Accept:** A revoked session cannot perform a new protected mutation from an already-open tab.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Fresh server session validation, expiry denial and own-profile session-bound query sealing are implemented in `lib/auth/server.ts` and `lib/profile.ts`; mocked authority tests passed.
+    - [ ] A session/device list and individual/other-session revocation controls are not implemented.
+
     **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
   - [ ] <a id="f02-07"></a>**F02.07 — Sensitive-action reauthentication** · `S`
@@ -795,6 +856,11 @@ SoloDesk
 
     **Accept:** Switching identities never unlocks the previous identity's protected draft or cached record.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Current account/profile sign-out, private-view concealment and Realtime subtree disposal/revalidation are implemented in `components/live-profile.tsx`; desktop/mobile account controls exist in `components/site-header-auth.tsx`.
+    - [ ] Cross-account browser acceptance and the future protected-draft key/retention/account-switch contract remain pending; no workspace switcher exists.
+
     **Docs basis:** Documented parent requirement/contract: [Browser connectivity and state contract](docs/specs/platform-and-workspaces.md#browser-connectivity-and-state-contract).
 
   - [ ] <a id="f02-09"></a>**F02.09 — Personal profile and preferences** · `S`
@@ -810,6 +876,12 @@ SoloDesk
     **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
     **Accept:** Changing a personal language cannot reprice an invoice or alter a teammate's preferences.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Own name read/update and live profile projection are implemented in `lib/profile.ts`, `app/actions.ts`, `app/api/profile/route.ts` and `components/live-profile.tsx`.
+    - [x] Browser presentation preferences are implemented by F04.05.
+    - [ ] Personal timezone and notification preference settings/storage remain unbuilt.
 
     **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
@@ -827,6 +899,11 @@ SoloDesk
 
     **Accept:** Repeated attempts are bounded without exposing whether a target belongs to a workspace.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Client-side duplicate-submit locks, pending states and resend cooldowns are implemented in the auth form/panel/social controls.
+    - [ ] Hosted challenge/attempt limits, enumeration resistance and shared cross-instance abuse controls still need implementation or verified managed support.
+
     **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
   - [ ] <a id="f02-11"></a>**F02.11 — Profile avatar** · `E`
@@ -840,6 +917,11 @@ SoloDesk
     **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
     **Accept:** A failed upload leaves the previous profile reference intact and unsafe bytes cannot become a public avatar.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Existing provider-image display and initial-letter fallback are implemented in `components/site-header-auth.tsx` and `components/ui/avatar.tsx`; header rendering tests passed.
+    - [ ] Private avatar upload, crop, replacement/removal and file-validation flows are not implemented; display alone does not complete this feature.
 
     **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
@@ -1203,13 +1285,13 @@ SoloDesk
 
     **Docs basis:** Documented parent requirement/contract: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
-  - [ ] <a id="f04-05"></a>**F04.05 — Theme and language preferences** · `S`
+  - [x] <a id="f04-05"></a>**F04.05 — Theme and language preferences** · `S`
 
-    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
+    **Requires:** Existing shared UI tokens and public/account locale routing; workspace authorization/navigation are needed only when future workspace screens consume these preferences.
 
     **Deliver:** Light/Dark/System themes, English/Arabic switching, logical RTL layout and isolated mixed-direction IDs.
 
-    **Inspected source status:** PARTIAL: public/account locale and Light/Dark/System behavior exists; future workspace screens must inherit it.
+    **Inspected source status:** DONE — implemented for current public/account routes: Light/Dark/System, English/Arabic, RTL direction and isolated mixed-direction fields exist in `lib/site.ts`, `app/api/preferences/route.ts`, `proxy.ts`, the localized layout and `app/globals.css`. Preference/destination and ICU parity tests passed locally; future workspace screens must reuse these controls.
 
     **Flow and records:** Use the current Light/Dark/System tokens and personal English/Arabic preference; isolate mixed-direction emails, IDs and numeric meaning.
 
@@ -1232,6 +1314,11 @@ SoloDesk
     **Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
 
     **Accept:** Keyboard-only completion, 320 CSS-pixel reflow and 200% zoom retain labels and actions.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Reusable button/field/input/alert/avatar/menu/skeleton primitives and current auth loading states are implemented in `components/ui/` and `components/auth-skeleton.tsx`.
+    - [ ] Business tables/dialogs, full non-drag journeys, assistive-technology, zoom/reflow and contrast acceptance remain open.
 
     **Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
 
@@ -1263,6 +1350,11 @@ SoloDesk
 
     **Accept:** A validation failure focuses the relevant field and does not discard the rest of the edit.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Auth validation/pending/retry and profile unavailable/denied/save feedback are implemented in `components/auth-email-form.tsx`, `components/auth-entry-page.tsx`, the account page and `components/live-profile.tsx`.
+    - [ ] General workspace/domain conflict, quota and unknown-commit recovery states remain unbuilt.
+
     **Docs basis:** Documented parent requirement/contract: [Error taxonomy](docs/architecture/api-contracts.md#error-taxonomy).
 
   - [ ] <a id="f04-09"></a>**F04.09 — Browser navigation and deep links** · `S`
@@ -1278,6 +1370,11 @@ SoloDesk
     **Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
 
     **Accept:** Reopening an old resource URL after revocation shows no protected data.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Allowed public/account destinations, locale/theme rewriting, callback normalization and protected profile route checks are implemented in `lib/site.ts`, `proxy.ts` and the existing account routes; local destination-denial tests passed.
+    - [ ] Workspace/resource deep links and revoked-resource browser-history acceptance remain pending.
 
     **Docs basis:** Documented parent requirement/contract: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
 
@@ -1418,6 +1515,11 @@ SoloDesk
     **Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
 
     **Accept:** Reusing a key with changed content is rejected without modifying the earlier accepted result.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Auth-email event-ID/hash receipts reject changed payloads and deduplicate matching success in `lib/auth/email-webhook.ts`; mocked receipt/reconciliation tests passed.
+    - [ ] Workspace/actor/operation-scoped business command receipts and atomic domain effects are not implemented.
 
     **Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
 
@@ -5941,6 +6043,11 @@ SoloDesk
 
     **Accept:** A bounce or unknown provider outcome remains distinct from delivery success.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Auth/contact email templates, escaped HTML/plain text and SMTP transport error handling are implemented in `emails/` and `lib/email.tsx`; synthetic render/send tests passed.
+    - [ ] Workspace-approved business sender/recipients, immutable financial attachments, durable jobs and real delivered/bounced/unknown provider reconciliation remain pending.
+
     **Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
 
   - [ ] <a id="f27-04"></a>**F27.04 — Provider token refresh** · `S`
@@ -6636,6 +6743,11 @@ SoloDesk
     **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
 
     **Accept:** Forged, replayed or wrong-tenant events cannot invoke domain effects.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Bounded signed auth-email webhook parsing and event receipt handling are implemented in `app/api/webhooks/neon-auth/route.tsx` and `lib/auth/email-webhook.ts`; mocked signature/replay/forgery tests passed.
+    - [ ] Isolated webhook activation and generalized workspace-scoped business-provider handlers remain pending.
 
     **Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
 
@@ -8079,6 +8191,11 @@ SoloDesk
 
     **Accept:** The prior supported build runs safely during rollout and rollback testing.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Auth-email receipt migration SQL and runtime-grant instructions exist in `migrations/001-email-deliveries.sql`.
+    - [ ] Migration application is not confirmed here; business schemas, controlled migration execution and old-build/rollback/restore proof remain pending.
+
     **Docs basis:** Documented parent requirement/contract: [Persistence and migrations](docs/architecture/data-lifecycle.md#persistence-and-migrations).
 
   - [ ] <a id="f38-03"></a>**F38.03 — Runtime database least privilege** · `S`
@@ -8136,6 +8253,11 @@ SoloDesk
     **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
 
     **Accept:** Multiple application instances cannot multiply one tenant's allowed burst unboundedly.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Bounded process-local contact rate limiting is implemented in `lib/contact.ts`.
+    - [ ] A shared cross-instance limiter and distributed quota/ingress tests are not implemented.
 
     **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
@@ -8361,6 +8483,12 @@ SoloDesk
 
     **Accept:** Shared components work in both themes without bypassing semantics or contrast decisions.
 
+    **Implementation progress — 1 November 2026:**
+
+    - [x] Shared shadcn/Base UI primitives, semantic theme tokens and component guidance are implemented in `components/ui/`, `app/globals.css` and `DESIGN.md`.
+    - [x] The design-system showcase is implemented in `components/design-system-showcase.tsx` and `app/(utility)/design-system/page.tsx`.
+    - [ ] Current documented contrast gaps, full component-state/keyboard/RTL acceptance and future business composites remain open; this is not a completed accessibility release gate.
+
     **Docs basis:** Documented parent requirement/contract: [Components](DESIGN.md#components).
 
   - [ ] <a id="f39-02"></a>**F39.02 — English and Arabic message parity** · `S`
@@ -8376,6 +8504,11 @@ SoloDesk
     **Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
 
     **Accept:** Missing keys and mixed-direction IDs are caught on representative complete journeys.
+
+    **Implementation progress — 1 November 2026:**
+
+    - [x] English/Arabic message catalogs and the structural parity checker are implemented in `messages/en.json`, `messages/ar.json` and `scripts/check-translations.mjs`; 324 matching key/structure entries passed locally.
+    - [ ] Complete translation of hardcoded current labels and all future business errors/notifications/PDFs, plus fluent review and complete-journey RTL acceptance, remain pending.
 
     **Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
 
@@ -8766,10 +8899,10 @@ Validate the first target segment and launch countries; interview users about th
 
 ## 12. Documentation verification and handoff
 
-This update inspects current source and retains all 550 previous feature IDs, names, S/E labels, deliverables, feature-specific flows, constraints, acceptance examples and documentation links. It adds a current implementation inventory, a nested tree, explicit per-feature dependencies, shared compatibility contracts and six concrete next work packages. All 550 acceptance boxes remain open; existing code is identified separately rather than falsely reported as fully accepted.
+This status review retains all 550 feature IDs, names, S/E labels, deliverables, feature-specific flows, constraints, acceptance examples and documentation links. It marks 3 complete implemented features and 27 implemented subtasks done; the other 547 feature parents remain open. F04.05's prerequisites now describe the existing presentation foundation: theme/language switching already works before workspace navigation and authorization are built. Existing release/policy/provider/accessibility gates are preserved separately.
 
 Documentation checks for this update cover feature uniqueness/completeness, one prerequisite list and acceptance contract per feature, reference resolution, an acyclic feature graph, all 143 stable functional/nonfunctional requirement IDs, local file/heading links and whitespace. These structural checks cannot establish integration compatibility or application security. The dependency graph describes the proposed order and contracts; meaningful positive, negative, concurrent, recovery and migration tests must prove each implemented combination.
 
-No application build/test, live auth/Neon call, browser/human evaluation, migration, fresh advisory scan, provider research or deployment was performed for this documentation update. Previously recorded research and test claims remain dated source material; no new claim of current competitor offerings, provider support or clean dependencies is made. Future implementation must compare exact lockfile/deployed/managed versions to fresh advisories; unavailable scans are gaps.
+For the 1 November status review, `npm test` and `node scripts/check-translations.mjs` passed locally. No application build, live auth/Neon call, browser/human evaluation, migration, fresh advisory scan, provider research or deployment was performed. Previously recorded research and test claims remain dated source material; no new claim of current competitor offerings, provider support or clean dependencies is made. Future implementation must compare exact lockfile/deployed/managed versions to fresh advisories; unavailable scans are gaps.
 
 The next executable slice is NEXT-01, followed by the workspace and first billable journey work in section 8.1. Before coding each selected slice, inspect current changes and canonical specs, read installed version-matched Next.js guides, load the applicable skills/SEC controls and name exact files/interfaces/fixtures/checks. Keep the root plan as the feature/dependency ledger; keep small execution plans in the owning feature specification. Append future features under the matching branch without renumbering existing IDs. This document does not authorize the entire backlog to be built or remotely activated in one operation.

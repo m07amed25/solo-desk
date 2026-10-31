@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ProfileSkeleton } from "@/components/auth-skeleton";
+import { Loader2 } from "lucide-react";
 
 type Envelope = {
   userId: string;
@@ -188,16 +190,12 @@ export function LiveProfile({
             signOut={signOut}
           />
         </div>
+      ) : view === "checking" ? (
+        <ProfileSkeleton statusText={t("checking")} />
       ) : (
         <div className="flex flex-col gap-4">
           <p role="status">
-            {t(
-              view === "unavailable"
-                ? "unavailable"
-                : view === "denied"
-                  ? "denied"
-                  : "checking",
-            )}
+            {t(view === "unavailable" ? "unavailable" : "denied")}
           </p>
           {view === "unavailable" && (
             <Button size="lg" onClick={() => void revalidate()}>
@@ -261,6 +259,7 @@ function ProfileForm({
   const t = useTranslations("Profile");
   const [name, setName] = useState(initialName);
   const [pending, setPending] = useState(false);
+  const [signingOutState, setSigningOutState] = useState(false);
   const [message, setMessage] = useState<
     "invalidName" | "unauthorized" | "saveFailed" | "saved" | null
   >(null);
@@ -346,7 +345,14 @@ function ProfileForm({
               disabled={pending}
             />
           </Field>
-          <Button type="submit" size="lg" disabled={pending}>
+          <Button type="submit" size="lg" disabled={pending || signingOutState}>
+            {pending && (
+              <Loader2
+                className="animate-spin"
+                data-icon="inline-start"
+                aria-hidden="true"
+              />
+            )}
             {t(pending ? "saving" : "save")}
           </Button>
         </FieldGroup>
@@ -361,10 +367,24 @@ function ProfileForm({
         type="button"
         variant="outline"
         size="lg"
-        disabled={pending}
-        onClick={() => void signOut()}
+        disabled={pending || signingOutState}
+        onClick={async () => {
+          setSigningOutState(true);
+          try {
+            await signOut();
+          } finally {
+            if (active.current) setSigningOutState(false);
+          }
+        }}
       >
-        {t("signOut")}
+        {signingOutState && (
+          <Loader2
+            className="animate-spin"
+            data-icon="inline-start"
+            aria-hidden="true"
+          />
+        )}
+        {t(signingOutState ? "signingOut" : "signOut")}
       </Button>
     </section>
   );
