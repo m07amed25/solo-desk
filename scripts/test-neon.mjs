@@ -6,9 +6,16 @@ import { Pool } from "pg";
 import { createRealtimeClient } from "@neon/realtime/client";
 
 // This check precedes env loading, client construction and every remote operation.
-assert.equal(process.env.SOLODESK_TEST_ENV, "isolated", "Remote tests require an independently verified isolated target and SOLODESK_TEST_ENV=isolated");
+assert.equal(
+  process.env.SOLODESK_TEST_ENV,
+  "isolated",
+  "Remote tests require an independently verified isolated target and SOLODESK_TEST_ENV=isolated",
+);
 loadEnvFile(".env.local");
-assert.ok(process.env.NEON_BRANCH && !/prod/i.test(process.env.NEON_BRANCH), "Production or unidentified branches cannot run fixtures");
+assert.ok(
+  process.env.NEON_BRANCH && !/prod/i.test(process.env.NEON_BRANCH),
+  "Production or unidentified branches cannot run fixtures",
+);
 const base = process.env.TEST_BASE_URL ?? "http://localhost:3000";
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL.replace(
@@ -24,12 +31,24 @@ const realtime = createRealtimeClient({
 const emails = [];
 
 async function saveName(userId, name, jar) {
-  const manifest = JSON.parse(readFileSync(".next/server/server-reference-manifest.json", "utf8"));
-  const actionId = Object.entries(manifest.node).find(([, value]) => value.exportedName === "saveProfile")?.[0];
-  assert.ok(actionId, "Build the app before running the production integration test");
+  const manifest = JSON.parse(
+    readFileSync(".next/server/server-reference-manifest.json", "utf8"),
+  );
+  const actionId = Object.entries(manifest.node).find(
+    ([, value]) => value.exportedName === "saveProfile",
+  )?.[0];
+  assert.ok(
+    actionId,
+    "Build the app before running the production integration test",
+  );
   const response = await fetch(`${base}/app`, {
     method: "POST",
-    headers: { Origin: base, "Next-Action": actionId, "Content-Type": "text/plain;charset=UTF-8", Cookie: [...jar].map(([k, v]) => `${k}=${v}`).join("; ") },
+    headers: {
+      Origin: base,
+      "Next-Action": actionId,
+      "Content-Type": "text/plain;charset=UTF-8",
+      Cookie: [...jar].map(([k, v]) => `${k}=${v}`).join("; "),
+    },
     body: JSON.stringify([userId, name]),
     signal: AbortSignal.timeout(30_000),
   });
@@ -53,7 +72,11 @@ async function request(path, jar = new Map(), body, origin = base) {
     const index = pair.indexOf("=");
     jar.set(pair.slice(0, index), pair.slice(index + 1));
   }
-  assert.match(response.headers.get("content-type") ?? "", /application\/json/, `Non-JSON app response (${response.status}) at ${path.split("?")[0]}`);
+  assert.match(
+    response.headers.get("content-type") ?? "",
+    /application\/json/,
+    `Non-JSON app response (${response.status}) at ${path.split("?")[0]}`,
+  );
   const data = await response.json();
   return { response, data };
 }
@@ -74,10 +97,29 @@ async function account() {
     `Signup failed: ${data.code ?? response.status}`,
   );
   assert.ok(data.user?.id, "Signup must return a user");
+  const unverifiedCheck = await request(
+    `/api/profile?userId=${data.user.id}`,
+    jar,
+  );
+  assert.equal(
+    unverifiedCheck.response.status,
+    401,
+    "Unverified user profile read must be denied (401)",
+  );
   // Synthetic fixture only; preserve the branch policy and skip mailbox delivery.
-  await pool.query('UPDATE neon_auth."user" SET "emailVerified" = true WHERE id = $1 AND email = $2', [data.user.id, email]);
-  const login = await request("/api/auth/sign-in/email", jar, { email, password });
-  assert.equal(login.response.status, 200, `Fixture login failed: ${login.data.code ?? login.response.status}`);
+  await pool.query(
+    'UPDATE neon_auth."user" SET "emailVerified" = true WHERE id = $1 AND email = $2',
+    [data.user.id, email],
+  );
+  const login = await request("/api/auth/sign-in/email", jar, {
+    email,
+    password,
+  });
+  assert.equal(
+    login.response.status,
+    200,
+    `Fixture login failed: ${login.data.code ?? login.response.status}`,
+  );
   return { jar, email, password, id: data.user.id };
 }
 
@@ -90,13 +132,26 @@ try {
   assert.equal(anonymous.response.status, 401);
   assert.match(anonymous.response.headers.get("cache-control"), /no-store/);
   for (const provider of ["google", "github"]) {
-    const oauth = await request("/api/auth/sign-in/social", new Map(), { provider, callbackURL: `${base}/auth/callback`, disableRedirect: true });
-    assert.equal(oauth.response.status, 200, `${provider} OAuth initiation failed`);
+    const oauth = await request("/api/auth/sign-in/social", new Map(), {
+      provider,
+      callbackURL: `${base}/auth/callback`,
+      disableRedirect: true,
+    });
+    assert.equal(
+      oauth.response.status,
+      200,
+      `${provider} OAuth initiation failed`,
+    );
     const destination = new URL(oauth.data.url);
     assert.equal(destination.protocol, "https:");
-    assert.equal(destination.origin, new URL(process.env.NEON_AUTH_BASE_URL).origin);
+    assert.equal(
+      destination.origin,
+      new URL(process.env.NEON_AUTH_BASE_URL).origin,
+    );
     assert.ok(destination.pathname.endsWith("/sign-in/social/init"));
-    console.log(`PASS OAuth: ${provider} managed sign-in initiated through app proxy`);
+    console.log(
+      `PASS OAuth: ${provider} managed sign-in initiated through app proxy`,
+    );
   }
   const first = await account();
   const second = await account();
@@ -114,7 +169,10 @@ try {
   assert.deepEqual(profile.data.initialData, [
     { id: first.id, name: "Neon integration test" },
   ]);
-  assert.ok(Date.parse(profile.data.sessionExpiresAt) > Date.now(), "Profile envelope must contain a future session expiry");
+  assert.ok(
+    Date.parse(profile.data.sessionExpiresAt) > Date.now(),
+    "Profile envelope must contain a future session expiry",
+  );
   console.log(
     "PASS App: session restoration, protected Postgres read, cross-account denial",
   );
@@ -136,8 +194,14 @@ try {
   );
   assert.equal(csrf.response.status, 403);
   const name = `Live profile ${randomUUID().slice(0, 8)}`;
-  assert.match(await saveName(second.id, "Must not be saved", first.jar), /unauthorized/);
-  assert.match(await saveName(first.id, "x".repeat(101), first.jar), /invalidName/);
+  assert.match(
+    await saveName(second.id, "Must not be saved", first.jar),
+    /unauthorized/,
+  );
+  assert.match(
+    await saveName(first.id, "x".repeat(101), first.jar),
+    /invalidName/,
+  );
   assert.match(await saveName(first.id, name, first.jar), /"error":null/);
   await subscription.awaitRows((data) => data[0]?.name === name, 20_000);
   const saved = await pool.query(
@@ -148,7 +212,27 @@ try {
   console.log(
     "PASS Realtime: committed profile update delivered live; Postgres confirms persistence",
   );
-  console.log("PASS Security: hostile origin, cross-account action, oversized name denied");
+  console.log(
+    "PASS Security: hostile origin, cross-account action, oversized name denied",
+  );
+
+  // Real database unverified status removes row from live query
+  await pool.query(
+    'UPDATE neon_auth."user" SET "emailVerified" = false WHERE id = $1',
+    [first.id],
+  );
+  await subscription.awaitRows((data) => data.length === 0, 20_000);
+  console.log(
+    "PASS Realtime: unverified user row removed live from subscription",
+  );
+  await pool.query(
+    'UPDATE neon_auth."user" SET "emailVerified" = true WHERE id = $1',
+    [first.id],
+  );
+  await subscription.awaitRows(
+    (data) => data.length === 1 && data[0].id === first.id,
+    20_000,
+  );
 
   const renew = await request(`/api/profile?userId=${first.id}`, first.jar);
   assert.equal(

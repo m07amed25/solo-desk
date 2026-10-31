@@ -8,12 +8,19 @@ import {
   HeaderScrollContainer,
   HeaderNavLink,
 } from "@/components/header-scroll-container";
+import {
+  HeaderDesktopAuth,
+  HeaderMobileAuth,
+  type AuthUser,
+} from "@/components/site-header-auth";
 import { presentation, themes, type ReturnPath } from "@/lib/site";
 
 export async function SiteHeader({
   returnTo = "/",
+  initialUser = null,
 }: {
   returnTo?: ReturnPath;
+  initialUser?: AuthUser | null;
 }) {
   const t = await getTranslations("Navigation");
   const { locale, theme } = presentation(await rootLocale(), await rootTheme());
@@ -60,17 +67,13 @@ export async function SiteHeader({
           </HeaderNavLink>
         </nav>
         <div className="header-controls">
-          <div className="hidden items-center gap-2 lg:flex">
-            <a
-              href="/sign-in"
-              className={buttonVariants({ variant: "ghost", size: "lg" })}
-            >
-              {t("signIn")}
-            </a>
-            <a href="/sign-up" className={buttonVariants({ size: "lg" })}>
-              {t("signUp")}
-            </a>
-          </div>
+          <HeaderDesktopAuth
+            signInLabel={t("signIn")}
+            signUpLabel={t("signUp")}
+            workspaceLabel={t("workspace")}
+            signOutLabel={t("signOut")}
+            initialUser={initialUser}
+          />
           <form action="/api/preferences" method="post">
             <input type="hidden" name="returnTo" value={returnTo} />
             <input type="hidden" name="locale" value={nextLocale} />
@@ -156,17 +159,13 @@ export async function SiteHeader({
               >
                 {t("contact")}
               </a>
-              <div className="my-2 border-t border-border pt-2 flex flex-col gap-2">
-                <a
-                  href="/sign-in"
-                  className={buttonVariants({ variant: "outline", size: "lg" })}
-                >
-                  {t("signIn")}
-                </a>
-                <a href="/sign-up" className={buttonVariants({ size: "lg" })}>
-                  {t("signUp")}
-                </a>
-              </div>
+              <HeaderMobileAuth
+                signInLabel={t("signIn")}
+                signUpLabel={t("signUp")}
+                workspaceLabel={t("workspace")}
+                signOutLabel={t("signOut")}
+                initialUser={initialUser}
+              />
             </nav>
           </SiteDisclosure>
         </div>

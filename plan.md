@@ -10,9 +10,11 @@
 
 **Specification:** [Product](PRODUCT.md), [requirements](docs/product/requirements.md), [coverage register](docs/planning/coverage.md), [roadmap](docs/planning/roadmap.md), [architecture](docs/architecture/overview.md), [design system](DESIGN.md), and the linked domain specifications. These retain authority over detailed fields and rules. This plan adds implementation order and reviewable work packages while preserving P00–P09 and all 143 requirement IDs.
 
-**Prepared:** 30 October 2026. Status: planning only; no business phase is complete. Estimates require confirmed capacity and decisions; this document makes no delivery-date commitment.
+**Updated:** 31 October 2026; repository inventory refreshed for this working tree. Status: planning only; no business phase is complete. Estimates require confirmed capacity and decisions; this document makes no delivery-date commitment.
 
-**Feature scope:** This is the full product plan, including researched functionality and relevant expansion options, with one separately tracked phase per feature. Start with the [complete feature catalogue](#9-complete-feature-catalogue), then use the [phase sequence](#2-release-sequence-and-dependencies) and [implementation packages](#4-phased-implementation) to build it. The 143 existing requirements are the baseline; proposed extensions below broaden that baseline without silently changing confirmed product decisions.
+**Feature scope:** This is the full product plan, including existing specified functionality and relevant expansion options, with one stable tracked feature ID per leaf. Start with the [feature tree](#9-complete-feature-catalogue), then use the [phase sequence](#2-release-sequence-and-dependencies) and [implementation packages](#4-phased-implementation) to build it. The 143 existing requirements are the baseline; proposed extensions below broaden that baseline without silently changing confirmed product decisions.
+
+**Quick navigation:** [What is built](#inspected-implementation-inventory--31-october-2026) · [Compatibility rules](#tree-and-compatibility-contract) · [Build sequence](#2-release-sequence-and-dependencies) · [Next six tasks](#81-immediate-continuation-from-the-inspected-checkout) · [Full feature tree](#9-complete-feature-catalogue) · [Open decisions](#5-decisions-and-external-prerequisites) · [Release gates](#6-security-and-verification-matrix).
 
 ## 1. Current baseline and scope
 
@@ -20,9 +22,52 @@ The current repository already has public/account pages, English/Arabic catalogs
 
 Workspace authorization, business schemas/migrations, clients, projects, tasks, time, billing, reports, jobs and the portal remain to be built. Personal-profile isolation is useful evidence for that slice, not proof of workspace isolation. Some older architecture/phase documents still describe a bare starter; use inspected source and dated evidence to establish implementation status.
 
-Existing release gaps include the privileged database connection role, development Google credentials, production email/recovery setup, interactive GitHub return verification, tenant policy, comprehensive accessibility, load and restore evidence. Dependency findings also need fresh exact-version assessment; earlier scan counts are dated results.
+Previously recorded release gaps to revalidate include the privileged database connection role, development Google credentials, production email/recovery setup, interactive GitHub return verification, tenant policy, comprehensive accessibility, load and restore evidence. Dependency findings also need fresh exact-version assessment; earlier scan counts are dated results.
 
-The current working tree contains a modified account page and an untracked landing-page specification. Preserve those changes and reconcile their ownership before a future implementation commit.
+The current working tree contains substantial landing/auth/email/profile edits, the `003-enhance-auth-pages` specification, added UI primitives and a deletion of the previous root plan. This file replaces that deleted plan while retaining its 550 stable feature IDs and all feature deliverables/acceptance contracts. Preserve unrelated work; no application changes are part of this planning update.
+
+### Inspected implementation inventory — 31 October 2026
+
+Status is based on source inspection, not a fresh runtime/deployment test. `CODE` means the implementation exists in this checkout; `PARTIAL` means only a slice exists; `GATED` means remote/policy evidence is unresolved; `PLANNED` means no business implementation was found. Catalogue checkboxes remain acceptance tasks, even where code exists.
+
+| Area                                             | Observed files                                                                                                                                  | Status and work remaining                                                                                                                                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public landing, tour, navigation and disclosure  | `components/landing-page.tsx`, `components/landing/`, `components/product-tour.tsx`, `components/site-header.tsx`, `lib/site-content.ts`        | CODE/PARTIAL: synthetic demonstrations exist; no clients/time/invoice engine behind them. Status strings such as “inDevelopment” are marketing metadata, not implementation evidence.                                         |
+| English/Arabic and theme preferences             | `messages/en.json`, `messages/ar.json`, `lib/site.ts`, `proxy.ts`, `app/api/preferences/route.ts`, `app/globals.css`                            | CODE: localized site and preferences exist; every future screen/email/artifact still needs parity, RTL and accessibility review.                                                                                              |
+| Shared component system                          | `components/ui/`, `components.json`, `DESIGN.md`, `app/(utility)/design-system/page.tsx`                                                        | CODE/PARTIAL: shared primitives/showcase exist; business tables, navigation, editors and their acceptance remain pending.                                                                                                     |
+| Google/GitHub auth and callback                  | `components/sign-in.tsx`, `lib/auth/client.ts`, `lib/auth/server.ts`, `app/api/auth/[...path]/route.ts`, `app/(utility)/auth/callback/page.tsx` | CODE/GATED: preserve Managed Better Auth; actual provider returns, managed versions/policy and environment evidence require revalidation.                                                                                     |
+| Email signup, verification, sign-in and recovery | `components/auth-email-form.tsx`, `components/auth-interactive-panel.tsx`, localized sign-in/sign-up routes/loading states                      | CODE/GATED: forms and SDK calls exist, but isolated end-to-end managed behavior, approved Q-08 and reset/session invariants remain open. Do not equate visible forms with activation approval or assume a server gate exists. |
+| Account/profile and Realtime                     | `app/(site)/[locale]/[theme]/app/page.tsx`, `app/actions.ts`, `app/api/profile/route.ts`, `lib/profile.ts`, `components/live-profile.tsx`       | CODE: `/app` is a personal profile slice, not a workspace dashboard. Own verified, nonbanned, unexpired session checks and a scoped sealed query exist; workspace/resource authorization does not.                            |
+| Contact and transactional email                  | `app/api/contact/route.ts`, `lib/contact.ts`, `lib/request-body.ts`, `lib/email.tsx`, `emails/`                                                 | CODE/GATED: contact route checks `SOLODESK_CONTACT_ENABLED`; transport/production ingress and distributed abuse controls need proof. Current in-memory limiting is not cross-instance protection.                             |
+| Auth email webhook and receipt schema            | `app/api/webhooks/neon-auth/route.tsx`, `lib/auth/email-webhook.ts`, `migrations/001-email-deliveries.sql`                                      | CODE/GATED: deduplication/signature handlers and one migration exist; isolated migration application, callback registration and real inbox delivery remain unverified here. No business schema was found.                     |
+| Footer newsletter                                | `components/footer-newsletter-form.tsx`                                                                                                         | MOCK: uses `setTimeout` to simulate success, with no subscription backend. It must be removed, clearly labeled or connected with truthful consent/delivery before being advertised as working.                                |
+| Local and integration test harnesses             | `scripts/*.test.mjs`, `scripts/test-auth-flows.mjs`, `scripts/test-neon.mjs`, `scripts/test-site-http.mjs`, `tests/email.test.mjs`              | CODE: harnesses exist. No application tests, live database tests, browser matrix or human studies were rerun for this document. Production-target refusal is a GAP, never an integration pass.                                |
+| Workspace/business platform                      | No workspace/client/project/task/time/invoice business service or schema in `app/`, `lib/` or `migrations/`                                     | PLANNED: all corresponding business features below remain unchecked. Earlier native/Electron/Supabase records do not count.                                                                                                   |
+
+The `003` evidence file contains conflicting gate labels and broad browser/human/performance claims alongside open isolated-environment gates. Reconcile raw artifacts and actual execution before carrying any claim forward; task checkmarks and written summaries alone do not establish acceptance.
+
+### Tree and compatibility contract
+
+This is a comprehensive, expandable catalogue for the current freelance/small-team product: 40 branches and 550 feature leaves, including compatible optional extensions. No finite file can enumerate every future invention. New in-scope ideas get appended stable IDs, dependencies, policy gates and an acceptance test; excluded product directions remain excluded until explicitly reconsidered.
+
+Each branch contains feature leaves; every leaf has `Requires`, scope, deliverable, flow, constraints, acceptance and specification links. `S` is an existing specified requirement or supporting contract; `E` is an optional proposed extension. Neither means shipped. Feature numbers are permanent identifiers, not a mandatory numeric build order. Prerequisites form a directed acyclic graph: build a ready leaf after its prerequisites, independently of optional siblings.
+
+The explicit per-leaf `Requires` list governs execution; old category summaries supply context and policy gates, not additional hidden feature edges. Cross-links mentioned in a flow identify conditional integrations. For example, basic project creation does not require an accepted proposal; manual acceptance can hand off without a portal; fixed-fee invoices do not wait for time billing; product subscriptions do not depend on customer service-subscriptions. Optional source adapters activate only when their own feature passes.
+
+All leaves inherit these compatibility rules:
+
+1. One canonical workspace/client/project/task/source identity; every relationship stays in its tenant. Contacts, staff memberships and portal identities remain distinct.
+2. One server-side authorization policy for routes, actions, reads, search/counts, exports, files, subscriptions and jobs. Grants are current at execution; UI visibility is never authority.
+3. One transactional command/receipt/audit/outbox foundation. Same operation and digest replays one result; changed intent under the same key fails. Realtime is a refresh mechanism, not acceptance authority.
+4. One exact finance calculator, source-allocation authority and posting history. Quotes, invoices, reports and integrations consume them; no parallel totals or floating-point money engines.
+5. One time evidence model: integer seconds, explicit timezone/work date, reviewed uncertainty and conserved source ranges. Tasks, commits, meetings and focus sessions cannot silently become billable work.
+6. Customer-visible documents and publications bind immutable versions, original parties, calculation policy and rendering metadata. Later profile/template/translation/rate edits do not rewrite history.
+7. Feature switches and commercial entitlements can restrict new actions but never widen permissions, erase history, strand corrections or block required export on cancellation.
+8. Shared shadcn primitives/composites, semantic tokens and English/Arabic RTL apply everywhere, including new error/empty/recovery states, PDFs and emails.
+9. Expand/contract migrations support declared stale-tab/API/schema windows. Imports, restores, provider callbacks and replay use the same validation and never resurrect authority or reuse financial numbers.
+10. Every included feature supplies query/input/job bounds, privacy classification, failure/recovery behavior and applicable release evidence. Cross-cutting F37–F39 controls are gates on included features, not a reason to build the whole catalogue first.
+
+**Runtime support gate:** Beta/managed SDK capabilities, MFA/passkeys/SSO/provisioning, storage providers, custom domains and connector actions require verification against actual installed and hosted versions before commitment. Listing a provider or security feature does not assert that the selected managed service supports it today.
 
 ### Global constraints
 
@@ -321,7104 +366,8326 @@ Start in this order:
 
 1. **P00.1:** Reconcile current changes and evidence; add package/status/owner/evidence fields to the existing coverage workflow.
 2. **P00.2:** Obtain foundation policy decisions Q-05/Q-06/Q-07/Q-08/Q-11/Q-13; identify Q-02/Q-16 operational constraints and finance decision owners.
-3. **P01.1/P01.2:** Write the exact workspace/invitation/permission task plan using existing session/UI code. Prove an Owner invites a Contributor, while a different workspace cannot read or mutate its records.
-4. **P01.3/P01.4:** Add the minimum revision/receipt/audit foundation and browser-draft proof. Demonstrate lost-response replay and revoked-member denial before feature breadth.
+3. **P01.3 then P01.1/P01.2:** Establish isolated application schemas, restricted roles and transactional receipt/audit primitives, then write the workspace/invitation/permission task plan using existing session/UI code. Prove an Owner invites a Contributor, while a different workspace cannot read or mutate its records.
+4. **P01.3/P01.4:** Reuse the revision/receipt/audit foundation and add browser-draft proof. Demonstrate lost-response replay and revoked-member denial before feature breadth.
 5. **P02.1 → P03.1/2 → P04 core → P05 core:** Deliver the first real client-to-payment journey, with P09 evidence and restore work progressing throughout.
 
 This expansion modifies only `plan.md`; existing roadmap/docs links already point here. It introduces no application code, dependencies, database changes or external actions. Documentation verification checks links, phase/requirement coverage and diff hygiene; runtime tests and fresh advisory scans belong to the subsequent implementation/release work and are not claimed here.
 
+### 8.1 Immediate continuation from the inspected checkout
+
+The next implementation starts here; do not rebuild the landing/profile slice or begin all 550 features at once. This document is the requested deliverable. The checklist below records the concrete continuation, with dependencies and reviewable outputs.
+
+- [ ] **NEXT-01 — Reconcile current auth and evidence (P00.1/P01.2).** Read `specs/003-enhance-auth-pages/{spec,plan,tasks,evidence}.md`, `lib/auth/{client,server}.ts`, `lib/profile.ts`, `components/auth-email-form.tsx`, `components/auth-interactive-panel.tsx`, `app/actions.ts` and the matching auth/profile/email harnesses. Compare actual calls and exposed forms with G1–G6/Q-08; retain existing edits. Output: accurate capability/gate ledger, owned findings, isolation prerequisites and a concrete server-enforced activation/rollback plan if provider behavior is unproven. Test same-account verified access, unverified/revoked denial, reset purpose/replay and both-session revocation on an authorized isolated target only. A refused target leaves the live gate open; do not create a misleading “all passed” record.
+- [ ] **NEXT-02 — Establish isolated migrations and runtime roles (P01.3).** Depends on NEXT-01 inventory. Reuse `lib/db.ts` and `migrations/001-email-deliveries.sql`; inspect the database state before choosing the next unused migration filename. Add application-owned workspace/membership/grant tables plus the minimal command receipt/digest/revision/audit/outbox foundation through reviewed SQL in `migrations/`; preserve Neon's managed auth schema. Propose `lib/workspaces.ts` for the first small server-only workspace service rather than precreating every module. Output: reviewed migration/rollback notes, restricted runtime and migration-role policy, synthetic two-workspace fixtures and real PostgreSQL constraint/pool tests. Provisioning/credentials remain separately gated by Q-02 and environment authorization.
+- [ ] **NEXT-03 — Prove create/join/switch and authorization (P01.2).** Depends on NEXT-02 and approved Q-05/Q-08 invitation/role policy. Extend the existing localized app area with workspace creation/switching and recipient-bound expiring invitations; add server service checks, final-owner protection and audit in the same transaction. Keep `app/actions.ts` profile behavior working; add only needed workspace actions. Proposed focused test: `scripts/test-workspaces.test.mjs`, supplemented by isolated PostgreSQL race/negative cases. Output: two authorized members plus a separate tenant; cross-tenant IDs, revoked grants, concurrent owner-removal and direct calls fail with no forbidden data/effects. Preserve existing `/app` entry through an intentional profile/dashboard transition.
+- [ ] **NEXT-04 — Add shell, commands and one recovery proof (P01.1/P01.3/P01.4).** Depends on NEXT-03. Reuse `components/ui/`, locale/theme layouts and `messages/{en,ar}.json`; add only the current workspace navigation, honest home/empty/error states and needed server services. Reuse NEXT-02 operation ID/digest, expected revision, receipt, audit and outbox primitives; transaction helpers stay beside existing server code until reuse warrants a split. Prove duplicate/lost-reply behavior and one revision conflict. Evaluate one synthetic protected browser draft only after Q-06/Q-07; otherwise expose online/memory limits and keep persistence off. Output: bilingual two-member vertical slice and documented recovery, without premature broad caching or a generic CRUD framework.
+- [ ] **NEXT-05 — Deliver first work records (P02.1/P03.1/P03.2).** Depends on NEXT-04. Add `lib/clients.ts` for CRM-001 and `lib/projects.ts` for WRK-001/002 services when needed; add localized workspace client/project/task pages under the existing app route hierarchy, with exact URL shape settled in the small implementation plan. Reuse grants, revisions, shared components and translations; include migrations, direct service/API callers, counts/search, fixtures and archive recovery. Output: create client → active project → assigned task, visible only to allowed members. Acceptance checks valid references, wrong-workspace IDs, archived records and failed-save input preservation.
+- [ ] **NEXT-06 — Complete first billable journey (P04/P05).** Depends on NEXT-05 and approved Q-01/Q-03/Q-04 policies. Add pure integer-second/exact-money rules to `lib/time.ts` and `lib/finance.ts` only as needed, keeping DB/auth imports in adjacent server-only services. First implement timer/manual time and whole-entry reservation; then online issue, saved snapshot/PDF, manual partial payment, safe credit/reversal and balance. Include source/number uniqueness, concurrent issue, lost reply, uncertain time, stale preview and Arabic artifact fixtures. Output: one reproducible client → task → reviewed time → issued invoice → recorded payment journey; no automatic sends, charges or statutory compliance claim.
+
+For each NEXT task: map its real files/callers/exports/config/fixtures first; pin one meaningful failure scenario, implement the smallest complete slice, run the relevant checks, attach exact evidence and then advance. The later tree leaves remain backlog. Do not overwrite unrelated changes or stage a broad working tree.
+
+### 8.2 Ready-feature selection and shared contracts
+
+A feature is ready when its explicit prerequisites have accepted contracts, its applicable Q decisions are resolved for the chosen profile, and its own runtime/provider evidence exists. Features may be implemented locally while activation is gated; preserve the distinction. A source prerequisite already present needs verification and any missing contract, not automatic reimplementation. Quality/security tasks run alongside the feature they verify rather than waiting for their catalogue position.
+
+Shared command shape: server-derived actor/session, explicit workspace, stable operation ID, expected revision and bounded validated payload → permitted projection, committed revision and scoped receipt, or a localized stable error code. Never accept a caller-supplied actor as authority. Shared record links, private files, query bounds and errors follow `docs/architecture/{data-model,api-contracts}.md`. Money/time and external publication follow their canonical specifications, not an invented generic API.
+
+When implementing a node, record its forward impact: which dependent leaves consume its fields, event/version, source identity and error semantics. Add additive fields first; preserve historic readers and exact issued snapshots; version a breaking contract and migrate consumers before removal. Siblings interact only through these shared contracts. Compatibility is a design and test obligation, not a promise that unbuilt features have been proven together.
+
 ## 9. Complete feature catalogue
 
-**Research date:** 30 October 2026. **Catalogue:** 550 separately tracked feature phases in 40 categories (357 specified-scope phases; 193 proposed-extension phases). Every feature below has its own `Fxx.yy` heading and completion checkbox. A category is navigation, not a single bundled feature phase. A feature phase includes the lifecycle actions needed to make that one capability usable; create/edit/archive buttons are not separate product features.
+Read this as `SoloDesk → product area → feature → deliverable/flow/constraints/acceptance`. The top-level outline is followed by the complete nested tree, with 550 stable leaf IDs retained from the prior plan. `Requires` links are explicit implementation prerequisites and were checked for missing references and cycles. They do not prove runtime interoperability. Every feature remains unchecked until its own acceptance evidence passes; see the source inventory for partial implementations.
 
-This is a broad, researched inventory for SoloDesk, not a promise to exhaust every conceivable feature or automatically build every candidate. The 143 canonical requirements remain the baseline. **S** elaborates current specification; **E** is a proposed extension requiring a product decision and updated specification before implementation. All phases start unchecked; existing partial code requires fresh acceptance. Feature IDs are permanent once adopted; append new IDs rather than renumbering delivered work.
+**Scope:** `S` = existing specified/supporting capability; `E` = proposed optional expansion, requiring a focused specification and product decision before commitment. Parent and child IDs never overwrite the existing PLT/CRM/WRK/TIM/FIN/INS/INT/NFR requirements. No budget, timeline, service purchase or deployment is approved by this inventory.
 
-**How to use a phase:** Its group supplies package ownership, prerequisites, source/spec links, extension wave and a mandatory negative test. Each phase supplies its deliverable, feature-specific flow/records, documented constraints, acceptance example and links to its current documentation basis. These fields together form its entry/exit contract. Before coding, expand only the selected phase into exact files, service interfaces, policy fixtures and executable checks using section 3/8. Do not invent signatures or capacity estimates for hundreds of unapproved features.
+```text
+SoloDesk
+├── Reach and onboard customers: F01, F07–F11, F31–F32
+├── Secure accounts and teams: F02–F03, F40
+├── Run daily work: F04–F06, F12–F18, F33
+├── Bill and collect: F19–F24
+├── Understand and reuse knowledge: F25–F26
+├── Connect and collaborate externally: F27–F30
+└── Operate the service: F34–F39
+```
 
-**Detail authority:** Current domain specifications, architecture/security policy, DESIGN.md and the decision register govern the details below. Each S phase links to its documented parent requirement/contract; that link does not resolve an open policy or prove implementation. Each E phase is explicitly a proposed flow plus constraints from a supporting contract, not an approved feature-specific specification. Existing documentation does not fully specify those extensions; selecting one first requires updating the canonical spec/decision/coverage records. These details introduce no new country, tax, factor, quota, price, retention duration, provider, signature or booking-policy default. Historical native/Supabase feature/QA records and competitor capabilities do not override current website rules.
+**Shared release gates:** Every enabled leaf inherits the compatibility contract, its branch acceptance, applicable SEC-001–064 controls, NFR-001–019, current dependency/hosted-version review, and the security release checklist. Missing tests/feeds/artifacts stay GAP. Optional extensions cannot bypass these gates. See sections 2, 5–7 and 10 for release/policy/requirement mapping.
 
-**Common completion gate for every phase:** demonstrate the described outcome; test applicable denied-role/cross-tenant, stale/retry and failure paths; preserve errors and data; pass relevant security controls in section 6, English/Arabic RTL, responsive keyboard/accessibility and recovery checks; update the canonical coverage/evidence ledger. Include callers, UI, messages, services, schema/index migrations, jobs, API/export contracts, fixtures and documentation only where touched. Unavailable evidence is a gap. No phase here is approved for deployment by this planning file.
-
-**Dependency interpretation:** `Pxx.n` is an implementation contract in section 4; `Fxx.yy` is a feature prerequisite in this catalogue; `Q-xx` is an open decision in section 5. IDs group ownership rather than prescribe numeric execution order. Build only the needed slice of a referenced package, not its optional extensions. Cross-module navigation/cards activate after their source feature; a basic shell does not wait for all dashboard domains. F05.05 and F38.04 establish command receipts before consumer mutations; F05.05 itself depends on the P01.3 transaction foundation, not on itself. Provider names are candidates, not purchase decisions.
-
-| Category                                                                  | Feature phases | Package                     |
-| ------------------------------------------------------------------------- | -------------- | --------------------------- |
-| [9.1 Public website, discovery and conversion](#category-01)              | F01.01–F01.13  | P01/P09                     |
-| [9.2 Registration, identity and personal security](#category-02)          | F02.01–F02.15  | P01                         |
-| [9.3 Workspaces, members and permissions](#category-03)                   | F03.01–F03.16  | P01                         |
-| [9.4 Application shell, personal workspace and interaction](#category-04) | F04.01–F04.13  | P01/P06                     |
-| [9.5 Browser drafts, sync and conflicts](#category-05)                    | F05.01–F05.15  | P01                         |
-| [9.6 Notifications, inbox and reminders](#category-06)                    | F06.01–F06.10  | P01/P07                     |
-| [9.7 Clients, contacts and relationship records](#category-07)            | F07.01–F07.14  | P02                         |
-| [9.8 Lead pipeline and sales opportunities](#category-08)                 | F08.01–F08.12  | P02                         |
-| [9.9 Service catalog, estimates and quoting](#category-09)                | F09.01–F09.12  | P02/P05                     |
-| [9.10 Proposals, contracts and acceptance](#category-10)                  | F10.01–F10.15  | P02/P08                     |
-| [9.11 Onboarding, engagement handoff and renewals](#category-11)          | F11.01–F11.10  | P02/P03                     |
-| [9.12 Projects, portfolios and commercial scope](#category-12)            | F12.01–F12.13  | P03                         |
-| [9.13 Tasks, checklists and personal work](#category-13)                  | F13.01–F13.15  | P03                         |
-| [9.14 Scheduling, capacity and delivery planning](#category-14)           | F14.01–F14.12  | P03                         |
-| [9.15 Collaboration, reviews, files and knowledge links](#category-15)    | F15.01–F15.14  | P03/P08                     |
-| [9.16 Timers, work evidence and recovery](#category-16)                   | F16.01–F16.16  | P04                         |
-| [9.17 Rates, timesheets and billing evidence](#category-17)               | F17.01–F17.14  | P04/P05                     |
-| [9.18 Personal focus and sustainable work](#category-18)                  | F18.01–F18.08  | P04/P06                     |
-| [9.19 Invoice configuration, arithmetic and drafts](#category-19)         | F19.01–F19.18  | P05                         |
-| [9.20 Issuance, documents and immutable history](#category-20)            | F20.01–F20.15  | P05/P09                     |
-| [9.21 Payments, credits and collections](#category-21)                    | F21.01–F21.18  | P05/P07                     |
-| [9.22 Recurring services, retainers and subscriptions](#category-22)      | F22.01–F22.12  | P05/P07                     |
-| [9.23 Expenses and subcontractor costs](#category-23)                     | F23.01–F23.13  | P05                         |
-| [9.24 Reconciliation and accounting handoff](#category-24)                | F24.01–F24.12  | P05/P07                     |
-| [9.25 Dashboards, reports and forecasts](#category-25)                    | F25.01–F25.24  | P06                         |
-| [9.26 Knowledge, search and reusable work](#category-26)                  | F26.01–F26.14  | P06                         |
-| [9.27 Provider connections and communication](#category-27)               | F27.01–F27.15  | P07                         |
-| [9.28 Engineering and calendar connectors](#category-28)                  | F28.01–F28.14  | P07                         |
-| [9.29 Client portal and external collaboration](#category-29)             | F29.01–F29.18  | P08                         |
-| [9.30 Developer API, jobs and deterministic automation](#category-30)     | F30.01–F30.17  | P07                         |
-| [9.31 Forms, intake and service requests](#category-31)                   | F31.01–F31.10  | P02/P03/P08                 |
-| [9.32 Meeting booking and availability](#category-32)                     | F32.01–F32.10  | P02/P07/P08                 |
-| [9.33 Software delivery and ongoing maintenance](#category-33)            | F33.01–F33.12  | P03/P06/P08                 |
-| [9.34 Migration, portability and recovery tools](#category-34)            | F34.01–F34.12  | P01/P05/P09                 |
-| [9.35 SoloDesk plans and subscription administration](#category-35)       | F35.01–F35.12  | P09 commercial extension    |
-| [9.36 Support, feedback and service administration](#category-36)         | F36.01–F36.12  | P09                         |
-| [9.37 Privacy, retention and governance](#category-37)                    | F37.01–F37.12  | P01/P09                     |
-| [9.38 Infrastructure, reliability and security delivery](#category-38)    | F38.01–F38.20  | P01/P09                     |
-| [9.39 Accessibility, localization and release evidence](#category-39)     | F39.01–F39.14  | P01/P09 and every UI module |
-| [9.40 Advanced identity and organizational controls](#category-40)        | F40.01–F40.09  | P01 enterprise extension    |
+| Branch                                                                      | Feature leaves |
+| --------------------------------------------------------------------------- | -------------- |
+| [F01 — Public website, discovery and conversion](#category-01)              | 13             |
+| [F02 — Registration, identity and personal security](#category-02)          | 15             |
+| [F03 — Workspaces, members and permissions](#category-03)                   | 16             |
+| [F04 — Application shell, personal workspace and interaction](#category-04) | 13             |
+| [F05 — Browser drafts, sync and conflicts](#category-05)                    | 15             |
+| [F06 — Notifications, inbox and reminders](#category-06)                    | 10             |
+| [F07 — Clients, contacts and relationship records](#category-07)            | 14             |
+| [F08 — Lead pipeline and sales opportunities](#category-08)                 | 12             |
+| [F09 — Service catalog, estimates and quoting](#category-09)                | 12             |
+| [F10 — Proposals, contracts and acceptance](#category-10)                   | 15             |
+| [F11 — Onboarding, engagement handoff and renewals](#category-11)           | 10             |
+| [F12 — Projects, portfolios and commercial scope](#category-12)             | 13             |
+| [F13 — Tasks, checklists and personal work](#category-13)                   | 15             |
+| [F14 — Scheduling, capacity and delivery planning](#category-14)            | 12             |
+| [F15 — Collaboration, reviews, files and knowledge links](#category-15)     | 14             |
+| [F16 — Timers, work evidence and recovery](#category-16)                    | 16             |
+| [F17 — Rates, timesheets and billing evidence](#category-17)                | 14             |
+| [F18 — Personal focus and sustainable work](#category-18)                   | 8              |
+| [F19 — Invoice configuration, arithmetic and drafts](#category-19)          | 18             |
+| [F20 — Issuance, documents and immutable history](#category-20)             | 15             |
+| [F21 — Payments, credits and collections](#category-21)                     | 18             |
+| [F22 — Recurring services, retainers and subscriptions](#category-22)       | 12             |
+| [F23 — Expenses and subcontractor costs](#category-23)                      | 13             |
+| [F24 — Reconciliation and accounting handoff](#category-24)                 | 12             |
+| [F25 — Dashboards, reports and forecasts](#category-25)                     | 24             |
+| [F26 — Knowledge, search and reusable work](#category-26)                   | 14             |
+| [F27 — Provider connections and communication](#category-27)                | 15             |
+| [F28 — Engineering and calendar connectors](#category-28)                   | 14             |
+| [F29 — Client portal and external collaboration](#category-29)              | 18             |
+| [F30 — Developer API, jobs and deterministic automation](#category-30)      | 17             |
+| [F31 — Forms, intake and service requests](#category-31)                    | 10             |
+| [F32 — Meeting booking and availability](#category-32)                      | 10             |
+| [F33 — Software delivery and ongoing maintenance](#category-33)             | 12             |
+| [F34 — Migration, portability and recovery tools](#category-34)             | 12             |
+| [F35 — SoloDesk plans and subscription administration](#category-35)        | 12             |
+| [F36 — Support, feedback and service administration](#category-36)          | 12             |
+| [F37 — Privacy, retention and governance](#category-37)                     | 12             |
+| [F38 — Infrastructure, reliability and security delivery](#category-38)     | 20             |
+| [F39 — Accessibility, localization and release evidence](#category-39)      | 14             |
+| [F40 — Advanced identity and organizational controls](#category-40)         | 9              |
 
 <a id="category-01"></a>
 
 ### 9.1 Public website, discovery and conversion
 
-**Owner/package:** P01/P09. **Prerequisites for each phase:** P00.1/P00.3; existing shared public layout. **Optional extension wave:** X1.
+**Owner/package:** P01/P09. **Original branch context (specific Requires below governs feature order):** P00.1/P00.3; existing shared public layout. **Optional extension wave:** X1.
 
 **Packages:** P01.1, P09.4/P09.5. **Baseline links:** PLT-001/015, NFR-006/007/011/015/016. Marketing expansion belongs to wave X1.
 
-**Research context:** [Moxie product](https://www.withmoxie.com/product). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Check accurate copy in English/Arabic, keyboard use at 320px, and failure/consent behavior without real customer data.
 
-#### F01.01 — Public landing page
+- **F01 — Public website, discovery and conversion**
 
-- [ ] **S · Deliver:** Public product landing page with accurate capability descriptions, language/theme controls and account entry points.
+  - [ ] <a id="f01-01"></a>**F01.01 — Public landing page** · `S`
 
-**Flow and records:** Visitors read truthful capability descriptions and reach localized account entry; synthetic previews are labeled separately from real workspace content.
+    **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
-**Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+    **Deliver:** Public product landing page with accurate capability descriptions, language/theme controls and account entry points.
 
-**Accept:** A visitor can navigate both languages without seeing private records or claims that planned billing already exists.
+    **Inspected source status:** CODE: landing source exists; current release acceptance is pending.
 
-**Docs basis:** Documented parent requirement/contract: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+    **Flow and records:** Visitors read truthful capability descriptions and reach localized account entry; synthetic previews are labeled separately from real workspace content.
 
-#### F01.02 — Account entry pages
+    **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
 
-- [ ] **S · Deliver:** Responsive sign-in/sign-up entry pages, authentication-error states and clear return navigation.
+    **Accept:** A visitor can navigate both languages without seeing private records or claims that planned billing already exists.
 
-**Flow and records:** Account entry preserves the allowed destination and displays provider/callback failures with an actionable recovery path.
+    **Docs basis:** Documented parent requirement/contract: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+  - [ ] <a id="f01-02"></a>**F01.02 — Account entry pages** · `S`
 
-**Accept:** A failed login leaves the user at a usable entry screen without a false empty account.
+    **Requires:** [F02.01](#f02-01)
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Deliver:** Responsive sign-in/sign-up entry pages, authentication-error states and clear return navigation.
 
-#### F01.03 — Feature pages
+    **Inspected source status:** CODE/GATED: entry pages and loading states exist; verify the auth capability gates.
 
-- [ ] **E · Deliver:** Feature detail pages for CRM, projects, time, billing, reporting and the client portal.
+    **Flow and records:** Account entry preserves the allowed destination and displays provider/callback failures with an actionable recovery path.
 
-**Proposed flow and records:** Feature pages may explain only the current documented capability and its implementation status; publication of each page remains an extension.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
+    **Accept:** A failed login leaves the user at a usable entry screen without a false empty account.
 
-**Accept:** A planned connector is described as planned and links to the relevant workflow rather than implying activation.
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
+  - [ ] <a id="f01-03"></a>**F01.03 — Feature pages** · `E`
 
-#### F01.04 — Persona pages
+    **Requires:** [F01.01](#f01-01)
 
-- [ ] **E · Deliver:** Persona/use-case pages for independent developers, consultants and boutique teams.
+    **Deliver:** Feature detail pages for CRM, projects, time, billing, reporting and the client portal.
 
-**Proposed flow and records:** Persona content must retain the same freelancer/small-team scope and required cloud account; no alternative stack or unapproved product edition is introduced.
+    **Proposed flow and records:** Feature pages may explain only the current documented capability and its implementation status; publication of each page remains an extension.
 
-**Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
+    **Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
 
-**Accept:** Each persona page retains equivalent Arabic navigation and accurate account requirements.
+    **Accept:** A planned connector is described as planned and links to the relevant workflow rather than implying activation.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
 
-#### F01.05 — Synthetic product tour
+  - [ ] <a id="f01-04"></a>**F01.04 — Persona pages** · `E`
 
-- [ ] **E · Deliver:** Product tour and synthetic sample workspace that never exposes a real customer's data.
+    **Requires:** [F01.01](#f01-01)
 
-**Proposed flow and records:** An isolated demo presents invented records as examples and keeps its state separate from signed-in customer data.
+    **Deliver:** Persona/use-case pages for independent developers, consultants and boutique teams.
 
-**Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+    **Proposed flow and records:** Persona content must retain the same freelancer/small-team scope and required cloud account; no alternative stack or unapproved product edition is introduced.
 
-**Accept:** Moving from demo to account cannot carry sample invoices into the customer's workspace.
+    **Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+    **Accept:** Each persona page retains equivalent Arabic navigation and accurate account requirements.
 
-#### F01.06 — Pricing comparison
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
 
-- [ ] **E · Deliver:** Pricing/plan comparison, monthly/annual presentation and clearly defined limits after Q-12.
+  - [ ] <a id="f01-05"></a>**F01.05 — Synthetic product tour** · `E`
 
-**Proposed flow and records:** Plan comparison awaits Q-12 definitions for prices, seats, limits and cancellation; the roadmap supplies no numeric commercial defaults.
+    **Requires:** [F01.01](#f01-01)
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Deliver:** Product tour and synthetic sample workspace that never exposes a real customer's data.
 
-**Accept:** Unselected prices or quotas are never rendered as confirmed offers.
+    **Inspected source status:** PARTIAL: synthetic landing tour exists; a standalone interactive sample workspace does not.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Proposed flow and records:** An isolated demo presents invented records as examples and keeps its state separate from signed-in customer data.
 
-#### F01.07 — Help and getting-started content
+    **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
 
-- [ ] **E · Deliver:** FAQ, getting-started guides, documentation search and contact/support entry points.
+    **Accept:** Moving from demo to account cannot carry sample invoices into the customer's workspace.
 
-**Proposed flow and records:** Help explains sessions, invitations, timer recovery, exact billing and exports with consistent English/Arabic terminology.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+  - [ ] <a id="f01-06"></a>**F01.06 — Pricing comparison** · `E`
 
-**Accept:** Guidance distinguishes browser save, server acceptance and recovery-required states.
+    **Requires:** [F35.01](#f35-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Deliver:** Pricing/plan comparison, monthly/annual presentation and clearly defined limits after Q-12.
 
-#### F01.08 — Public changelog
+    **Proposed flow and records:** Plan comparison awaits Q-12 definitions for prices, seats, limits and cancellation; the roadmap supplies no numeric commercial defaults.
 
-- [ ] **E · Deliver:** Public changelog, release notes and service-status link with real operational ownership.
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
 
-**Proposed flow and records:** Release information separates documented plans from features verified in a named build and links service incidents to operational ownership.
+    **Accept:** Unselected prices or quotas are never rendered as confirmed offers.
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
-**Accept:** A draft release note cannot report an unchecked phase as shipped.
+  - [ ] <a id="f01-07"></a>**F01.07 — Help and getting-started content** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Requires:** [F01.01](#f01-01)
 
-#### F01.09 — Customer stories
+    **Deliver:** FAQ, getting-started guides, documentation search and contact/support entry points.
 
-- [ ] **E · Deliver:** Customer stories/testimonials published only with the necessary consent and permissions.
+    **Inspected source status:** PARTIAL: landing FAQ exists; complete getting-started/help/search is pending.
 
-**Proposed flow and records:** Customer evidence requires permission to publish and must omit protected client/business details; testimonial collection is not a defined baseline workflow.
+    **Proposed flow and records:** Help explains sessions, invitations, timer recovery, exact billing and exports with consistent English/Arabic terminology.
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Accept:** Revoking publication permission prevents new publication without erasing required private audit history.
+    **Accept:** Guidance distinguishes browser save, server acceptance and recovery-required states.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-#### F01.10 — Public search metadata
+  - [ ] <a id="f01-08"></a>**F01.08 — Public changelog** · `E`
 
-- [ ] **E · Deliver:** Share metadata, canonical URLs, sitemap, robots policy and localized page metadata for public content; exclude private routes from discovery.
+    **Requires:** [F39.11](#f39-11)
 
-**Proposed flow and records:** Public metadata describes only intentionally public content; authenticated pages, exported files and private record identifiers are excluded from public discovery.
+    **Deliver:** Public changelog, release notes and service-status link with real operational ownership.
 
-**Documented constraints:** Use allowlisted filters and stable bounded cursors; scope counts/files/exports and expose revision/as-of rather than mixing pending and committed totals.
+    **Proposed flow and records:** Release information separates documented plans from features verified in a named build and links service incidents to operational ownership.
 
-**Accept:** A public sitemap or page preview contains no tenant-specific title or URL.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
+    **Accept:** A draft release note cannot report an unchecked phase as shipped.
 
-#### F01.11 — Contact and waitlist forms
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-- [ ] **E · Deliver:** Accessible contact/demo/waitlist forms with abuse controls and explicit communication consent.
+  - [ ] <a id="f01-09"></a>**F01.09 — Customer stories** · `E`
 
-**Proposed flow and records:** Submissions preserve valid input on failure and separate an inquiry from any permission to send unrelated communications.
+    **Requires:** [F37.02](#f37-02)
 
-**Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+    **Deliver:** Customer stories/testimonials published only with the necessary consent and permissions.
 
-**Accept:** Invalid or failed submission shows a recovery action without falsely recording successful delivery.
+    **Proposed flow and records:** Customer evidence requires permission to publish and must omit protected client/business details; testimonial collection is not a defined baseline workflow.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
 
-#### F01.12 — Legal information pages
+    **Accept:** Revoking publication permission prevents new publication without erasing required private audit history.
 
-- [ ] **E · Deliver:** Editable privacy/terms/acceptable-use and data-processing information reviewed for the chosen service and markets.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-**Proposed flow and records:** Legal pages reflect reviewed operating regions, retention, subprocessors and commercial policies; missing legal decisions stay visible rather than receiving generated terms.
+  - [ ] <a id="f01-10"></a>**F01.10 — Public search metadata** · `E`
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Requires:** [F01.01](#f01-01)
 
-**Accept:** Published claims can be traced to an approved policy version and named market.
+    **Deliver:** Share metadata, canonical URLs, sitemap, robots policy and localized page metadata for public content; exclude private routes from discovery.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Inspected source status:** PARTIAL: route metadata exists; full public discovery/canonical/sitemap audit is pending.
 
-#### F01.13 — Consent-based acquisition analytics
+    **Proposed flow and records:** Public metadata describes only intentionally public content; authenticated pages, exported files and private record identifiers are excluded from public discovery.
 
-- [ ] **E · Deliver:** Opt-in acquisition analytics and campaign attribution with declared retention; avoid private record content.
+    **Documented constraints:** Use allowlisted filters and stable bounded cursors; scope counts/files/exports and expose revision/as-of rather than mixing pending and committed totals.
 
-**Proposed flow and records:** Optional acquisition measurements use the documented opt-in privacy model and exclude customer records, credential-bearing URLs and raw form content.
+    **Accept:** A public sitemap or page preview contains no tenant-specific title or URL.
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
 
-**Accept:** Declining optional analytics leaves account entry and public navigation usable.
+  - [ ] <a id="f01-11"></a>**F01.11 — Contact and waitlist forms** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Requires:** [F38.06](#f38-06)
+
+    **Deliver:** Accessible contact/demo/waitlist forms with abuse controls and explicit communication consent.
+
+    **Inspected source status:** PARTIAL/MOCK: contact handler exists behind a server switch; footer newsletter simulates success and does not subscribe anyone.
+
+    **Proposed flow and records:** Submissions preserve valid input on failure and separate an inquiry from any permission to send unrelated communications.
+
+    **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+
+    **Accept:** Invalid or failed submission shows a recovery action without falsely recording successful delivery.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+
+  - [ ] <a id="f01-12"></a>**F01.12 — Legal information pages** · `E`
+
+    **Requires:** [F37.01](#f37-01)
+
+    **Deliver:** Editable privacy/terms/acceptable-use and data-processing information reviewed for the chosen service and markets.
+
+    **Proposed flow and records:** Legal pages reflect reviewed operating regions, retention, subprocessors and commercial policies; missing legal decisions stay visible rather than receiving generated terms.
+
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+
+    **Accept:** Published claims can be traced to an approved policy version and named market.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+
+  - [ ] <a id="f01-13"></a>**F01.13 — Consent-based acquisition analytics** · `E`
+
+    **Requires:** [F37.02](#f37-02)
+
+    **Deliver:** Opt-in acquisition analytics and campaign attribution with declared retention; avoid private record content.
+
+    **Proposed flow and records:** Optional acquisition measurements use the documented opt-in privacy model and exclude customer records, credential-bearing URLs and raw form content.
+
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+
+    **Accept:** Declining optional analytics leaves account entry and public navigation usable.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
 <a id="category-02"></a>
 
 ### 9.2 Registration, identity and personal security
 
-**Owner/package:** P01. **Prerequisites for each phase:** P00.2 and the existing managed Better Auth integration; Q-08. **Optional extension wave:** X5 for enterprise identity; basic avatar/profile/security-alert extensions belong to X1/X2.
+**Owner/package:** P01. **Original branch context (specific Requires below governs feature order):** P00.2 and the existing managed Better Auth integration; Q-08. **Optional extension wave:** X5 for enterprise identity; basic avatar/profile/security-alert extensions belong to X1/X2.
 
 **Package:** P01.2. **Baseline links:** PLT-001/002/006, Q-08. Enterprise identity extensions belong to X5.
 
 **Required group acceptance:** Exercise valid, expired, replayed and wrong-account proof; no protected state or credential leaks on failure.
 
-#### F02.01 — Email and social sign-in
+- **F02 — Registration, identity and personal security**
 
-- [ ] **S · Deliver:** Email registration/sign-in under the approved verification policy, plus approved Google/GitHub social sign-in.
+  - [ ] <a id="f02-01"></a>**F02.01 — Email and social sign-in** · `S`
 
-**Flow and records:** Use the selected managed Better Auth identity flow; email/password availability and required verification follow Q-08 rather than assuming another auth system.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07)
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Deliver:** Email registration/sign-in under the approved verification policy, plus approved Google/GitHub social sign-in.
 
-**Accept:** A successful approved sign-in yields the intended account; an unverified disallowed identity cannot enter protected services.
+    **Inspected source status:** CODE/GATED: Google/GitHub and email SDK paths exist; isolated hosted acceptance and approved policy remain open.
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Flow and records:** Use the selected managed Better Auth identity flow; email/password availability and required verification follow Q-08 rather than assuming another auth system.
 
-#### F02.02 — Identity verification
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-- [ ] **S · Deliver:** Verification resend, expiration, already-used challenge and wrong-account recovery states.
+    **Accept:** A successful approved sign-in yields the intended account; an unverified disallowed identity cannot enter protected services.
 
-**Flow and records:** Show resend, expiry and consumed-proof outcomes without turning a public verification response into an account-existence disclosure.
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+  - [ ] <a id="f02-02"></a>**F02.02 — Identity verification** · `S`
 
-**Accept:** Wrong-account, expired and reused verification proof all fail without changing the active identity.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.01](#f02-01)
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Deliver:** Verification resend, expiration, already-used challenge and wrong-account recovery states.
 
-#### F02.03 — Password recovery
+    **Inspected source status:** CODE/GATED: email challenge UI and verified-session checks exist; real managed verification/recovery evidence is incomplete.
 
-- [ ] **S · Deliver:** Password reset/recovery with expiring single-use proof and anti-enumeration responses where password sign-in is enabled.
+    **Flow and records:** Show resend, expiry and consumed-proof outcomes without turning a public verification response into an account-existence disclosure.
 
-**Flow and records:** Recovery uses purpose-bound expiring proof only where password access is enabled; retain an understandable route back to normal account entry.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Accept:** Wrong-account, expired and reused verification proof all fail without changing the active identity.
 
-**Accept:** A consumed reset cannot be reused and reset responses disclose no account membership.
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+  - [ ] <a id="f02-03"></a>**F02.03 — Password recovery** · `S`
 
-#### F02.04 — OAuth callbacks and failure recovery
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.01](#f02-01)
 
-- [ ] **S · Deliver:** Complete OAuth cancellation, provider failure, callback, trusted-origin and safe-redirect behavior.
+    **Deliver:** Password reset/recovery with expiring single-use proof and anti-enumeration responses where password sign-in is enabled.
 
-**Flow and records:** Handle provider cancellation, error and callback return using validated origins/destinations; no business integration is enabled by social login.
+    **Inspected source status:** CODE/GATED: request/reset forms exist; real reset, social-only account invariants and session revocation remain gated.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Flow and records:** Recovery uses purpose-bound expiring proof only where password access is enabled; retain an understandable route back to normal account entry.
 
-**Accept:** A hostile return URL is rejected and provider cancellation does not strand the user.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Accept:** A consumed reset cannot be reused and reset responses disclose no account membership.
 
-#### F02.05 — Multi-factor authentication
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-- [ ] **S · Deliver:** Approved MFA enrollment/challenge/recovery policy, with tested managed-auth support before activation.
+  - [ ] <a id="f02-04"></a>**F02.04 — OAuth callbacks and failure recovery** · `S`
 
-**Flow and records:** Enrollment, challenge and recovery use only supported reviewed factors; mandatory-factor and recovery requirements remain Q-08.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.01](#f02-01)
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Deliver:** Complete OAuth cancellation, provider failure, callback, trusted-origin and safe-redirect behavior.
 
-**Accept:** Recovery cannot bypass the selected mandatory-factor policy or reactivate a revoked session.
+    **Inspected source status:** CODE/GATED: callback/return handling exists; revalidate provider returns and hostile destinations.
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Flow and records:** Handle provider cancellation, error and callback return using validated origins/destinations; no business integration is enabled by social login.
 
-#### F02.06 — Session management
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-- [ ] **S · Deliver:** Session/device list, current-session identification, individual revoke and revoke-other-sessions controls where supported.
+    **Accept:** A hostile return URL is rejected and provider cancellation does not strand the user.
 
-**Flow and records:** Display the current session distinctly and expose supported per-session/other-session revocation with safe device labels.
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+  - [ ] <a id="f02-05"></a>**F02.05 — Multi-factor authentication** · `S`
 
-**Accept:** A revoked session cannot perform a new protected mutation from an already-open tab.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.02](#f02-02)
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Deliver:** Approved MFA enrollment/challenge/recovery policy, with tested managed-auth support before activation.
 
-#### F02.07 — Sensitive-action reauthentication
+    **Flow and records:** Enrollment, challenge and recovery use only supported reviewed factors; mandatory-factor and recovery requirements remain Q-08.
 
-- [ ] **S · Deliver:** Reauthentication for protected credential/ownership/export/closure actions.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Flow and records:** Before protected credential, transfer, closure or sensitive-export actions, request the reauthentication required by the approved policy.
+    **Accept:** Recovery cannot bypass the selected mandatory-factor policy or reactivate a revoked session.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Accept:** A stale proof cannot authorize a different sensitive action or account.
+  - [ ] <a id="f02-06"></a>**F02.06 — Session management** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.01](#f02-01)
 
-#### F02.08 — Sign-out and account switching
+    **Deliver:** Session/device list, current-session identification, individual revoke and revoke-other-sessions controls where supported.
 
-- [ ] **S · Deliver:** Safe sign-out, expired-session recovery and account switching that clear protected views/subscriptions.
+    **Inspected source status:** PARTIAL: server session checks exist; complete member-facing session list/revoke management is pending.
 
-**Flow and records:** Sign-out/account switching disposes private subscriptions/views and follows the explicit draft-key retention policy without changing draft ownership.
+    **Flow and records:** Display the current session distinctly and expose supported per-session/other-session revocation with safe device labels.
 
-**Documented constraints:** Session expiry and pending draft state can coexist; protected actions require current server authority and honest recovery states.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Accept:** Switching identities never unlocks the previous identity's protected draft or cached record.
+    **Accept:** A revoked session cannot perform a new protected mutation from an already-open tab.
 
-**Docs basis:** Documented parent requirement/contract: [Browser connectivity and state contract](docs/specs/platform-and-workspaces.md#browser-connectivity-and-state-contract).
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-#### F02.09 — Personal profile and preferences
+  - [ ] <a id="f02-07"></a>**F02.07 — Sensitive-action reauthentication** · `S`
 
-- [ ] **S · Deliver:** Profile/name and personal language/timezone/notification preferences with validated updates.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.06](#f02-06)
 
-**Flow and records:** Keep personal name, locale, timezone and notice preferences separate from workspace defaults and issued-document language.
+    **Deliver:** Reauthentication for protected credential/ownership/export/closure actions.
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+    **Flow and records:** Before protected credential, transfer, closure or sensitive-export actions, request the reauthentication required by the approved policy.
 
-**Accept:** Changing a personal language cannot reprice an invoice or alter a teammate's preferences.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Accept:** A stale proof cannot authorize a different sensitive action or account.
 
-#### F02.10 — Authentication abuse controls
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-- [ ] **S · Deliver:** Bounded login/reset/invite attempts, security-event audit and actionable account-lock/recovery states.
+  - [ ] <a id="f02-08"></a>**F02.08 — Sign-out and account switching** · `S`
 
-**Flow and records:** Bound public auth/invite/recovery attempts and record redacted security events; thresholds and recovery policy need explicit selection.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.06](#f02-06)
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Deliver:** Safe sign-out, expired-session recovery and account switching that clear protected views/subscriptions.
 
-**Accept:** Repeated attempts are bounded without exposing whether a target belongs to a workspace.
+    **Inspected source status:** PARTIAL: sign-out exists; full account/workspace switching and future draft isolation remain pending.
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Flow and records:** Sign-out/account switching disposes private subscriptions/views and follows the explicit draft-key retention policy without changing draft ownership.
 
-#### F02.11 — Profile avatar
+    **Documented constraints:** Session expiry and pending draft state can coexist; protected actions require current server authority and honest recovery states.
 
-- [ ] **E · Deliver:** Avatar upload/crop/removal using the private-file rules and controlled public projection if desired.
+    **Accept:** Switching identities never unlocks the previous identity's protected draft or cached record.
 
-**Proposed flow and records:** If selected, avatar handling reuses verified file upload/reference rules; public exposure needs an explicit allowed projection rather than an unrestricted object URL.
+    **Docs basis:** Documented parent requirement/contract: [Browser connectivity and state contract](docs/specs/platform-and-workspaces.md#browser-connectivity-and-state-contract).
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+  - [ ] <a id="f02-09"></a>**F02.09 — Personal profile and preferences** · `S`
 
-**Accept:** A failed upload leaves the previous profile reference intact and unsafe bytes cannot become a public avatar.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.01](#f02-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Deliver:** Profile/name and personal language/timezone/notification preferences with validated updates.
 
-#### F02.12 — Verified identity changes
+    **Inspected source status:** PARTIAL: own live name/profile and presentation preferences exist; wider personal settings remain pending.
 
-- [ ] **E · Deliver:** Verified email changes and social-account linking/unlinking without duplicate-account takeover or lockout.
+    **Flow and records:** Keep personal name, locale, timezone and notice preferences separate from workspace defaults and issued-document language.
 
-**Proposed flow and records:** Identity-change and account-linking behavior needs a reviewed managed-auth contract; matching a contact email never proves account ownership.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Accept:** Changing a personal language cannot reprice an invoice or alter a teammate's preferences.
 
-**Accept:** Linking from the wrong verified account cannot transfer existing sessions or business ownership.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+  - [ ] <a id="f02-10"></a>**F02.10 — Authentication abuse controls** · `S`
 
-#### F02.13 — Passkey and passwordless sign-in
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F38.06](#f38-06)
 
-- [ ] **E · Deliver:** Passkey/passwordless login and hardware-backed factor options if supported by the selected managed integration.
+    **Deliver:** Bounded login/reset/invite attempts, security-event audit and actionable account-lock/recovery states.
 
-**Proposed flow and records:** Passkey/passwordless support is conditional on the selected managed integration and Q-08 recovery policy; no new factor guarantee is inferred.
+    **Inspected source status:** PARTIAL/GATED: local in-flight/cooldown handling exists; actual hosted limits and cross-instance abuse resistance need evidence.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Flow and records:** Bound public auth/invite/recovery attempts and record redacted security events; thresholds and recovery policy need explicit selection.
 
-**Accept:** An unsupported factor remains unavailable and never removes the last valid recovery route.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Accept:** Repeated attempts are bounded without exposing whether a target belongs to a workspace.
 
-#### F02.14 — Security-event alerts
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-- [ ] **E · Deliver:** New-session/security-change alerts, personal security history and session risk review without location-tracking promises.
+  - [ ] <a id="f02-11"></a>**F02.11 — Profile avatar** · `E`
 
-**Proposed flow and records:** Security notices use minimal metadata, scoped recipients and the documented exception policy for required alerts; avoid location or risk claims without evidence.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.09](#f02-09), [F38.05](#f38-05)
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Deliver:** Avatar upload/crop/removal using the private-file rules and controlled public projection if desired.
 
-**Accept:** A notice payload contains neither session secrets nor private tenant content.
+    **Proposed flow and records:** If selected, avatar handling reuses verified file upload/reference rules; public exposure needs an explicit allowed projection rather than an unrestricted object URL.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-#### F02.15 — Enterprise identity
+    **Accept:** A failed upload leaves the previous profile reference intact and unsafe bytes cannot become a public avatar.
 
-- [ ] **E · Deliver:** Business SSO/domain verification and managed user provisioning after enterprise requirements and compatibility review.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Proposed flow and records:** Treat enterprise identity as a compatibility/policy assessment first; F40 separates domain, SSO and provisioning candidates that have no approved implementation contract.
+  - [ ] <a id="f02-12"></a>**F02.12 — Verified identity changes** · `E`
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.02](#f02-02), [F02.07](#f02-07)
 
-**Accept:** No enterprise login path is activated solely because its name appears in this roadmap.
+    **Deliver:** Verified email changes and social-account linking/unlinking without duplicate-account takeover or lockout.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Proposed flow and records:** Identity-change and account-linking behavior needs a reviewed managed-auth contract; matching a contact email never proves account ownership.
+
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+
+    **Accept:** Linking from the wrong verified account cannot transfer existing sessions or business ownership.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+
+  - [ ] <a id="f02-13"></a>**F02.13 — Passkey and passwordless sign-in** · `E`
+
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.02](#f02-02), [F02.07](#f02-07)
+
+    **Deliver:** Passkey/passwordless login and hardware-backed factor options if supported by the selected managed integration.
+
+    **Proposed flow and records:** Passkey/passwordless support is conditional on the selected managed integration and Q-08 recovery policy; no new factor guarantee is inferred.
+
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+
+    **Accept:** An unsupported factor remains unavailable and never removes the last valid recovery route.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+
+  - [ ] <a id="f02-14"></a>**F02.14 — Security-event alerts** · `E`
+
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.06](#f02-06), [F06.07](#f06-07)
+
+    **Deliver:** New-session/security-change alerts, personal security history and session risk review without location-tracking promises.
+
+    **Proposed flow and records:** Security notices use minimal metadata, scoped recipients and the documented exception policy for required alerts; avoid location or risk claims without evidence.
+
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+
+    **Accept:** A notice payload contains neither session secrets nor private tenant content.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+
+  - [ ] <a id="f02-15"></a>**F02.15 — Enterprise identity** · `E`
+
+    **Requires:** [F38.01](#f38-01), [F38.07](#f38-07), [F40.02](#f40-02)
+
+    **Deliver:** Business SSO/domain verification and managed user provisioning after enterprise requirements and compatibility review.
+
+    **Proposed flow and records:** Treat enterprise identity as a compatibility/policy assessment first; F40 separates domain, SSO and provisioning candidates that have no approved implementation contract.
+
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+
+    **Accept:** No enterprise login path is activated solely because its name appears in this roadmap.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
 <a id="category-03"></a>
 
 ### 9.3 Workspaces, members and permissions
 
-**Owner/package:** P01. **Prerequisites for each phase:** F02.01 and P01 server-only data foundation; Q-05/Q-13. **Optional extension wave:** X5.
+**Owner/package:** P01. **Original branch context (specific Requires below governs feature order):** F02.01 and P01 server-only data foundation; Q-05/Q-13. **Optional extension wave:** X5.
 
 **Packages:** P01.2/P01.5/P01.6. **Baseline links:** PLT-003–006/011/014/017/018.
 
 **Required group acceptance:** Use two workspaces and a revoked member; deny direct calls and preserve the final owner and historical references.
 
-#### F03.01 — Workspace creation
+- **F03 — Workspaces, members and permissions**
 
-- [ ] **S · Deliver:** Create personal/team workspaces with stable IDs, name, timezone, locales, currency and legal-profile readiness.
+  - [ ] <a id="f03-01"></a>**F03.01 — Workspace creation** · `S`
 
-**Flow and records:** Create a workspace with immutable identity and scoped legal/presentation defaults; account identity remains owned by Better Auth.
+    **Requires:** [F38.04](#f38-04), [F02.01](#f02-01), [F38.06](#f38-06)
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+    **Deliver:** Create personal/team workspaces with stable IDs, name, timezone, locales, currency and legal-profile readiness.
 
-**Accept:** A newly created workspace cannot reference another workspace's client or membership.
+    **Flow and records:** Create a workspace with immutable identity and scoped legal/presentation defaults; account identity remains owned by Better Auth.
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-#### F03.02 — Workspace switching
+    **Accept:** A newly created workspace cannot reference another workspace's client or membership.
 
-- [ ] **S · Deliver:** Switch among authorized workspaces with visible context on consequential actions.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Flow and records:** Show the active workspace on consequential screens and refresh its current grants before loading records or applying actions.
+  - [ ] <a id="f03-02"></a>**F03.02 — Workspace switching** · `S`
 
-**Documented constraints:** Session expiry and pending draft state can coexist; protected actions require current server authority and honest recovery states.
+    **Requires:** [F38.04](#f38-04), [F03.01](#f03-01), [F03.06](#f03-06)
 
-**Accept:** Switching workspace clears prior subscriptions and cannot reuse stale cost projections.
+    **Deliver:** Switch among authorized workspaces with visible context on consequential actions.
 
-**Docs basis:** Documented parent requirement/contract: [Browser connectivity and state contract](docs/specs/platform-and-workspaces.md#browser-connectivity-and-state-contract).
+    **Flow and records:** Show the active workspace on consequential screens and refresh its current grants before loading records or applying actions.
 
-#### F03.03 — Recipient-bound invitations
+    **Documented constraints:** Session expiry and pending draft state can coexist; protected actions require current server authority and honest recovery states.
 
-- [ ] **S · Deliver:** Invite a named recipient with role, resource scope and expiry; accept only with the intended identity.
+    **Accept:** Switching workspace clears prior subscriptions and cannot reuse stale cost projections.
 
-**Flow and records:** Bind each invitation to its intended recipient, scope, expiry and one-time acceptance; a client contact is never implicitly a member.
+    **Docs basis:** Documented parent requirement/contract: [Browser connectivity and state contract](docs/specs/platform-and-workspaces.md#browser-connectivity-and-state-contract).
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+  - [ ] <a id="f03-03"></a>**F03.03 — Recipient-bound invitations** · `S`
 
-**Accept:** A different account or a second acceptance cannot acquire the invitation's grants.
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06), [F02.02](#f02-02)
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Deliver:** Invite a named recipient with role, resource scope and expiry; accept only with the intended identity.
 
-#### F03.04 — Invitation management
+    **Flow and records:** Bind each invitation to its intended recipient, scope, expiry and one-time acceptance; a client contact is never implicitly a member.
 
-- [ ] **S · Deliver:** Pending-invite list, resend with old-token invalidation, revoke and already-accepted handling.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Flow and records:** List pending invitations and support reviewed resend/revoke behavior; replacement proof invalidates the old invitation token.
+    **Accept:** A different account or a second acceptance cannot acquire the invitation's grants.
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Accept:** A resent or revoked token cannot later create membership.
+  - [ ] <a id="f03-04"></a>**F03.04 — Invitation management** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Requires:** [F38.04](#f38-04), [F03.03](#f03-03)
 
-#### F03.05 — Role templates
+    **Deliver:** Pending-invite list, resend with old-token invalidation, revoke and already-accepted handling.
 
-- [ ] **S · Deliver:** Owner/Admin/Manager/Contributor/Finance/Viewer templates refined by approved action/resource grants.
+    **Flow and records:** List pending invitations and support reviewed resend/revoke behavior; replacement proof invalidates the old invitation token.
 
-**Flow and records:** Translate Owner/Admin/Manager/Contributor/Finance/Viewer templates into explicit capabilities with the final matrix approved under Q-05.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Accept:** A resent or revoked token cannot later create membership.
 
-**Accept:** A Finance actor can issue only when granted and cannot promote themselves through a role payload.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+  - [ ] <a id="f03-05"></a>**F03.05 — Role templates** · `S`
 
-#### F03.06 — Resource and field permissions
+    **Requires:** [F38.04](#f38-04), [F03.01](#f03-01)
 
-- [ ] **S · Deliver:** Project/client scope and separate permissions for costs, finance, exports, integrations and policy changes.
+    **Deliver:** Owner/Admin/Manager/Contributor/Finance/Viewer templates refined by approved action/resource grants.
 
-**Flow and records:** Project/client scope and field-sensitive permissions govern costs, exports, finance, integrations and policy changes independently.
+    **Flow and records:** Translate Owner/Admin/Manager/Contributor/Finance/Viewer templates into explicit capabilities with the final matrix approved under Q-05.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-**Accept:** A Contributor cannot infer hidden costs from totals, snippets, CSV or attachment access.
+    **Accept:** A Finance actor can issue only when granted and cannot promote themselves through a role payload.
 
-**Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+    **Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
 
-#### F03.07 — Membership revocation
+  - [ ] <a id="f03-06"></a>**F03.06 — Resource and field permissions** · `S`
 
-- [ ] **S · Deliver:** Member grant changes/removal with immediate current-authority checks and affected-work review.
+    **Requires:** [F38.04](#f38-04), [F03.05](#f03-05)
 
-**Flow and records:** Review affected work on member removal and invalidate authorized projections/subscriptions; record the permission change as an audited event.
+    **Deliver:** Project/client scope and separate permissions for costs, finance, exports, integrations and policy changes.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Flow and records:** Project/client scope and field-sensitive permissions govern costs, exports, finance, integrations and policy changes independently.
 
-**Accept:** A revoked editor's pending write fails without deleting previously accepted records.
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-**Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+    **Accept:** A Contributor cannot infer hidden costs from totals, snippets, CSV or attachment access.
 
-#### F03.08 — Workspace ownership transfer
+    **Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
 
-- [ ] **S · Deliver:** Ownership transfer, leave-workspace flow and transaction-safe protection of the final owner.
+  - [ ] <a id="f03-07"></a>**F03.07 — Membership revocation** · `S`
 
-**Flow and records:** Transfer ownership online with required reauthentication and prevent the final owner from being removed through concurrent operations.
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06), [F02.06](#f02-06)
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Deliver:** Member grant changes/removal with immediate current-authority checks and affected-work review.
 
-**Accept:** Two simultaneous owner-removal attempts cannot leave an ownerless workspace.
+    **Flow and records:** Review affected work on member removal and invalidate authorized projections/subscriptions; record the permission change as an audited event.
 
-**Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-#### F03.09 — Permission audit
+    **Accept:** A revoked editor's pending write fails without deleting previously accepted records.
 
-- [ ] **S · Deliver:** Membership/grant audit with permitted change summaries and scoped audit export.
+    **Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
 
-**Flow and records:** Expose actor, target, operation, revision and redacted change summary only to permitted audit readers/exporters.
+  - [ ] <a id="f03-08"></a>**F03.08 — Workspace ownership transfer** · `S`
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06), [F02.07](#f02-07)
 
-**Accept:** An ordinary member cannot edit the grant-change record or export restricted audit fields.
+    **Deliver:** Ownership transfer, leave-workspace flow and transaction-safe protection of the final owner.
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Flow and records:** Transfer ownership online with required reauthentication and prevent the final owner from being removed through concurrent operations.
 
-#### F03.10 — Capability configuration
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-- [ ] **S · Deliver:** Feature/settings dependency validation; disable new actions while retaining existing obligations/history.
+    **Accept:** Two simultaneous owner-removal attempts cannot leave an ownerless workspace.
 
-**Flow and records:** Validate enabled capabilities and their dependencies; disabling future creation must preserve pending obligations, history and export access.
+    **Docs basis:** Documented parent requirement/contract: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+  - [ ] <a id="f03-09"></a>**F03.09 — Permission audit** · `S`
 
-**Accept:** Turning off recurrence prevents new allowed generation without hiding old issued invoices.
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06)
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Deliver:** Membership/grant audit with permitted change summaries and scoped audit export.
 
-#### F03.11 — Workspace and account closure
+    **Flow and records:** Expose actor, target, operation, revision and redacted change summary only to permitted audit readers/exporters.
 
-- [ ] **S · Deliver:** Account/workspace closure preview, owner transfer, export path, grace and retention/legal-hold behavior.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Flow and records:** Preview ownership, obligations, export, legal hold, grace and retention before closure; do not equate subscription cancellation with deletion.
+    **Accept:** An ordinary member cannot edit the grant-change record or export restricted audit fields.
 
-**Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Accept:** Closing a user cannot silently erase another owner's workspace or retained invoices.
+  - [ ] <a id="f03-10"></a>**F03.10 — Capability configuration** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06)
 
-#### F03.12 — Member groups
+    **Deliver:** Feature/settings dependency validation; disable new actions while retaining existing obligations/history.
 
-- [ ] **E · Deliver:** Member groups/project teams for assigning reviewed grant bundles; groups never bypass per-resource policy.
+    **Flow and records:** Validate enabled capabilities and their dependencies; disabling future creation must preserve pending obligations, history and export access.
 
-**Proposed flow and records:** Group-based grant bundles need a separate approved specification; their members still pass current per-resource/action authorization.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Accept:** Turning off recurrence prevents new allowed generation without hiding old issued invoices.
 
-**Accept:** A group assignment cannot grant a capability the acting administrator cannot delegate.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+  - [ ] <a id="f03-11"></a>**F03.11 — Workspace and account closure** · `S`
 
-#### F03.13 — Workspace branding
+    **Requires:** [F38.04](#f38-04), [F03.08](#f03-08), [F02.07](#f02-07), [F37.03](#f37-03)
 
-- [ ] **E · Deliver:** Workspace branding/profile images, invitation branding and reusable onboarding presets.
+    **Deliver:** Account/workspace closure preview, owner transfer, export path, grace and retention/legal-hold behavior.
 
-**Proposed flow and records:** Branding candidates must reuse current semantic tokens/components and approved file projections; branding cannot change legal seller snapshots.
+    **Flow and records:** Preview ownership, obligations, export, legal hold, grace and retention before closure; do not equate subscription cancellation with deletion.
 
-**Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
+    **Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
 
-**Accept:** An invitation label or image cannot inject active content or replace required workspace context.
+    **Accept:** Closing a user cannot silently erase another owner's workspace or retained invoices.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Components](DESIGN.md#components).
+    **Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
 
-#### F03.14 — Temporary contractor access
+  - [ ] <a id="f03-12"></a>**F03.12 — Member groups** · `E`
 
-- [ ] **E · Deliver:** Temporary contractor access with explicit expiry, review reminders and reassignment/offboarding checklist.
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06)
 
-**Proposed flow and records:** Temporary access needs explicitly approved expiry and reassignment rules rather than a guessed contractor duration.
+    **Deliver:** Member groups/project teams for assigning reviewed grant bundles; groups never bypass per-resource policy.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Proposed flow and records:** Group-based grant bundles need a separate approved specification; their members still pass current per-resource/action authorization.
 
-**Accept:** Once the selected expiry is reached, direct protected requests fail and historic time retains its actor.
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+    **Accept:** A group assignment cannot grant a capability the acting administrator cannot delegate.
 
-#### F03.15 — Permission simulator
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
 
-- [ ] **E · Deliver:** Permission simulator showing the permitted actions of a selected role without impersonating its identity.
+  - [ ] <a id="f03-13"></a>**F03.13 — Workspace branding** · `E`
 
-**Proposed flow and records:** A permission preview is a proposed explanatory view, not identity impersonation or a way to execute the selected role's actions.
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06)
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Deliver:** Workspace branding/profile images, invitation branding and reusable onboarding presets.
 
-**Accept:** Testing a role in the preview cannot issue an invoice or mutate grants.
+    **Proposed flow and records:** Branding candidates must reuse current semantic tokens/components and approved file projections; branding cannot change legal seller snapshots.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+    **Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
 
-#### F03.16 — Workspace usage dashboard
+    **Accept:** An invitation label or image cannot inject active content or replace required workspace context.
 
-- [ ] **E · Deliver:** Workspace storage/usage dashboards and policy-controlled limits, integrated with product entitlements.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Components](DESIGN.md#components).
 
-**Proposed flow and records:** Usage summaries use real measured resources and current access scope; numeric quotas/entitlements remain Q-02/Q-12 decisions.
+  - [ ] <a id="f03-14"></a>**F03.14 — Temporary contractor access** · `E`
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Requires:** [F38.04](#f38-04), [F03.03](#f03-03), [F03.07](#f03-07)
 
-**Accept:** Missing usage telemetry is shown as unavailable rather than a fabricated zero or unlimited guarantee.
+    **Deliver:** Temporary contractor access with explicit expiry, review reminders and reassignment/offboarding checklist.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+    **Proposed flow and records:** Temporary access needs explicitly approved expiry and reassignment rules rather than a guessed contractor duration.
+
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+
+    **Accept:** Once the selected expiry is reached, direct protected requests fail and historic time retains its actor.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+
+  - [ ] <a id="f03-15"></a>**F03.15 — Permission simulator** · `E`
+
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06)
+
+    **Deliver:** Permission simulator showing the permitted actions of a selected role without impersonating its identity.
+
+    **Proposed flow and records:** A permission preview is a proposed explanatory view, not identity impersonation or a way to execute the selected role's actions.
+
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+
+    **Accept:** Testing a role in the preview cannot issue an invoice or mutate grants.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+
+  - [ ] <a id="f03-16"></a>**F03.16 — Workspace usage dashboard** · `E`
+
+    **Requires:** [F38.04](#f38-04), [F03.06](#f03-06), [F38.10](#f38-10)
+
+    **Deliver:** Workspace storage/usage dashboards and policy-controlled limits, integrated with product entitlements.
+
+    **Proposed flow and records:** Usage summaries use real measured resources and current access scope; numeric quotas/entitlements remain Q-02/Q-12 decisions.
+
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+
+    **Accept:** Missing usage telemetry is shown as unavailable rather than a fabricated zero or unlimited guarantee.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
 <a id="category-04"></a>
 
 ### 9.4 Application shell, personal workspace and interaction
 
-**Owner/package:** P01/P06. **Prerequisites for each phase:** F03.01/F03.06 for protected screens; public primitives can precede them. **Optional extension wave:** X1.
+**Owner/package:** P01/P06. **Original branch context (specific Requires below governs feature order):** F03.01/F03.06 for protected screens; public primitives can precede them. **Optional extension wave:** X1.
 
 **Packages:** P01.1/P01.5, P06.1/P06.4. **Baseline links:** PLT-011/015, INS-001/008.
 
 **Required group acceptance:** Exercise keyboard, focus, RTL and narrow-screen states; hidden data must not appear in component props or counts.
 
-#### F04.01 — Responsive navigation
+- **F04 — Application shell, personal workspace and interaction**
 
-- [ ] **S · Deliver:** Responsive desktop/sidebar and mobile navigation with workspace switcher and clear current location.
+  - [ ] <a id="f04-01"></a>**F04.01 — Responsive navigation** · `S`
 
-**Flow and records:** Compose shared responsive navigation with discoverable workspace, search, notices and timer controls; preserve ordinary browser navigation.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
+    **Deliver:** Responsive desktop/sidebar and mobile navigation with workspace switcher and clear current location.
 
-**Accept:** A keyboard user reaches the same destination on narrow and wide layouts.
+    **Flow and records:** Compose shared responsive navigation with discoverable workspace, search, notices and timer controls; preserve ordinary browser navigation.
 
-**Docs basis:** Documented parent requirement/contract: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
+    **Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
 
-#### F04.02 — Personal home dashboard
+    **Accept:** A keyboard user reaches the same destination on narrow and wide layouts.
 
-- [ ] **S · Deliver:** Personal home with assigned tasks, reviews, active timer, pending drafts/conflicts and permitted finance cards.
+    **Docs basis:** Documented parent requirement/contract: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
 
-**Flow and records:** Show source-linked assigned work, reviews, active timer, draft/conflict state and permitted finance cards with their filters/as-of.
+  - [ ] <a id="f04-02"></a>**F04.02 — Personal home dashboard** · `S`
 
-**Documented constraints:** Widgets expose filters/as-of and source links; missing data is not zero and restricted finance never leaks through counts.
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-**Accept:** A user lacking finance grants sees neither restricted amounts nor revealing finance counts.
+    **Deliver:** Personal home with assigned tasks, reviews, active timer, pending drafts/conflicts and permitted finance cards.
 
-**Docs basis:** Documented parent requirement/contract: [INS-001 — Actionable home and saved views](docs/specs/insights-and-knowledge.md#ins-001--actionable-home-and-saved-views).
+    **Flow and records:** Show source-linked assigned work, reviews, active timer, draft/conflict state and permitted finance cards with their filters/as-of.
 
-#### F04.03 — Search and command palette
+    **Documented constraints:** Widgets expose filters/as-of and source links; missing data is not zero and restricted finance never leaks through counts.
 
-- [ ] **S · Deliver:** Global search/command palette with resource-scoped results and safe keyboard shortcuts.
+    **Accept:** A user lacking finance grants sees neither restricted amounts nor revealing finance counts.
 
-**Flow and records:** Search allowed fields before producing snippets/counts; palette commands invoke the same protected service as ordinary buttons.
+    **Docs basis:** Documented parent requirement/contract: [INS-001 — Actionable home and saved views](docs/specs/insights-and-knowledge.md#ins-001--actionable-home-and-saved-views).
 
-**Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
+  - [ ] <a id="f04-03"></a>**F04.03 — Search and command palette** · `S`
 
-**Accept:** Revoking a resource removes its searchable snippet and prevents its command action.
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-**Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
+    **Deliver:** Global search/command palette with resource-scoped results and safe keyboard shortcuts.
 
-#### F04.04 — Persistent work indicators
+    **Flow and records:** Search allowed fields before producing snippets/counts; palette commands invoke the same protected service as ordinary buttons.
 
-- [ ] **S · Deliver:** Persistent timer and browser/server save indicators across applicable application routes.
+    **Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
 
-**Flow and records:** Display active timer and truthful unsaved/browser-saved/submitting/accepted/unknown states without treating a refresh hint as commit evidence.
+    **Accept:** Revoking a resource removes its searchable snippet and prevents its command action.
 
-**Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+    **Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
 
-**Accept:** A lost response displays checking status rather than a second timer or a false save.
+  - [ ] <a id="f04-04"></a>**F04.04 — Persistent work indicators** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-#### F04.05 — Theme and language preferences
+    **Deliver:** Persistent timer and browser/server save indicators across applicable application routes.
 
-- [ ] **S · Deliver:** Light/Dark/System themes, English/Arabic switching, logical RTL layout and isolated mixed-direction IDs.
+    **Flow and records:** Display active timer and truthful unsaved/browser-saved/submitting/accepted/unknown states without treating a refresh hint as commit evidence.
 
-**Flow and records:** Use the current Light/Dark/System tokens and personal English/Arabic preference; isolate mixed-direction emails, IDs and numeric meaning.
+    **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
 
-**Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
+    **Accept:** A lost response displays checking status rather than a second timer or a false save.
 
-**Accept:** Language or theme changes leave stored amounts, identifiers and issued snapshots unchanged.
+    **Docs basis:** Documented parent requirement/contract: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
-**Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+  - [ ] <a id="f04-05"></a>**F04.05 — Theme and language preferences** · `S`
 
-#### F04.06 — Accessible shared interactions
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-- [ ] **S · Deliver:** Accessible tables/lists/forms/dialogs, focus management, touch targets, reduced motion and non-drag alternatives.
+    **Deliver:** Light/Dark/System themes, English/Arabic switching, logical RTL layout and isolated mixed-direction IDs.
 
-**Flow and records:** Retain shared shadcn semantics for fields/tables/dialogs; provide focus restoration, readable errors and a non-drag path for each action.
+    **Inspected source status:** PARTIAL: public/account locale and Light/Dark/System behavior exists; future workspace screens must inherit it.
 
-**Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
+    **Flow and records:** Use the current Light/Dark/System tokens and personal English/Arabic preference; isolate mixed-direction emails, IDs and numeric meaning.
 
-**Accept:** Keyboard-only completion, 320 CSS-pixel reflow and 200% zoom retain labels and actions.
+    **Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
 
-**Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
+    **Accept:** Language or theme changes leave stored amounts, identifiers and issued snapshots unchanged.
 
-#### F04.07 — Saved record views
+    **Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
 
-- [ ] **S · Deliver:** Saved views, explicit filters, stable sort/pagination and distinction between empty data and no matches.
+  - [ ] <a id="f04-06"></a>**F04.06 — Accessible shared interactions** · `S`
 
-**Flow and records:** Persist filters, sorting, grouping and presentation rather than duplicating records; distinguish a true empty workspace from zero matches.
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Deliver:** Accessible tables/lists/forms/dialogs, focus management, touch targets, reduced motion and non-drag alternatives.
 
-**Accept:** A no-match view retains its filter summary and a clear-reset action.
+    **Inspected source status:** PARTIAL: shared UI primitives exist; full business interaction/a11y acceptance remains open.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Flow and records:** Retain shared shadcn semantics for fields/tables/dialogs; provide focus restoration, readable errors and a non-drag path for each action.
 
-#### F04.08 — Recoverable error states
+    **Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
 
-- [ ] **S · Deliver:** Clear validation/read/save/permission/network/quota/unknown-outcome states with recoverable input.
+    **Accept:** Keyboard-only completion, 320 CSS-pixel reflow and 200% zoom retain labels and actions.
 
-**Flow and records:** Resolve stable redacted error codes into localized field/recovery messages and preserve valid input after rejection or service failure.
+    **Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
 
-**Documented constraints:** Return stable redacted codes and recovery actions, preserve input, check unknown outcomes and never leak inaccessible objects or raw exceptions.
+  - [ ] <a id="f04-07"></a>**F04.07 — Saved record views** · `S`
 
-**Accept:** A validation failure focuses the relevant field and does not discard the rest of the edit.
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-**Docs basis:** Documented parent requirement/contract: [Error taxonomy](docs/architecture/api-contracts.md#error-taxonomy).
+    **Deliver:** Saved views, explicit filters, stable sort/pagination and distinction between empty data and no matches.
 
-#### F04.09 — Browser navigation and deep links
+    **Flow and records:** Persist filters, sorting, grouping and presentation rather than duplicating records; distinguish a true empty workspace from zero matches.
 
-- [ ] **S · Deliver:** Standard browser Back/Forward, deep links and refresh recovery with current permission checks.
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
 
-**Flow and records:** HTTPS deep links resolve current account/workspace/resource scope and support refresh/Back/Forward without trusting route visibility as authorization.
+    **Accept:** A no-match view retains its filter summary and a clear-reset action.
 
-**Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
+    **Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
-**Accept:** Reopening an old resource URL after revocation shows no protected data.
+  - [ ] <a id="f04-08"></a>**F04.08 — Recoverable error states** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-#### F04.10 — Favorites and recent records
+    **Deliver:** Clear validation/read/save/permission/network/quota/unknown-outcome states with recoverable input.
 
-- [ ] **E · Deliver:** Favorites/pinned projects, recently visited records and personal quick-create shortcuts.
+    **Inspected source status:** PARTIAL: auth/profile/contact error handling exists; business error/recovery states remain pending.
 
-**Proposed flow and records:** Favorites/recent/quick-create are optional navigation aids; all displayed targets and invoked actions remain current-scope filtered.
+    **Flow and records:** Resolve stable redacted error codes into localized field/recovery messages and preserve valid input after rejection or service failure.
 
-**Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
+    **Documented constraints:** Return stable redacted codes and recovery actions, preserve input, check unknown outcomes and never leak inaccessible objects or raw exceptions.
 
-**Accept:** A removed project is not exposed through a stale favorite or recent-item label.
+    **Accept:** A validation failure focuses the relevant field and does not discard the rest of the edit.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
+    **Docs basis:** Documented parent requirement/contract: [Error taxonomy](docs/architecture/api-contracts.md#error-taxonomy).
 
-#### F04.11 — Personal view customization
+  - [ ] <a id="f04-09"></a>**F04.09 — Browser navigation and deep links** · `S`
 
-- [ ] **E · Deliver:** Configurable table columns/density and per-user widget ordering with accessible defaults.
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
 
-**Proposed flow and records:** Column/density/widget preferences affect layout only and cannot request restricted fields through a presentation setting.
+    **Deliver:** Standard browser Back/Forward, deep links and refresh recovery with current permission checks.
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Inspected source status:** PARTIAL: public/account routing exists; protected workspace/resource deep links remain pending.
 
-**Accept:** A saved cost column remains unavailable after the user's financial grant is removed.
+    **Flow and records:** HTTPS deep links resolve current account/workspace/resource scope and support refresh/Back/Forward without trusting route visibility as authorization.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
 
-#### F04.12 — Guided onboarding
+    **Accept:** Reopening an old resource URL after revocation shows no protected data.
 
-- [ ] **E · Deliver:** Contextual onboarding tips, dismissible checklists and a keyboard-shortcut reference.
+    **Docs basis:** Documented parent requirement/contract: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
 
-**Proposed flow and records:** Onboarding guidance explains real limits and recoverable states; completion of a tip never acts as a financial approval or policy selection.
+  - [ ] <a id="f04-10"></a>**F04.10 — Favorites and recent records** · `E`
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Requires:** [F03.06](#f03-06), [F04.09](#f04-09)
 
-**Accept:** Dismissing guidance cannot hide an unresolved storage or permissions error.
+    **Deliver:** Favorites/pinned projects, recently visited records and personal quick-create shortcuts.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Proposed flow and records:** Favorites/recent/quick-create are optional navigation aids; all displayed targets and invoked actions remain current-scope filtered.
 
-#### F04.13 — Installable web shortcuts
+    **Documented constraints:** Keep workspace/search/timer/notices/save/language discoverable; deep links authenticate and every drag/shortcut action has a visible accessible alternative.
 
-- [ ] **E · Deliver:** Installable web manifest/app shortcuts where supported; offline behavior remains limited to the approved contract.
+    **Accept:** A removed project is not exposed through a stale favorite or recent-item label.
 
-**Proposed flow and records:** A web manifest/shortcut is an optional convenience with no native-process, background-job or durable-offline guarantee.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Navigation and interaction](docs/product/ux-and-localization.md#navigation-and-interaction).
 
-**Documented constraints:** Refresh identity, grants, revisions and receipts after tab return; suspended/closed pages cannot provide durable jobs or financial authority.
+  - [ ] <a id="f04-11"></a>**F04.11 — Personal view customization** · `E`
 
-**Accept:** Installing the shortcut cannot bypass session checks or enable unproved browser persistence.
+    **Requires:** [F03.06](#f03-06), [F04.02](#f04-02), [F04.07](#f04-07)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Online authority and browser limits](docs/architecture/sync-and-collaboration.md#online-authority-and-browser-limits).
+    **Deliver:** Configurable table columns/density and per-user widget ordering with accessible defaults.
+
+    **Proposed flow and records:** Column/density/widget preferences affect layout only and cannot request restricted fields through a presentation setting.
+
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+
+    **Accept:** A saved cost column remains unavailable after the user's financial grant is removed.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+
+  - [ ] <a id="f04-12"></a>**F04.12 — Guided onboarding** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F03.01](#f03-01), [F04.01](#f04-01)
+
+    **Deliver:** Contextual onboarding tips, dismissible checklists and a keyboard-shortcut reference.
+
+    **Proposed flow and records:** Onboarding guidance explains real limits and recoverable states; completion of a tip never acts as a financial approval or policy selection.
+
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+
+    **Accept:** Dismissing guidance cannot hide an unresolved storage or permissions error.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+
+  - [ ] <a id="f04-13"></a>**F04.13 — Installable web shortcuts** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F04.01](#f04-01)
+
+    **Deliver:** Installable web manifest/app shortcuts where supported; offline behavior remains limited to the approved contract.
+
+    **Proposed flow and records:** A web manifest/shortcut is an optional convenience with no native-process, background-job or durable-offline guarantee.
+
+    **Documented constraints:** Refresh identity, grants, revisions and receipts after tab return; suspended/closed pages cannot provide durable jobs or financial authority.
+
+    **Accept:** Installing the shortcut cannot bypass session checks or enable unproved browser persistence.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Online authority and browser limits](docs/architecture/sync-and-collaboration.md#online-authority-and-browser-limits).
 
 <a id="category-05"></a>
 
 ### 9.5 Browser drafts, sync and conflicts
 
-**Owner/package:** P01. **Prerequisites for each phase:** F03.06/P01.3; Q-06/Q-07 gate protected persistence/offline features only, and Q-13 gates retention/cleanup; server receipts/revisions can proceed without browser persistence. **Optional extension wave:** X2.
+**Owner/package:** P01. **Original branch context (specific Requires below governs feature order):** F03.06/P01.3; Q-06/Q-07 gate protected persistence/offline features only, and Q-13 gates retention/cleanup; server receipts/revisions can proceed without browser persistence. **Optional extension wave:** X2.
 
 **Packages:** P01.3/P01.4; all editing modules. **Baseline links:** PLT-007–010/012, NFR-002/005/010, Q-06/Q-07/Q-13.
 
 **Required group acceptance:** Interrupt save/reconnect, change the server revision and revoke access; never claim an unacknowledged save or replay money.
 
-#### F05.01 — Protected draft eligibility
+- **F05 — Browser drafts, sync and conflicts**
 
-- [ ] **S · Deliver:** Explicit eligible draft classes and protected browser-storage enablement only after key-custody review.
+  - [ ] <a id="f05-01"></a>**F05.01 — Protected draft eligibility** · `S`
 
-**Flow and records:** Define minimal eligible draft classes and reviewed encryption/key custody before any protected persistent browser data is enabled.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+    **Deliver:** Explicit eligible draft classes and protected browser-storage enablement only after key-custody review.
 
-**Accept:** Without Q-06/Q-07 proof, input is memory-only with an explicit reload-loss limit.
+    **Flow and records:** Define minimal eligible draft classes and reviewed encryption/key custody before any protected persistent browser data is enabled.
 
-**Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+    **Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
 
-#### F05.02 — Atomic local draft save
+    **Accept:** Without Q-06/Q-07 proof, input is memory-only with an explicit reload-loss limit.
 
-- [ ] **S · Deliver:** Atomic draft plus stable pending-operation save; distinct unsaved/browser-saved/submitting/server-accepted labels.
+    **Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
 
-**Flow and records:** Commit draft content and its stable pending operation together in approved IndexedDB storage, then announce browser save separately from server acceptance.
+  - [ ] <a id="f05-02"></a>**F05.02 — Atomic local draft save** · `S`
 
-**Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+    **Requires:** [F03.06](#f03-06), [F05.01](#f05-01), [F05.08](#f05-08)
 
-**Accept:** Interrupting a local save never leaves an acknowledged draft with no associated pending operation.
+    **Deliver:** Atomic draft plus stable pending-operation save; distinct unsaved/browser-saved/submitting/server-accepted labels.
 
-**Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+    **Flow and records:** Commit draft content and its stable pending operation together in approved IndexedDB storage, then announce browser save separately from server acceptance.
 
-#### F05.03 — Pending-operation inbox
+    **Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
 
-- [ ] **S · Deliver:** Pending-operation list with linked records, operation status, retry/repair and current authorization.
+    **Accept:** Interrupting a local save never leaves an acknowledged draft with no associated pending operation.
 
-**Flow and records:** List pending operations with target, scope, status and safe retry/repair; derive actor again from the current session on submission.
+    **Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
 
-**Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
+  - [ ] <a id="f05-03"></a>**F05.03 — Pending-operation inbox** · `S`
 
-**Accept:** A quarantined permission failure is actionable and does not retry forever.
+    **Requires:** [F03.06](#f03-06), [F05.02](#f05-02), [F05.05](#f05-05)
 
-**Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
+    **Deliver:** Pending-operation list with linked records, operation status, retry/repair and current authorization.
 
-#### F05.04 — Connection recovery
+    **Flow and records:** List pending operations with target, scope, status and safe retry/repair; derive actor again from the current session on submission.
 
-- [ ] **S · Deliver:** Network interruption/reconnect handling with bounded backoff and receipt lookup after lost replies.
+    **Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
 
-**Flow and records:** Reconnect with bounded retries and obtain the scoped operation receipt when the original reply is unknown.
+    **Accept:** A quarantined permission failure is actionable and does not retry forever.
 
-**Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
+    **Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
 
-**Accept:** A committed operation with a lost reply returns its original result instead of creating another effect.
+  - [ ] <a id="f05-04"></a>**F05.04 — Connection recovery** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
+    **Requires:** [F03.06](#f03-06), [F05.03](#f05-03), [F05.06](#f05-06)
 
-#### F05.05 — Command receipts and deduplication
+    **Deliver:** Network interruption/reconnect handling with bounded backoff and receipt lookup after lost replies.
 
-- [ ] **S · Deliver:** Stable operation IDs and digest checks that reject reused IDs with changed payloads.
+    **Flow and records:** Reconnect with bounded retries and obtain the scoped operation receipt when the original reply is unknown.
 
-**Flow and records:** Scope write keys by workspace, actor and operation type and retain a digest of the submitted payload.
+    **Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
 
-**Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
+    **Accept:** A committed operation with a lost reply returns its original result instead of creating another effect.
 
-**Accept:** Reusing a key with changed content is rejected without modifying the earlier accepted result.
+    **Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
 
-**Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
+  - [ ] <a id="f05-05"></a>**F05.05 — Command receipts and deduplication** · `S`
 
-#### F05.06 — Revision conflicts
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04)
 
-- [ ] **S · Deliver:** Revision-checked submissions and authorized local/base/server conflict comparison.
+    **Deliver:** Stable operation IDs and digest checks that reject reused IDs with changed payloads.
 
-**Flow and records:** Compare permitted base/local/server values against expected revisions and preserve both same-field candidates for explicit resolution.
+    **Inspected source status:** PARTIAL: auth-email delivery receipts exist; general domain command receipts do not.
 
-**Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
+    **Flow and records:** Scope write keys by workspace, actor and operation type and retain a digest of the submitted payload.
 
-**Accept:** Two edits to one description cannot silently overwrite each other.
+    **Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
 
-**Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
+    **Accept:** Reusing a key with changed content is rejected without modifying the earlier accepted result.
 
-#### F05.07 — Reviewed field merging
+    **Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
 
-- [ ] **S · Deliver:** Proven independent-field merging and explicit review for same-field/rich-text conflicts.
+  - [ ] <a id="f05-06"></a>**F05.06 — Revision conflicts** · `S`
 
-**Flow and records:** Merge independent fields only where the base revision proves independence; rich-text and financial facts do not receive casual last-write-wins merging.
+    **Requires:** [F03.06](#f03-06), [F05.05](#f05-05)
 
-**Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
+    **Deliver:** Revision-checked submissions and authorized local/base/server conflict comparison.
 
-**Accept:** A proven independent field change survives while a same-field conflict remains reviewable.
+    **Flow and records:** Compare permitted base/local/server values against expected revisions and preserve both same-field candidates for explicit resolution.
 
-**Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
+    **Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
 
-#### F05.08 — Draft identity and key isolation
+    **Accept:** Two edits to one description cannot silently overwrite each other.
 
-- [ ] **S · Deliver:** Account/workspace isolation, lock/expiry/key-loss states and approved recoverable-draft export.
+    **Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
 
-**Flow and records:** Tie draft access to the approved account/key/retention policy; expose key-loss or expiry honestly without promising recall of downloaded information.
+  - [ ] <a id="f05-07"></a>**F05.07 — Reviewed field merging** · `S`
 
-**Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+    **Requires:** [F03.06](#f03-06), [F05.06](#f05-06)
 
-**Accept:** Account switching cannot reveal another identity's ciphertext contents or unlocked draft.
+    **Deliver:** Proven independent-field merging and explicit review for same-field/rich-text conflicts.
 
-**Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+    **Flow and records:** Merge independent fields only where the base revision proves independence; rich-text and financial facts do not receive casual last-write-wins merging.
 
-#### F05.09 — Storage-loss recovery
+    **Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
 
-- [ ] **S · Deliver:** Quota/eviction/storage-denial handling without unprotected fallback or false save success.
+    **Accept:** A proven independent field change survives while a same-field conflict remains reviewable.
 
-**Flow and records:** Handle storage permission, quota and eviction failures without falling back to unprotected persistence or announcing a durable save.
+    **Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
 
-**Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+  - [ ] <a id="f05-08"></a>**F05.08 — Draft identity and key isolation** · `S`
 
-**Accept:** Denied persistence keeps current memory input visible with an honest recovery/loss explanation.
+    **Requires:** [F03.06](#f03-06), [F05.01](#f05-01)
 
-**Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+    **Deliver:** Account/workspace isolation, lock/expiry/key-loss states and approved recoverable-draft export.
 
-#### F05.10 — Multi-tab revisions
+    **Flow and records:** Tie draft access to the approved account/key/retention policy; expose key-loss or expiry honestly without promising recall of downloaded information.
 
-- [ ] **S · Deliver:** Multi-tab coordination through server revisions; local channel hints remain advisory.
+    **Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
 
-**Flow and records:** Use server revision/uniqueness checks for multiple tabs; local channels only prompt refresh and cannot decide financial or timer ownership.
+    **Accept:** Account switching cannot reveal another identity's ciphertext contents or unlocked draft.
 
-**Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
+    **Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
 
-**Accept:** Two isolated tabs still cannot create two authoritative timers by missing a local signal.
+  - [ ] <a id="f05-09"></a>**F05.09 — Storage-loss recovery** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
+    **Requires:** [F03.06](#f03-06), [F05.02](#f05-02)
 
-#### F05.11 — Stale schema and tombstones
+    **Deliver:** Quota/eviction/storage-denial handling without unprotected fallback or false save success.
 
-- [ ] **S · Deliver:** Tombstone/stale-schema handling that prevents deleted-record resurrection and blind old-command replay.
+    **Flow and records:** Handle storage permission, quota and eviction failures without falling back to unprotected persistence or announcing a durable save.
 
-**Flow and records:** Tombstones and supported schema windows stop stale edits from recreating deleted records; old formats require reviewed refresh/import.
+    **Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
 
-**Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
+    **Accept:** Denied persistence keeps current memory input visible with an honest recovery/loss explanation.
 
-**Accept:** An old offline edit cannot silently resurrect a purged or archived financial reference.
+    **Docs basis:** Documented parent requirement/contract: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
 
-**Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
+  - [ ] <a id="f05-10"></a>**F05.10 — Multi-tab revisions** · `S`
 
-#### F05.12 — Revocation refresh
+    **Requires:** [F03.06](#f03-06), [F05.05](#f05-05)
 
-- [ ] **S · Deliver:** Permission downgrade/revocation refresh for views, queries, subscriptions and pending submissions.
+    **Deliver:** Multi-tab coordination through server revisions; local channel hints remain advisory.
 
-**Flow and records:** Refresh current scope in views, subscriptions and pending commands; redact conflict candidates the member no longer has permission to inspect.
+    **Flow and records:** Use server revision/uniqueness checks for multiple tabs; local channels only prompt refresh and cannot decide financial or timer ownership.
 
-**Documented constraints:** Deny by default and recheck membership, resource and action at all reads, counts, exports, files, jobs and side effects.
+    **Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
 
-**Accept:** A downgraded member cannot read a formerly visible private-rate candidate in the conflict inbox.
+    **Accept:** Two isolated tabs still cannot create two authoritative timers by missing a local signal.
 
-**Docs basis:** Documented parent requirement/contract: [Tenant and resource authorization](docs/architecture/security-and-privacy.md#tenant-and-resource-authorization).
+    **Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
 
-#### F05.13 — Online financial authority
+  - [ ] <a id="f05-11"></a>**F05.11 — Stale schema and tombstones** · `S`
 
-- [ ] **S · Deliver:** Financial drafts remain candidates; issuance/posting/publication require current online authority.
+    **Requires:** [F03.06](#f03-06), [F05.05](#f05-05)
 
-**Flow and records:** Offline document/source selections remain provisional; issue, post, allocate and publish require an online current-authority command.
+    **Deliver:** Tombstone/stale-schema handling that prevents deleted-record resurrection and blind old-command replay.
 
-**Documented constraints:** Offline selections are candidates only; online issue/post/publish requires current authority and one transactional immutable result.
+    **Flow and records:** Tombstones and supported schema windows stop stale edits from recreating deleted records; old formats require reviewed refresh/import.
 
-**Accept:** A disconnected invoice editor cannot allocate a final number or consume globally billable seconds.
+    **Documented constraints:** Same-key changed payload is rejected; resolve lost replies through receipts, preserve same-field candidates and never merge financial postings.
 
-**Docs basis:** Documented parent requirement/contract: [Time and financial operations](docs/architecture/sync-and-collaboration.md#time-and-financial-operations).
+    **Accept:** An old offline edit cannot silently resurrect a purged or archived financial reference.
 
-#### F05.14 — Draft storage cleanup
+    **Docs basis:** Documented parent requirement/contract: [Submission, refresh and conflicts](docs/architecture/sync-and-collaboration.md#submission-refresh-and-conflicts).
 
-- [ ] **E · Deliver:** User-visible draft-storage usage and a scoped cleanup preview that preserves unresolved work.
+  - [ ] <a id="f05-12"></a>**F05.12 — Revocation refresh** · `S`
 
-**Proposed flow and records:** Storage cleanup needs Q-13 retention and unresolved-work preview; no numeric limit or automatic purge rule is inferred from this feature.
+    **Requires:** [F03.06](#f03-06), [F03.07](#f03-07), [F05.10](#f05-10)
 
-**Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+    **Deliver:** Permission downgrade/revocation refresh for views, queries, subscriptions and pending submissions.
 
-**Accept:** Cleanup cannot discard an unresolved recoverable operation without the approved policy and explicit impact review.
+    **Flow and records:** Refresh current scope in views, subscriptions and pending commands; redact conflict candidates the member no longer has permission to inspect.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+    **Documented constraints:** Deny by default and recheck membership, resource and action at all reads, counts, exports, files, jobs and side effects.
 
-#### F05.15 — Sync diagnostics
+    **Accept:** A downgraded member cannot read a formerly visible private-rate candidate in the conflict inbox.
 
-- [ ] **E · Deliver:** Manual connectivity diagnostics and a redacted sync-health report for support.
+    **Docs basis:** Documented parent requirement/contract: [Tenant and resource authorization](docs/architecture/security-and-privacy.md#tenant-and-resource-authorization).
 
-**Proposed flow and records:** Diagnostics expose only redacted build/error/health metadata with a preview; they do not dump tenant content, credentials or encryption keys.
+  - [ ] <a id="f05-13"></a>**F05.13 — Online financial authority** · `S`
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Requires:** [F03.06](#f03-06), [F05.05](#f05-05)
 
-**Accept:** A support export contains no auth token, raw document or other account's pending payload.
+    **Deliver:** Financial drafts remain candidates; issuance/posting/publication require current online authority.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Flow and records:** Offline document/source selections remain provisional; issue, post, allocate and publish require an online current-authority command.
+
+    **Documented constraints:** Offline selections are candidates only; online issue/post/publish requires current authority and one transactional immutable result.
+
+    **Accept:** A disconnected invoice editor cannot allocate a final number or consume globally billable seconds.
+
+    **Docs basis:** Documented parent requirement/contract: [Time and financial operations](docs/architecture/sync-and-collaboration.md#time-and-financial-operations).
+
+  - [ ] <a id="f05-14"></a>**F05.14 — Draft storage cleanup** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F05.02](#f05-02), [F37.03](#f37-03)
+
+    **Deliver:** User-visible draft-storage usage and a scoped cleanup preview that preserves unresolved work.
+
+    **Proposed flow and records:** Storage cleanup needs Q-13 retention and unresolved-work preview; no numeric limit or automatic purge rule is inferred from this feature.
+
+    **Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+
+    **Accept:** Cleanup cannot discard an unresolved recoverable operation without the approved policy and explicit impact review.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+
+  - [ ] <a id="f05-15"></a>**F05.15 — Sync diagnostics** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F05.03](#f05-03), [F38.10](#f38-10)
+
+    **Deliver:** Manual connectivity diagnostics and a redacted sync-health report for support.
+
+    **Proposed flow and records:** Diagnostics expose only redacted build/error/health metadata with a preview; they do not dump tenant content, credentials or encryption keys.
+
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+
+    **Accept:** A support export contains no auth token, raw document or other account's pending payload.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
 <a id="category-06"></a>
 
 ### 9.6 Notifications, inbox and reminders
 
-**Owner/package:** P01/P07. **Prerequisites for each phase:** F03.06 and relevant source event; external delivery additionally F27.03/F30.05. **Optional extension wave:** X3.
+**Owner/package:** P01/P07. **Original branch context (specific Requires below governs feature order):** F03.06 and relevant source event; external delivery additionally F27.03/F30.05. **Optional extension wave:** X3.
 
 **Packages:** P01.5, P07.5. **Baseline links:** PLT-013, INT-011, TIM-017/018, FIN-027.
 
 **Required group acceptance:** Revoke the recipient, replay an event and pay a reminder balance before dispatch; suppress private or duplicate content.
 
-#### F06.01 — Notification inbox
+- **F06 — Notifications, inbox and reminders**
 
-- [ ] **S · Deliver:** In-app notification center with unread/read, dismiss, snooze and source links.
+  - [ ] <a id="f06-01"></a>**F06.01 — Notification inbox** · `S`
 
-**Flow and records:** Open an in-app center with personal read/dismiss/snooze state and links checked against current source permissions.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04)
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Deliver:** In-app notification center with unread/read, dismiss, snooze and source links.
 
-**Accept:** Marking a notice read does not complete the task or settle its invoice.
+    **Flow and records:** Open an in-app center with personal read/dismiss/snooze state and links checked against current source permissions.
 
-**Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-#### F06.02 — Domain-event notices
+    **Accept:** Marking a notice read does not complete the task or settle its invoice.
 
-- [ ] **S · Deliver:** Task assignment, mention, review, milestone, time-approval and billing event categories respecting recipient scope.
+    **Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-**Flow and records:** Build assignment, mention, review and finance notices only from accepted source events and permitted projections.
+  - [ ] <a id="f06-02"></a>**F06.02 — Domain-event notices** · `S`
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Requires:** [F03.06](#f03-06), [F06.01](#f06-01)
 
-**Accept:** A role lacking invoice access receives no revealing invoice title, amount or count.
+    **Deliver:** Task assignment, mention, review, milestone, time-approval and billing event categories respecting recipient scope.
 
-**Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Flow and records:** Build assignment, mention, review and finance notices only from accepted source events and permitted projections.
 
-#### F06.03 — Notification preferences
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-- [ ] **S · Deliver:** Personal topic/channel preferences, timezone and quiet hours; separate documented security-notice policy.
+    **Accept:** A role lacking invoice access receives no revealing invoice title, amount or count.
 
-**Flow and records:** Apply selected topic/channel/quiet-hour preferences in the user's timezone, with documented required-security-notice exceptions.
+    **Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+  - [ ] <a id="f06-03"></a>**F06.03 — Notification preferences** · `S`
 
-**Accept:** Quiet hours delay eligible notices without disabling essential in-app access.
+    **Requires:** [F03.06](#f03-06), [F06.01](#f06-01)
 
-**Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Deliver:** Personal topic/channel preferences, timezone and quiet hours; separate documented security-notice policy.
 
-#### F06.04 — Browser notification consent
+    **Flow and records:** Apply selected topic/channel/quiet-hour preferences in the user's timezone, with documented required-security-notice exceptions.
 
-- [ ] **S · Deliver:** Opt-in browser notifications with capability detection and in-app fallback after denial.
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-**Flow and records:** Request browser notification consent only through a supported capability path and preserve an in-site alternative after denial.
+    **Accept:** Quiet hours delay eligible notices without disabling essential in-app access.
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-**Accept:** Denying browser permission does not suppress the source notification inside the app.
+  - [ ] <a id="f06-04"></a>**F06.04 — Browser notification consent** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Requires:** [F03.06](#f03-06), [F06.03](#f06-03)
 
-#### F06.05 — Notice deduplication
+    **Deliver:** Opt-in browser notifications with capability detection and in-app fallback after denial.
 
-- [ ] **S · Deliver:** Deduplication by event/recipient/channel and summarized catch-up after downtime.
+    **Flow and records:** Request browser notification consent only through a supported capability path and preserve an in-site alternative after denial.
 
-**Flow and records:** Identify deliveries by source event, recipient and channel and summarize missed activity rather than replaying an unlimited backlog.
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Accept:** Denying browser permission does not suppress the source notification inside the app.
 
-**Accept:** Repeated event ingestion creates one notice per eligible recipient/channel.
+    **Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-**Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+  - [ ] <a id="f06-05"></a>**F06.05 — Notice deduplication** · `S`
 
-#### F06.06 — Source-based reminders
+    **Requires:** [F03.06](#f03-06), [F06.01](#f06-01), [F05.05](#f05-05)
 
-- [ ] **S · Deliver:** Follow-up, budget threshold, renewal and overdue reminders with visible source/policy and suppression history.
+    **Deliver:** Deduplication by event/recipient/channel and summarized catch-up after downtime.
 
-**Flow and records:** Reminder content references the actual follow-up, threshold, renewal or overdue source and the policy/version that made it eligible.
+    **Flow and records:** Identify deliveries by source event, recipient and channel and summarize missed activity rather than replaying an unlimited backlog.
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-**Accept:** A snoozed source does not produce repeated old-date reminders.
+    **Accept:** Repeated event ingestion creates one notice per eligible recipient/channel.
 
-**Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-#### F06.07 — Delivery authorization recheck
+  - [ ] <a id="f06-06"></a>**F06.06 — Source-based reminders** · `S`
 
-- [ ] **S · Deliver:** Recipient/grant/balance recheck before external delivery; paid/disputed/opted-out obligations are suppressed.
+    **Requires:** [F03.06](#f03-06), [F06.05](#f06-05), [F30.05](#f30-05)
 
-**Flow and records:** Immediately before external dispatch, recheck recipient scope and the relevant balance, dispute and suppression state.
+    **Deliver:** Follow-up, budget threshold, renewal and overdue reminders with visible source/policy and suppression history.
 
-**Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
+    **Flow and records:** Reminder content references the actual follow-up, threshold, renewal or overdue source and the policy/version that made it eligible.
 
-**Accept:** Paying the final outstanding amount cancels an otherwise queued overdue reminder.
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-**Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
+    **Accept:** A snoozed source does not produce repeated old-date reminders.
 
-#### F06.08 — Delivery outcome tracking
+    **Docs basis:** Documented parent requirement/contract: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-- [ ] **S · Deliver:** Separate queued, accepted, delivered, bounced, failed and unknown delivery states.
+  - [ ] <a id="f06-07"></a>**F06.07 — Delivery authorization recheck** · `S`
 
-**Flow and records:** Show prepared/queued/provider-accepted/verified-delivered/bounced/failed/unknown independently from the underlying business state.
+    **Requires:** [F03.06](#f03-06), [F06.03](#f06-03), [F03.07](#f03-07)
 
-**Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
+    **Deliver:** Recipient/grant/balance recheck before external delivery; paid/disputed/opted-out obligations are suppressed.
 
-**Accept:** A provider timeout never appears as verified client delivery.
+    **Flow and records:** Immediately before external dispatch, recheck recipient scope and the relevant balance, dispute and suppression state.
 
-**Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
+    **Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
 
-#### F06.09 — Personal and team digests
+    **Accept:** Paying the final outstanding amount cancels an otherwise queued overdue reminder.
 
-- [ ] **E · Deliver:** Daily/weekly personal digests and configurable team summaries through approved delivery jobs.
+    **Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
 
-**Proposed flow and records:** Digests are proposed scheduled summaries of permitted source events; recipient scope and approved delivery jobs remain prerequisites.
+  - [ ] <a id="f06-08"></a>**F06.08 — Delivery outcome tracking** · `S`
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Requires:** [F03.06](#f03-06), [F06.05](#f06-05), [F27.03](#f27-03)
 
-**Accept:** A removed team member receives no old private summary after the schedule fires.
+    **Deliver:** Separate queued, accepted, delivered, bounced, failed and unknown delivery states.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Flow and records:** Show prepared/queued/provider-accepted/verified-delivered/bounced/failed/unknown independently from the underlying business state.
 
-#### F06.10 — Reviewer escalation
+    **Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
 
-- [ ] **E · Deliver:** Notification routing/escalation to a delegated reviewer under explicit scope and quiet-hour rules.
+    **Accept:** A provider timeout never appears as verified client delivery.
 
-**Proposed flow and records:** Reviewer routing needs an explicit approved delegation/escalation policy and cannot expand either delegate's resource grants.
+    **Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+  - [ ] <a id="f06-09"></a>**F06.09 — Personal and team digests** · `E`
 
-**Accept:** An escalation never assigns a private review to someone who cannot read the source.
+    **Requires:** [F03.06](#f03-06), [F06.06](#f06-06), [F06.07](#f06-07)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Deliver:** Daily/weekly personal digests and configurable team summaries through approved delivery jobs.
+
+    **Proposed flow and records:** Digests are proposed scheduled summaries of permitted source events; recipient scope and approved delivery jobs remain prerequisites.
+
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+
+    **Accept:** A removed team member receives no old private summary after the schedule fires.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+
+  - [ ] <a id="f06-10"></a>**F06.10 — Reviewer escalation** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F06.06](#f06-06), [F06.07](#f06-07)
+
+    **Deliver:** Notification routing/escalation to a delegated reviewer under explicit scope and quiet-hour rules.
+
+    **Proposed flow and records:** Reviewer routing needs an explicit approved delegation/escalation policy and cannot expand either delegate's resource grants.
+
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+
+    **Accept:** An escalation never assigns a private review to someone who cannot read the source.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
 <a id="category-07"></a>
 
 ### 9.7 Clients, contacts and relationship records
 
-**Owner/package:** P02. **Prerequisites for each phase:** F03.01/F03.06 and P01.3 revision/audit foundation. **Optional extension wave:** X1.
+**Owner/package:** P02. **Original branch context (specific Requires below governs feature order):** F03.01/F03.06 and P01.3 revision/audit foundation. **Optional extension wave:** X1.
 
 **Packages:** P02.1/P02.2. **Baseline links:** CRM-001/003/010.
 
-**Research context:** [Bonsai projects](https://help.hellobonsai.com/en/articles/12783206-all-about-projects). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Create, update and archive a client in two tenants; issued party snapshots and restricted fields must stay unchanged.
 
-#### F07.01 — Client directory
+- **F07 — Clients, contacts and relationship records**
 
-- [ ] **S · Deliver:** Organization/individual client records with display/legal/billing names, addresses, country and optional registration IDs.
+  - [ ] <a id="f07-01"></a>**F07.01 — Client directory** · `S`
 
-**Flow and records:** Create organization/individual records from a nonblank display name, then add legal identity, billing address, country and optional identifiers.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04)
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Deliver:** Organization/individual client records with display/legal/billing names, addresses, country and optional registration IDs.
 
-**Accept:** Renaming a client updates active pickers while an issued invoice retains its original party snapshot.
+    **Flow and records:** Create organization/individual records from a nonblank display name, then add legal identity, billing address, country and optional identifiers.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-#### F07.02 — Client business preferences
+    **Accept:** Renaming a client updates active pickers while an issued invoice retains its original party snapshot.
 
-- [ ] **S · Deliver:** Currency/language/timezone/payment-term preferences, owner, tags and internal notes.
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-**Flow and records:** Store client currency, locale, timezone, payment-term preference, owner, tags and internal notes as defaults for future explicit choices.
+  - [ ] <a id="f07-02"></a>**F07.02 — Client business preferences** · `S`
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01)
 
-**Accept:** Changing a default cannot alter an accepted proposal or issued total.
+    **Deliver:** Currency/language/timezone/payment-term preferences, owner, tags and internal notes.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Flow and records:** Store client currency, locale, timezone, payment-term preference, owner, tags and internal notes as defaults for future explicit choices.
 
-#### F07.03 — Client contacts
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-- [ ] **S · Deliver:** Multiple contacts and addresses, active/inactive status, and separate billing/delivery/decision-maker roles.
+    **Accept:** Changing a default cannot alter an accepted proposal or issued total.
 
-**Flow and records:** Maintain contact roles and active state, including separate billing, delivery and decision-maker relationships rather than one universal recipient.
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+  - [ ] <a id="f07-03"></a>**F07.03 — Client contacts** · `S`
 
-**Accept:** Inactivating a contact preserves referenced historical decisions and document recipients.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Deliver:** Multiple contacts and addresses, active/inactive status, and separate billing/delivery/decision-maker roles.
 
-#### F07.04 — Shared contact relationships
+    **Flow and records:** Maintain contact roles and active state, including separate billing, delivery and decision-maker relationships rather than one universal recipient.
 
-- [ ] **S · Deliver:** Contacts shared across client records without treating matching email as membership or identity proof.
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-**Flow and records:** Allow a contact to relate to multiple clients without deriving application identity, portal access or membership from an email match.
+    **Accept:** Inactivating a contact preserves referenced historical decisions and document recipients.
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-**Accept:** Two clients sharing an email remain separate permitted business records.
+  - [ ] <a id="f07-04"></a>**F07.04 — Shared contact relationships** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.03](#f07-03)
 
-#### F07.05 — Client duplicate merge
+    **Deliver:** Contacts shared across client records without treating matching email as membership or identity proof.
 
-- [ ] **S · Deliver:** Duplicate suggestions with disambiguation; reviewed atomic merge with alias/history and recovery protection.
+    **Flow and records:** Allow a contact to relate to multiple clients without deriving application identity, portal access or membership from an email match.
 
-**Flow and records:** Preview conflicts and affected relationships, select a surviving ID and preserve alias/history under the documented recovery prerequisite.
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Accept:** Two clients sharing an email remain separate permitted business records.
 
-**Accept:** A failed merge leaves both originals and all links intact.
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+  - [ ] <a id="f07-05"></a>**F07.05 — Client duplicate merge** · `S`
 
-#### F07.06 — Client archive and restore
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01), [F07.03](#f07-03)
 
-- [ ] **S · Deliver:** Archive/restore with active-work/timer/draft impact preview and preserved historical snapshots.
+    **Deliver:** Duplicate suggestions with disambiguation; reviewed atomic merge with alias/history and recovery protection.
 
-**Flow and records:** Archive/restore explicitly with affected projects, timers, drafts and future reminders reviewed; retain original lifecycle state and historical documents.
+    **Flow and records:** Preview conflicts and affected relationships, select a surviving ID and preserve alias/history under the documented recovery prerequisite.
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-**Accept:** Referenced clients cannot be hard-deleted through the archive action.
+    **Accept:** A failed merge leaves both originals and all links intact.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-#### F07.07 — Client relationship summary
+  - [ ] <a id="f07-06"></a>**F07.06 — Client archive and restore** · `S`
 
-- [ ] **S · Deliver:** Client detail tabs for activity, opportunities, projects, documents and permitted balances.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01)
 
-**Flow and records:** Client tabs aggregate only permitted linked activity, opportunities, delivery and balances; each total links to its authorized source.
+    **Deliver:** Archive/restore with active-work/timer/draft impact preview and preserved historical snapshots.
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Flow and records:** Archive/restore explicitly with affected projects, timers, drafts and future reminders reviewed; retain original lifecycle state and historical documents.
 
-**Accept:** Project-only access reveals minimum contact fields and no hidden receivable totals.
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Accept:** Referenced clients cannot be hard-deleted through the archive action.
 
-#### F07.08 — Communication activity records
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-- [ ] **S · Deliver:** Manual calls/meetings/email-summary notes with occurred/recorded timestamps and actual provenance.
+  - [ ] <a id="f07-07"></a>**F07.07 — Client relationship summary** · `S`
 
-**Flow and records:** Log subject, occurred/recorded time, outcome, next action and manual/import/connector provenance; an email summary is an internal activity record.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01)
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Deliver:** Client detail tabs for activity, opportunities, projects, documents and permitted balances.
 
-**Accept:** Logging a call or email sends no external message.
+    **Flow and records:** Client tabs aggregate only permitted linked activity, opportunities, delivery and balances; each total links to its authorized source.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-#### F07.09 — Client follow-ups
+    **Accept:** Project-only access reveals minimum contact fields and no hidden receivable totals.
 
-- [ ] **S · Deliver:** Follow-up scheduling/completion/snooze/cancel and owner assignment without silently sending a message.
+    **Docs basis:** Documented parent requirement/contract: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-**Flow and records:** Schedule, complete, snooze or cancel follow-ups while retaining old dates; create the next activity only through an explicit choice.
+  - [ ] <a id="f07-08"></a>**F07.08 — Communication activity records** · `S`
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.03](#f07-03)
 
-**Accept:** A missed reminder crossed while the browser was closed appears once on return.
+    **Deliver:** Manual calls/meetings/email-summary notes with occurred/recorded timestamps and actual provenance.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Flow and records:** Log subject, occurred/recorded time, outcome, next action and manual/import/connector provenance; an email summary is an internal activity record.
 
-#### F07.10 — Relationship reviews
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
 
-- [ ] **S · Deliver:** Relationship review dates, renewal context and explainable health indicators.
+    **Accept:** Logging a call or email sends no external message.
 
-**Flow and records:** Review renewal dates, delivery issues and permitted overdue values with source timestamps; label missing evidence as unknown.
+    **Docs basis:** Documented parent requirement/contract: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
-**Documented constraints:** Health links to dated source evidence; missing history means unknown, and renewal opportunities never renew contracts or charge clients.
+  - [ ] <a id="f07-09"></a>**F07.09 — Client follow-ups** · `S`
 
-**Accept:** A client with no calls is not automatically labeled dissatisfied.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.08](#f07-08), [F06.06](#f06-06)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-010 — Renewals, account reviews, and explainable health](docs/specs/client-lifecycle.md#crm-010--renewals-account-reviews-and-explainable-health).
+    **Deliver:** Follow-up scheduling/completion/snooze/cancel and owner assignment without silently sending a message.
 
-#### F07.11 — Client data import and export
+    **Flow and records:** Schedule, complete, snooze or cancel follow-ups while retaining old dates; create the next activity only through an explicit choice.
 
-- [ ] **S · Deliver:** Filtered search, source-preserving import/export and private-field exclusion.
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
 
-**Flow and records:** Preview mapped fields and duplicates before import, retain stable source IDs and export only permitted client/contact projections.
+    **Accept:** A missed reminder crossed while the browser was closed appears once on return.
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Docs basis:** Documented parent requirement/contract: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
-**Accept:** Reimporting an exact source creates no duplicate and private notes stay out of an ordinary export.
+  - [ ] <a id="f07-10"></a>**F07.10 — Relationship reviews** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.09](#f07-09)
 
-#### F07.12 — Client segmentation
+    **Deliver:** Relationship review dates, renewal context and explainable health indicators.
 
-- [ ] **E · Deliver:** Flexible segmentation and saved account lists using approved client custom fields.
+    **Flow and records:** Review renewal dates, delivery issues and permitted overdue values with source timestamps; label missing evidence as unknown.
 
-**Proposed flow and records:** Segmentation is an extension over existing tags/fields; any new client custom-field schema needs a reviewed spec before use.
+    **Documented constraints:** Health links to dated source evidence; missing history means unknown, and renewal opportunities never renew contracts or charge clients.
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Accept:** A client with no calls is not automatically labeled dissatisfied.
 
-**Accept:** A saved segment cannot expose a restricted client through its count.
+    **Docs basis:** Documented parent requirement/contract: [CRM-010 — Renewals, account reviews, and explainable health](docs/specs/client-lifecycle.md#crm-010--renewals-account-reviews-and-explainable-health).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+  - [ ] <a id="f07-11"></a>**F07.11 — Client data import and export** · `S`
 
-#### F07.13 — Client organization hierarchy
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01), [F34.01](#f34-01), [F34.05](#f34-05)
 
-- [ ] **E · Deliver:** Client hierarchy/parent-company links and separate branch billing profiles without merging legal history.
+    **Deliver:** Filtered search, source-preserving import/export and private-field exclusion.
 
-**Proposed flow and records:** Parent-company/branch relationships remain proposed; separate legal billing identities must not collapse existing invoices into a new party.
+    **Flow and records:** Preview mapped fields and duplicates before import, retain stable source IDs and export only permitted client/contact projections.
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-**Accept:** Reparenting an account cannot change the seller/customer snapshot of a historic document.
+    **Accept:** Reimporting an exact source creates no duplicate and private notes stay out of an ordinary export.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-#### F07.14 — Contact consent and suppression
+  - [ ] <a id="f07-12"></a>**F07.12 — Client segmentation** · `E`
 
-- [ ] **E · Deliver:** Consent/preference evidence and contact suppression lists for explicitly enabled communications.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01)
 
-**Proposed flow and records:** Activity/contact provenance is not proof of legal marketing consent; any communication suppression model needs explicit policy and delivery enforcement.
+    **Deliver:** Flexible segmentation and saved account lists using approved client custom fields.
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Proposed flow and records:** Segmentation is an extension over existing tags/fields; any new client custom-field schema needs a reviewed spec before use.
 
-**Accept:** A suppressed contact cannot receive an optional queued communication merely because they remain a billing contact.
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Accept:** A saved segment cannot expose a restricted client through its count.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+
+  - [ ] <a id="f07-13"></a>**F07.13 — Client organization hierarchy** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.01](#f07-01)
+
+    **Deliver:** Client hierarchy/parent-company links and separate branch billing profiles without merging legal history.
+
+    **Proposed flow and records:** Parent-company/branch relationships remain proposed; separate legal billing identities must not collapse existing invoices into a new party.
+
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+
+    **Accept:** Reparenting an account cannot change the seller/customer snapshot of a historic document.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+
+  - [ ] <a id="f07-14"></a>**F07.14 — Contact consent and suppression** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F07.03](#f07-03), [F37.02](#f37-02)
+
+    **Deliver:** Consent/preference evidence and contact suppression lists for explicitly enabled communications.
+
+    **Proposed flow and records:** Activity/contact provenance is not proof of legal marketing consent; any communication suppression model needs explicit policy and delivery enforcement.
+
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+
+    **Accept:** A suppressed contact cannot receive an optional queued communication merely because they remain a billing contact.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
 <a id="category-08"></a>
 
 ### 9.8 Lead pipeline and sales opportunities
 
-**Owner/package:** P02. **Prerequisites for each phase:** F07.01; priced forecast uses P05.1 exact arithmetic. **Optional extension wave:** X1.
+**Owner/package:** P02. **Original branch context (specific Requires below governs feature order):** F07.01; priced forecast uses P05.1 exact arithmetic. **Optional extension wave:** X1.
 
 **Package:** P02.2. **Baseline links:** CRM-002/003/010. Lead intake extensions belong to X2.
 
-**Research context:** [Dubsado feature overview](https://www.dubsado.com/feature-overview). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Move an opportunity through loss/reopen; separate forecast by currency and reject invalid probabilities.
 
-#### F08.01 — Lead capture
+- **F08 — Lead pipeline and sales opportunities**
 
-- [ ] **S · Deliver:** Capture qualified clients or unqualified leads with source, title, problem/outcome, owner and next action.
+  - [ ] <a id="f08-01"></a>**F08.01 — Lead capture** · `S`
 
-**Flow and records:** Capture an unqualified name/client reference, opportunity title, source, intended outcome, owner and next action before complete financial estimation.
+    **Requires:** [F07.01](#f07-01)
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Deliver:** Capture qualified clients or unqualified leads with source, title, problem/outcome, owner and next action.
 
-**Accept:** A lead without value saves as not estimated and contributes no invented cash.
+    **Flow and records:** Capture an unqualified name/client reference, opportunity title, source, intended outcome, owner and next action before complete financial estimation.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-#### F08.02 — Opportunity pipeline
+    **Accept:** A lead without value saves as not estimated and contributes no invented cash.
 
-- [ ] **S · Deliver:** Pipeline list/Kanban with open/on-hold/won/lost semantics and keyboard stage changes.
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Flow and records:** Map configurable stages to open/on-hold/won/lost semantics and use the same validated transition for board and form changes.
+  - [ ] <a id="f08-02"></a>**F08.02 — Opportunity pipeline** · `S`
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Requires:** [F07.01](#f07-01), [F08.01](#f08-01)
 
-**Accept:** A failed board save restores the prior visual stage while keeping recoverable intent.
+    **Deliver:** Pipeline list/Kanban with open/on-hold/won/lost semantics and keyboard stage changes.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Flow and records:** Map configurable stages to open/on-hold/won/lost semantics and use the same validated transition for board and form changes.
 
-#### F08.03 — Opportunity value and dates
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-- [ ] **S · Deliver:** Expected amount/range/currency, probability, decision date and expected work window.
+    **Accept:** A failed board save restores the prior visual stage while keeping recoverable intent.
 
-**Flow and records:** Record amount/range, one currency, explicit confidence and decision/work dates; missing values remain visible instead of defaulting to zero.
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+  - [ ] <a id="f08-03"></a>**F08.03 — Opportunity value and dates** · `S`
 
-**Accept:** An invalid reversed range cannot enter the monetary forecast.
+    **Requires:** [F07.01](#f07-01), [F08.02](#f08-02), [F19.03](#f19-03)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Deliver:** Expected amount/range/currency, probability, decision date and expected work window.
 
-#### F08.04 — Stage probabilities
+    **Flow and records:** Record amount/range, one currency, explicit confidence and decision/work dates; missing values remain visible instead of defaulting to zero.
 
-- [ ] **S · Deliver:** Stage defaults with visible assumptions and validated 0–100% probability.
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-**Flow and records:** Proposed stage probabilities are visible defaults that the user controls, rather than an undisclosed prediction.
+    **Accept:** An invalid reversed range cannot enter the monetary forecast.
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Accept:** Values below zero or above 100 are rejected through direct and UI mutations.
+  - [ ] <a id="f08-04"></a>**F08.04 — Stage probabilities** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Requires:** [F07.01](#f07-01), [F08.02](#f08-02)
 
-#### F08.05 — Weighted sales forecast
+    **Deliver:** Stage defaults with visible assumptions and validated 0–100% probability.
 
-- [ ] **S · Deliver:** Weighted forecasts grouped by currency and clearly separated from contracted revenue and cash.
+    **Flow and records:** Proposed stage probabilities are visible defaults that the user controls, rather than an undisclosed prediction.
 
-**Flow and records:** Compute weighted open opportunity value separately from signed backlog, invoiced revenue and collected cash, grouped by currency.
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Accept:** Values below zero or above 100 are rejected through direct and UI mutations.
 
-**Accept:** USD 10,000 at 40% contributes USD 4,000 to open forecast and zero to payments.
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+  - [ ] <a id="f08-05"></a>**F08.05 — Weighted sales forecast** · `S`
 
-#### F08.06 — Opportunity outcome history
+    **Requires:** [F07.01](#f07-01), [F08.03](#f08-03), [F08.04](#f08-04)
 
-- [ ] **S · Deliver:** Won engagement/manual reason, lost reason and reopen history without deleting past outcomes.
+    **Deliver:** Weighted forecasts grouped by currency and clearly separated from contracted revenue and cash.
 
-**Flow and records:** Won references accepted evidence or a manual reason; lost/reopened cycles retain earlier outcomes and their linked proposals.
+    **Flow and records:** Compute weighted open opportunity value separately from signed backlog, invoiced revenue and collected cash, grouped by currency.
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-**Accept:** Reopening a lost deal cannot delete its earlier invoice or count two wins for one cycle.
+    **Accept:** USD 10,000 at 40% contributes USD 4,000 to open forecast and zero to payments.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-#### F08.07 — Sales relationship links
+  - [ ] <a id="f08-06"></a>**F08.06 — Opportunity outcome history** · `S`
 
-- [ ] **S · Deliver:** Linked contacts, services, proposals, activities and follow-up reminders.
+    **Requires:** [F07.01](#f07-01), [F08.02](#f08-02)
 
-**Flow and records:** Link selected contacts, proposed services, commercial versions and follow-up activities while preserving their individual permissions.
+    **Deliver:** Won engagement/manual reason, lost reason and reopen history without deleting past outcomes.
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Flow and records:** Won references accepted evidence or a manual reason; lost/reopened cycles retain earlier outcomes and their linked proposals.
 
-**Accept:** A pipeline link cannot expose internal contact notes to a portal guest.
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Accept:** Reopening a lost deal cannot delete its earlier invoice or count two wins for one cycle.
 
-#### F08.08 — Pipeline completeness
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-- [ ] **S · Deliver:** Missing value/date coverage and stage-transition history.
+  - [ ] <a id="f08-07"></a>**F08.07 — Sales relationship links** · `S`
 
-**Flow and records:** Expose missing amounts/dates and stage history so forecasts identify their coverage rather than implying complete certainty.
+    **Requires:** [F07.01](#f07-01), [F08.01](#f08-01), [F07.03](#f07-03)
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Deliver:** Linked contacts, services, proposals, activities and follow-up reminders.
 
-**Accept:** A record with no expected decision date is counted as missing, not silently placed in the current period.
+    **Flow and records:** Link selected contacts, proposed services, commercial versions and follow-up activities while preserving their individual permissions.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-#### F08.09 — Public intake forms
+    **Accept:** A pipeline link cannot expose internal contact notes to a portal guest.
 
-- [ ] **E · Deliver:** Public lead/intake form with configurable safe fields, consent, spam protection and routing.
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Proposed flow and records:** Public intake is a proposed capture path; the client model and abuse/identity rules apply, and submission never automatically grants membership.
+  - [ ] <a id="f08-08"></a>**F08.08 — Pipeline completeness** · `S`
 
-**Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
+    **Requires:** [F07.01](#f07-01), [F08.02](#f08-02)
 
-**Accept:** A forged workspace/owner field cannot route a lead into an unrelated tenant.
+    **Deliver:** Missing value/date coverage and stage-transition history.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
+    **Flow and records:** Expose missing amounts/dates and stage history so forecasts identify their coverage rather than implying complete certainty.
 
-#### F08.10 — Lead qualification
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-- [ ] **E · Deliver:** Source/campaign conversion reports and configurable qualification checklists.
+    **Accept:** A record with no expected decision date is counted as missing, not silently placed in the current period.
 
-**Proposed flow and records:** Qualification checklists/source conversion are extensions; existing stages and transition events remain the factual basis for any later metric.
+    **Docs basis:** Documented parent requirement/contract: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+  - [ ] <a id="f08-09"></a>**F08.09 — Public intake forms** · `E`
 
-**Accept:** A qualification answer cannot mark a deal legally accepted or create invoice authority.
+    **Requires:** [F07.01](#f07-01), [F31.01](#f31-01), [F31.05](#f31-05)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Deliver:** Public lead/intake form with configurable safe fields, consent, spam protection and routing.
 
-#### F08.11 — Discovery-call requests
+    **Proposed flow and records:** Public intake is a proposed capture path; the client model and abuse/identity rules apply, and submission never automatically grants membership.
 
-- [ ] **E · Deliver:** Simple booking/discovery-call requests with availability review, timezone and cancellation rules.
+    **Documented constraints:** Referenced parties archive rather than disappear; duplicates are suggestions, and merge needs atomic links plus proven backup or reversible journal.
 
-**Proposed flow and records:** Booking/discovery requests are proposed linked activities with explicit timezone and confirmation policy; they are not confirmed work intervals.
+    **Accept:** A forged workspace/owner field cannot route a lead into an unrelated tenant.
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-001 — Clients, contacts, and relationship integrity](docs/specs/client-lifecycle.md#crm-001--clients-contacts-and-relationship-integrity).
 
-**Accept:** Requesting a meeting neither sends an invitation nor creates billable time automatically.
+  - [ ] <a id="f08-10"></a>**F08.10 — Lead qualification** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Requires:** [F07.01](#f07-01), [F08.01](#f08-01)
 
-#### F08.12 — Referral attribution
+    **Deliver:** Source/campaign conversion reports and configurable qualification checklists.
 
-- [ ] **E · Deliver:** Referral/source partner attribution without automatically creating commission liabilities.
+    **Proposed flow and records:** Qualification checklists/source conversion are extensions; existing stages and transition events remain the factual basis for any later metric.
 
-**Proposed flow and records:** Referral attribution is proposed source metadata; no commission, payable balance or provider money movement is implied by entering a source.
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Accept:** A qualification answer cannot mark a deal legally accepted or create invoice authority.
 
-**Accept:** Editing the source of a won deal does not alter its contracted value or settlements.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+  - [ ] <a id="f08-11"></a>**F08.11 — Discovery-call requests** · `E`
+
+    **Requires:** [F07.01](#f07-01), [F08.01](#f08-01), [F32.03](#f32-03)
+
+    **Deliver:** Simple booking/discovery-call requests with availability review, timezone and cancellation rules.
+
+    **Proposed flow and records:** Booking/discovery requests are proposed linked activities with explicit timezone and confirmation policy; they are not confirmed work intervals.
+
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+
+    **Accept:** Requesting a meeting neither sends an invitation nor creates billable time automatically.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+
+  - [ ] <a id="f08-12"></a>**F08.12 — Referral attribution** · `E`
+
+    **Requires:** [F07.01](#f07-01), [F08.01](#f08-01), [F37.02](#f37-02)
+
+    **Deliver:** Referral/source partner attribution without automatically creating commission liabilities.
+
+    **Proposed flow and records:** Referral attribution is proposed source metadata; no commission, payable balance or provider money movement is implied by entering a source.
+
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+
+    **Accept:** Editing the source of a won deal does not alter its contracted value or settlements.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
 
 <a id="category-09"></a>
 
 ### 9.9 Service catalog, estimates and quoting
 
-**Owner/package:** P02/P05. **Prerequisites for each phase:** F07.01 plus P05.1 exact arithmetic and approved Q-01/Q-03. **Optional extension wave:** X1.
+**Owner/package:** P02/P05. **Original branch context (specific Requires below governs feature order):** F07.01 plus P05.1 exact arithmetic and approved Q-01/Q-03. **Optional extension wave:** X1.
 
 **Packages:** P02.3, P05.1. **Baseline links:** CRM-004, FIN-002/003.
 
-**Research context:** [Bonsai proposals](https://help.hellobonsai.com/en/articles/5616844-all-about-proposals). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Change a catalogue rate after quoting; accepted values stay fixed and repeated conversion creates no extra allocation.
 
-#### F09.01 — Service catalogue
+- **F09 — Service catalog, estimates and quoting**
 
-- [ ] **S · Deliver:** Reusable service codes, descriptions, unit, quantity, currency, selling rate and active/archive state.
+  - [ ] <a id="f09-01"></a>**F09.01 — Service catalogue** · `S`
 
-**Flow and records:** Maintain catalog code/title/description, unit, quantity, selling rate, currency, active state and revision; historic use archives rather than deletes.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03)
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Deliver:** Reusable service codes, descriptions, unit, quantity, currency, selling rate and active/archive state.
 
-**Accept:** Archiving a catalog service leaves earlier estimate snapshots reproducible.
+    **Flow and records:** Maintain catalog code/title/description, unit, quantity, selling rate, currency, active state and revision; historic use archives rather than deletes.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-#### F09.02 — Exact estimate lines
+    **Accept:** Archiving a catalog service leaves earlier estimate snapshots reproducible.
 
-- [ ] **S · Deliver:** Hourly/fixed/unit/milestone estimate lines with exact quantities and approved tax/discount policy.
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Flow and records:** Author hourly/fixed/unit/milestone lines in one currency using the selected exact pricing/tax/discount profile.
+  - [ ] <a id="f09-02"></a>**F09.02 — Exact estimate lines** · `S`
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F07.01](#f07-01), [F09.01](#f09-01)
 
-**Accept:** Unsupported tax policy blocks readiness rather than silently substituting a rate.
+    **Deliver:** Hourly/fixed/unit/milestone estimate lines with exact quantities and approved tax/discount policy.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Flow and records:** Author hourly/fixed/unit/milestone lines in one currency using the selected exact pricing/tax/discount profile.
 
-#### F09.03 — Estimate scope and validity
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-- [ ] **S · Deliver:** Scope, assumptions, exclusions, dependencies, effort, contingency and validity dates.
+    **Accept:** Unsupported tax policy blocks readiness rather than silently substituting a rate.
 
-**Flow and records:** Record assumptions, exclusions, dependencies, validity and explicit effort/contingency context alongside the selected commercial scenario.
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+  - [ ] <a id="f09-03"></a>**F09.03 — Estimate scope and validity** · `S`
 
-**Accept:** Missing scope terms remain incomplete fields instead of generated contractual promises.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.02](#f09-02)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Deliver:** Scope, assumptions, exclusions, dependencies, effort, contingency and validity dates.
 
-#### F09.04 — Quote alternatives
+    **Flow and records:** Record assumptions, exclusions, dependencies, validity and explicit effort/contingency context alongside the selected commercial scenario.
 
-- [ ] **S · Deliver:** Alternative/optional lines and scenario comparison that counts only the selected scenario.
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-**Flow and records:** Compare alternatives explicitly and select which scenario/options contribute to the commercial snapshot.
+    **Accept:** Missing scope terms remain incomplete fields instead of generated contractual promises.
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Accept:** Choosing B removes A from the selected total without deleting either scenario's history.
+  - [ ] <a id="f09-04"></a>**F09.04 — Quote alternatives** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.02](#f09-02)
 
-#### F09.05 — Private estimate costing
+    **Deliver:** Alternative/optional lines and scenario comparison that counts only the selected scenario.
 
-- [ ] **S · Deliver:** Separate private cost assumptions and incomplete-margin warnings when inputs are missing.
+    **Flow and records:** Compare alternatives explicitly and select which scenario/options contribute to the commercial snapshot.
 
-**Flow and records:** Keep optional cost assumptions behind financial grants and identify incomplete margin when any required input is missing.
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Accept:** Choosing B removes A from the selected total without deleting either scenario's history.
 
-**Accept:** An absent cost is not treated as zero or exported in client output.
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+  - [ ] <a id="f09-05"></a>**F09.05 — Private estimate costing** · `S`
 
-#### F09.06 — Catalogue price snapshots
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.02](#f09-02), [F17.02](#f17-02)
 
-- [ ] **S · Deliver:** Versioned catalog-to-estimate snapshots; draft refresh requires a before/after preview.
+    **Deliver:** Separate private cost assumptions and incomplete-margin warnings when inputs are missing.
 
-**Flow and records:** Save catalog revision references and snapshot values; refreshing an unaccepted draft requires a visible before/after preview.
+    **Flow and records:** Keep optional cost assumptions behind financial grants and identify incomplete margin when any required input is missing.
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-**Accept:** Ten hours at USD 100 stays USD 1,000 after the catalog changes to USD 120.
+    **Accept:** An absent cost is not treated as zero or exported in client output.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-#### F09.07 — Estimate approval
+  - [ ] <a id="f09-06"></a>**F09.06 — Catalogue price snapshots** · `S`
 
-- [ ] **S · Deliver:** Quote readiness/approval and immutable embedded or accepted versions.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.01](#f09-01), [F09.02](#f09-02)
 
-**Flow and records:** Move a complete draft to ready under the proposal workflow; embedded/accepted values freeze and later revisions cannot mutate them.
+    **Deliver:** Versioned catalog-to-estimate snapshots; draft refresh requires a before/after preview.
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Flow and records:** Save catalog revision references and snapshot values; refreshing an unaccepted draft requires a visible before/after preview.
 
-**Accept:** A stale draft revision cannot overwrite the estimate embedded in shared v1.
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Accept:** Ten hours at USD 100 stays USD 1,000 after the catalog changes to USD 120.
 
-#### F09.08 — Quote conversion
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-- [ ] **S · Deliver:** Selected accepted lines convert to milestones/invoice drafts once, with source quantity/amount tracking.
+  - [ ] <a id="f09-07"></a>**F09.07 — Estimate approval** · `S`
 
-**Flow and records:** Select accepted source lines/quantities for an invoice/milestone preview and retain consumed conversion identity.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.03](#f09-03)
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Deliver:** Quote readiness/approval and immutable embedded or accepted versions.
 
-**Accept:** Retrying the same conversion cannot duplicate the amount already handed off.
+    **Flow and records:** Move a complete draft to ready under the proposal workflow; embedded/accepted values freeze and later revisions cannot mutate them.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-#### F09.09 — Localized estimates
+    **Accept:** A stale draft revision cannot overwrite the estimate embedded in shared v1.
 
-- [ ] **S · Deliver:** English/Arabic output and exact saved calculation policy references.
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Flow and records:** Render the saved estimate with its document language and calculation policy, without translating legal names or changing amounts.
+  - [ ] <a id="f09-08"></a>**F09.08 — Quote conversion** · `S`
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.07](#f09-07), [F19.10](#f19-10)
 
-**Accept:** English and Arabic versions preserve the identical selected currency components.
+    **Deliver:** Selected accepted lines convert to milestones/invoice drafts once, with source quantity/amount tracking.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Flow and records:** Select accepted source lines/quantities for an invoice/milestone preview and retain consumed conversion identity.
 
-#### F09.10 — Service bundles
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-- [ ] **E · Deliver:** Reusable service bundles/packages with explicitly priced included/optional services.
+    **Accept:** Retrying the same conversion cannot duplicate the amount already handed off.
 
-**Proposed flow and records:** Service packages remain proposed collections of catalog lines; included versus optional options still use explicit scenario selection.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+  - [ ] <a id="f09-09"></a>**F09.09 — Localized estimates** · `S`
 
-**Accept:** A package cannot count both alternative offerings in one accepted total.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.02](#f09-02)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Deliver:** English/Arabic output and exact saved calculation policy references.
 
-#### F09.11 — Dated price books
+    **Flow and records:** Render the saved estimate with its document language and calculation policy, without translating legal names or changing amounts.
 
-- [ ] **E · Deliver:** Volume/tier price books and customer-specific price agreements with approved effective-date rules.
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-**Proposed flow and records:** Tier/customer price books require a separate effective-date/quantity policy; they may not silently reprice accepted source snapshots.
+    **Accept:** English and Arabic versions preserve the identical selected currency components.
 
-**Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+    **Docs basis:** Documented parent requirement/contract: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Accept:** An unselected tier policy stays unavailable and changing a price book cannot affect shared v1.
+  - [ ] <a id="f09-10"></a>**F09.10 — Service bundles** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.01](#f09-01)
 
-#### F09.12 — Quote negotiation history
+    **Deliver:** Reusable service bundles/packages with explicitly priced included/optional services.
 
-- [ ] **E · Deliver:** Quote comparison/negotiation history and validity-expiry reminders.
+    **Proposed flow and records:** Service packages remain proposed collections of catalog lines; included versus optional options still use explicit scenario selection.
 
-**Proposed flow and records:** Negotiation reminders and comparisons remain proposed; source proposal revisions and expiry evidence are retained rather than replacing prior terms.
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+    **Accept:** A package cannot count both alternative offerings in one accepted total.
 
-**Accept:** An expired quote reminder cannot silently extend validity or accept new prices.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+  - [ ] <a id="f09-11"></a>**F09.11 — Dated price books** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.01](#f09-01)
+
+    **Deliver:** Volume/tier price books and customer-specific price agreements with approved effective-date rules.
+
+    **Proposed flow and records:** Tier/customer price books require a separate effective-date/quantity policy; they may not silently reprice accepted source snapshots.
+
+    **Documented constraints:** One currency and exact arithmetic apply; accepted/embedded estimates freeze, alternatives do not double count and missing cost is unavailable margin.
+
+    **Accept:** An unselected tier policy stays unavailable and changing a price book cannot affect shared v1.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-004 — Service catalog, estimates, and scenario comparison](docs/specs/client-lifecycle.md#crm-004--service-catalog-estimates-and-scenario-comparison).
+
+  - [ ] <a id="f09-12"></a>**F09.12 — Quote negotiation history** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F09.03](#f09-03), [F10.06](#f10-06)
+
+    **Deliver:** Quote comparison/negotiation history and validity-expiry reminders.
+
+    **Proposed flow and records:** Negotiation reminders and comparisons remain proposed; source proposal revisions and expiry evidence are retained rather than replacing prior terms.
+
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+
+    **Accept:** An expired quote reminder cannot silently extend validity or accept new prices.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
 <a id="category-10"></a>
 
 ### 9.10 Proposals, contracts and acceptance
 
-**Owner/package:** P02/P08. **Prerequisites for each phase:** F09.02 and private artifact foundation P01.6; client actions require F29.01. **Optional extension wave:** X1.
+**Owner/package:** P02/P08. **Original branch context (specific Requires below governs feature order):** F09.02 and private artifact foundation P01.6; client actions require F29.01. **Optional extension wave:** X1.
 
 **Packages:** P02.3/P02.4, P07.4, P08.3. **Baseline links:** CRM-005–007, Q-01/Q-10.
 
-**Research context:** [Plutio proposals/contracts](https://www.plutio.com/help/proposals-and-contracts). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Change a shared version and retry a decision; bind evidence to the exact version and exclude private cost fields.
 
-#### F10.01 — Proposal authoring
+- **F10 — Proposals, contracts and acceptance**
 
-- [ ] **S · Deliver:** Proposal authoring with objectives, scope, deliverables, timeline, estimate and payment/acceptance terms.
+  - [ ] <a id="f10-01"></a>**F10.01 — Proposal authoring** · `S`
 
-**Flow and records:** Author objectives, scope/exclusions, deliverables, dependencies, timeline, estimate and payment/acceptance terms against one client/opportunity version.
+    **Requires:** [F03.06](#f03-06), [F09.02](#f09-02), [F38.05](#f38-05)
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+    **Deliver:** Proposal authoring with objectives, scope, deliverables, timeline, estimate and payment/acceptance terms.
 
-**Accept:** Readiness identifies missing required sections or explicitly labeled nonpriced discovery scope.
+    **Flow and records:** Author objectives, scope/exclusions, deliverables, dependencies, timeline, estimate and payment/acceptance terms against one client/opportunity version.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
 
-#### F10.02 — Proposal lifecycle
+    **Accept:** Readiness identifies missing required sections or explicitly labeled nonpriced discovery scope.
 
-- [ ] **S · Deliver:** Draft/ready/shared/accepted/rejected/expired/withdrawn/superseded lifecycle with exact revision identity.
+    **Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
-**Flow and records:** Apply draft/ready/shared and terminal response states to the exact revision, preserving withdrawn/superseded alternatives.
+  - [ ] <a id="f10-02"></a>**F10.02 — Proposal lifecycle** · `S`
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+    **Requires:** [F03.06](#f03-06), [F10.01](#f10-01)
 
-**Accept:** A response to old v1 cannot approve current v2.
+    **Deliver:** Draft/ready/shared/accepted/rejected/expired/withdrawn/superseded lifecycle with exact revision identity.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+    **Flow and records:** Apply draft/ready/shared and terminal response states to the exact revision, preserving withdrawn/superseded alternatives.
 
-#### F10.03 — Recipient preview
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
 
-- [ ] **S · Deliver:** Recipient/content preview; private costs/internal notes excluded by construction.
+    **Accept:** A response to old v1 cannot approve current v2.
 
-**Flow and records:** Preview selected recipients and the precise client projection before export or sharing, excluding separate internal notes/cost assumptions.
+    **Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+  - [ ] <a id="f10-03"></a>**F10.03 — Recipient preview** · `S`
 
-**Accept:** Client preview contains neither private cost rates nor other-client attachments.
+    **Requires:** [F03.06](#f03-06), [F10.01](#f10-01)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+    **Deliver:** Recipient/content preview; private costs/internal notes excluded by construction.
 
-#### F10.04 — Sharing evidence
+    **Flow and records:** Preview selected recipients and the precise client projection before export or sharing, excluding separate internal notes/cost assumptions.
 
-- [ ] **S · Deliver:** Export, recorded sharing and verified delivery tracked as distinct evidence.
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
 
-**Flow and records:** Record export, actual sharing method/recipient and verified delivery as separate evidence, with retries retaining the same source revision.
+    **Accept:** Client preview contains neither private cost rates nor other-client attachments.
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+    **Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
-**Accept:** A downloaded PDF with no share event is Exported, sharing not recorded.
+  - [ ] <a id="f10-04"></a>**F10.04 — Sharing evidence** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+    **Requires:** [F03.06](#f03-06), [F10.03](#f10-03), [F10.05](#f10-05)
 
-#### F10.05 — Proposal versioning
+    **Deliver:** Export, recorded sharing and verified delivery tracked as distinct evidence.
 
-- [ ] **S · Deliver:** Content changes after sharing create a new version while prior outputs remain reproducible.
+    **Flow and records:** Record export, actual sharing method/recipient and verified delivery as separate evidence, with retries retaining the same source revision.
 
-**Flow and records:** After first sharing, content edits create a new draft revision and retain prior output, parties and issued metadata.
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+    **Accept:** A downloaded PDF with no share event is Exported, sharing not recorded.
 
-**Accept:** Editing scope/address after v1 sharing leaves the v1 PDF reproducible.
+    **Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
-**Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+  - [ ] <a id="f10-05"></a>**F10.05 — Proposal versioning** · `S`
 
-#### F10.06 — Manual decision evidence
+    **Requires:** [F03.06](#f03-06), [F10.01](#f10-01)
 
-- [ ] **S · Deliver:** Manual decision capture recording the actual capturing operator, purported actor, method, timestamps and evidence.
+    **Deliver:** Content changes after sharing create a new version while prior outputs remain reproducible.
 
-**Flow and records:** Record manual decision method, purported actor, capturing member, occurred/recorded timestamps, selected options and evidence level separately.
+    **Flow and records:** After first sharing, content edits create a new draft revision and retain prior output, parties and issued metadata.
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
 
-**Accept:** A phone acceptance is labeled owner-recorded and cannot display as verified signature.
+    **Accept:** Editing scope/address after v1 sharing leaves the v1 PDF reproducible.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+    **Docs basis:** Documented parent requirement/contract: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
-#### F10.07 — Verified client acceptance
+  - [ ] <a id="f10-06"></a>**F10.06 — Manual decision evidence** · `S`
 
-- [ ] **S · Deliver:** Authenticated client decisions on exact published versions with duplicate-click/callback protection.
+    **Requires:** [F03.06](#f03-06), [F10.05](#f10-05)
 
-**Flow and records:** Accept/reject only the currently eligible published version for the intended authorized reviewer using idempotent decision identity.
+    **Deliver:** Manual decision capture recording the actual capturing operator, purported actor, method, timestamps and evidence.
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Flow and records:** Record manual decision method, purported actor, capturing member, occurred/recorded timestamps, selected options and evidence level separately.
 
-**Accept:** Double-click acceptance creates one event and no duplicate project handoff.
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+    **Accept:** A phone acceptance is labeled owner-recorded and cannot display as verified signature.
 
-#### F10.08 — Decision disputes and withdrawal
+    **Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
 
-- [ ] **S · Deliver:** Rejection/change request/dispute/correction history; stale/withdrawn acceptance requires explicit review.
+  - [ ] <a id="f10-07"></a>**F10.07 — Verified client acceptance** · `S`
 
-**Flow and records:** Preserve rejected/change-request/dispute evidence; stale/expired/withdrawn responses follow explicit review or a newly eligible version.
+    **Requires:** [F03.06](#f03-06), [F10.05](#f10-05), [F29.01](#f29-01), [F29.02](#f29-02)
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Deliver:** Authenticated client decisions on exact published versions with duplicate-click/callback protection.
 
-**Accept:** Withdrawing v1 cannot make a queued response silently accept v2.
+    **Flow and records:** Accept/reject only the currently eligible published version for the intended authorized reviewer using idempotent decision identity.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
 
-#### F10.09 — Agreement register
+    **Accept:** Double-click acceptance creates one event and no duplicate project handoff.
 
-- [ ] **S · Deliver:** Agreement/SOW/NDA/support agreement files and metadata with review/signature/executed/ended lifecycle.
+    **Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
 
-**Flow and records:** Maintain agreement/SOW/NDA/support document parties, term/notice dates, related work and execution/evidence states.
+  - [ ] <a id="f10-08"></a>**F10.08 — Decision disputes and withdrawal** · `S`
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+    **Requires:** [F03.06](#f03-06), [F10.06](#f10-06)
 
-**Accept:** Ending a contract does not void a linked invoice or delete delivered work.
+    **Deliver:** Rejection/change request/dispute/correction history; stale/withdrawn acceptance requires explicit review.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Flow and records:** Preserve rejected/change-request/dispute evidence; stale/expired/withdrawn responses follow explicit review or a newly eligible version.
 
-#### F10.10 — Contract amendments
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
 
-- [ ] **S · Deliver:** Amendments reference executed originals; terms and obligations are not rewritten in place.
+    **Accept:** Withdrawing v1 cannot make a queued response silently accept v2.
 
-**Flow and records:** Create a separate amendment linked to the executed original; never edit executed content or backfill invented clauses.
+    **Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+  - [ ] <a id="f10-09"></a>**F10.09 — Agreement register** · `S`
 
-**Accept:** Changing an executed support period leaves both original and amendment traceable.
+    **Requires:** [F03.06](#f03-06), [F07.01](#f07-01), [F38.05](#f38-05)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Deliver:** Agreement/SOW/NDA/support agreement files and metadata with review/signature/executed/ended lifecycle.
 
-#### F10.11 — Contract obligations
+    **Flow and records:** Maintain agreement/SOW/NDA/support document parties, term/notice dates, related work and execution/evidence states.
 
-- [ ] **S · Deliver:** Renewal/notice/termination dates, responsible parties and obligation due/satisfied/waived/disputed evidence.
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
 
-**Flow and records:** Track obligations with responsible actor, due state and satisfaction/waiver/dispute evidence; compute reminders from explicit date/timezone.
+    **Accept:** Ending a contract does not void a linked invoice or delete delivered work.
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+    **Docs basis:** Documented parent requirement/contract: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
 
-**Accept:** An ambiguous auto-renewal clause stays unresolved instead of being guessed.
+  - [ ] <a id="f10-10"></a>**F10.10 — Contract amendments** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Requires:** [F03.06](#f03-06), [F10.09](#f10-09)
 
-#### F10.12 — Signature provider
+    **Deliver:** Amendments reference executed originals; terms and obligations are not rewritten in place.
 
-- [ ] **S · Deliver:** Approved signature-provider integration and legal-evidence classification when enabled.
+    **Flow and records:** Create a separate amendment linked to the executed original; never edit executed content or backfill invented clauses.
 
-**Flow and records:** Connected signature behavior awaits Q-10 jurisdiction, provider and evidence policy; verified receipts alone establish supported signature states.
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Accept:** Changing an executed support period leaves both original and amendment traceable.
 
-**Accept:** A provider timeout remains awaiting confirmation rather than accepted.
+    **Docs basis:** Documented parent requirement/contract: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
 
-**Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+  - [ ] <a id="f10-11"></a>**F10.11 — Contract obligations** · `S`
 
-#### F10.13 — Clause library
+    **Requires:** [F03.06](#f03-06), [F10.09](#f10-09), [F06.06](#f06-06)
 
-- [ ] **E · Deliver:** Controlled reusable clause/template library with reviewer/version provenance and no invented legal advice.
+    **Deliver:** Renewal/notice/termination dates, responsible parties and obligation due/satisfied/waived/disputed evidence.
 
-**Proposed flow and records:** Clause/template reuse remains proposed controlled content; reviewer/version provenance cannot become a universal legal-compliance guarantee.
+    **Flow and records:** Track obligations with responsible actor, due state and satisfaction/waiver/dispute evidence; compute reminders from explicit date/timezone.
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
 
-**Accept:** A missing legal clause is surfaced as incomplete rather than fabricated from a template name.
+    **Accept:** An ambiguous auto-renewal clause stays unresolved instead of being guessed.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Docs basis:** Documented parent requirement/contract: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
 
-#### F10.14 — Signature routing
+  - [ ] <a id="f10-12"></a>**F10.12 — Signature provider** · `S`
 
-- [ ] **E · Deliver:** Multi-party/multi-step signature routing, delegated authority and reminder policy after Q-10 approval.
+    **Requires:** [F03.06](#f03-06), [F10.09](#f10-09), [F27.02](#f27-02)
 
-**Proposed flow and records:** Multi-party/delegated routing needs the approved signer/authority policy; current docs explicitly leave those choices blocking.
+    **Deliver:** Approved signature-provider integration and legal-evidence classification when enabled.
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Flow and records:** Connected signature behavior awaits Q-10 jurisdiction, provider and evidence policy; verified receipts alone establish supported signature states.
 
-**Accept:** A team operator cannot impersonate an absent client signatory or supply both roles without policy.
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+    **Accept:** A provider timeout remains awaiting confirmation rather than accepted.
 
-#### F10.15 — Commercial version comparison
+    **Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
 
-- [ ] **E · Deliver:** Version comparison highlighting changed scope/price/terms before reapproval.
+  - [ ] <a id="f10-13"></a>**F10.13 — Clause library** · `E`
 
-**Proposed flow and records:** Version comparison is proposed over immutable revisions; show changed content without modifying prior acceptance scope or saved financial values.
+    **Requires:** [F03.06](#f03-06), [F10.09](#f10-09)
 
-**Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+    **Deliver:** Controlled reusable clause/template library with reviewer/version provenance and no invented legal advice.
 
-**Accept:** Comparing v1/v2 cannot retroactively move v1's approval to v2.
+    **Proposed flow and records:** Clause/template reuse remains proposed controlled content; reviewer/version provenance cannot become a universal legal-compliance guarantee.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+
+    **Accept:** A missing legal clause is surfaced as incomplete rather than fabricated from a template name.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+
+  - [ ] <a id="f10-14"></a>**F10.14 — Signature routing** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F10.12](#f10-12)
+
+    **Deliver:** Multi-party/multi-step signature routing, delegated authority and reminder policy after Q-10 approval.
+
+    **Proposed flow and records:** Multi-party/delegated routing needs the approved signer/authority policy; current docs explicitly leave those choices blocking.
+
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+
+    **Accept:** A team operator cannot impersonate an absent client signatory or supply both roles without policy.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+
+  - [ ] <a id="f10-15"></a>**F10.15 — Commercial version comparison** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F10.05](#f10-05)
+
+    **Deliver:** Version comparison highlighting changed scope/price/terms before reapproval.
+
+    **Proposed flow and records:** Version comparison is proposed over immutable revisions; show changed content without modifying prior acceptance scope or saved financial values.
+
+    **Documented constraints:** Sharing freezes a particular revision; later changes create a new draft and PDF export alone is not proof of sharing.
+
+    **Accept:** Comparing v1/v2 cannot retroactively move v1's approval to v2.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-005 — Proposals, document revisions, and sharing](docs/specs/client-lifecycle.md#crm-005--proposals-document-revisions-and-sharing).
 
 <a id="category-11"></a>
 
 ### 9.11 Onboarding, engagement handoff and renewals
 
-**Owner/package:** P02/P03. **Prerequisites for each phase:** F07.01; accepted handoff also F10.07/F12.01; portal content F29.02. **Optional extension wave:** X1.
+**Owner/package:** P02/P03. **Original branch context (specific Requires below governs feature order):** F07.01; accepted handoff also F10.06/F12.01 (manual acceptance; verified portal acceptance is an optional alternative); portal content F29.02. **Optional extension wave:** X1.
 
 **Package:** P02.4 with P03 project services. **Baseline links:** CRM-008–010.
 
 **Required group acceptance:** Retry handoff and reopen an engagement; create one mapped project without duplicating tasks or leaking access details.
 
-#### F11.01 — Onboarding questionnaires
+- **F11 — Onboarding, engagement handoff and renewals**
 
-- [ ] **S · Deliver:** Engagement-specific onboarding questionnaires, readiness checklists and assignees/due dates.
+  - [ ] <a id="f11-01"></a>**F11.01 — Onboarding questionnaires** · `S`
 
-**Flow and records:** Instantiate engagement questionnaires and readiness items with responsible people, due dates and explicit blocking/nonblocking classification.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06)
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+    **Deliver:** Engagement-specific onboarding questionnaires, readiness checklists and assignees/due dates.
 
-**Accept:** A blocking unverified access item prevents readiness while a documented nonessential waiver does not.
+    **Flow and records:** Instantiate engagement questionnaires and readiness items with responsible people, due dates and explicit blocking/nonblocking classification.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-#### F11.02 — Client information requests
+    **Accept:** A blocking unverified access item prevents readiness while a documented nonessential waiver does not.
 
-- [ ] **S · Deliver:** Request and track required client files/information with explicit received/missing/blocked states.
+    **Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-**Flow and records:** Track requested information/files as missing, waiting, received or verified according to the onboarding item rather than inferring receipt from a filename.
+  - [ ] <a id="f11-02"></a>**F11.02 — Client information requests** · `S`
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F11.01](#f11-01)
 
-**Accept:** A staged unverified upload cannot satisfy a blocking information request.
+    **Deliver:** Request and track required client files/information with explicit received/missing/blocked states.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+    **Flow and records:** Track requested information/files as missing, waiting, received or verified according to the onboarding item rather than inferring receipt from a filename.
 
-#### F11.03 — Access-readiness checklist
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-- [ ] **S · Deliver:** Record access readiness using safe external references; do not turn notes into a credential vault.
+    **Accept:** A staged unverified upload cannot satisfy a blocking information request.
 
-**Flow and records:** Record access verification and safe external references only; repository/credential readiness is an owner assertion, not secret custody.
+    **Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+  - [ ] <a id="f11-03"></a>**F11.03 — Access-readiness checklist** · `S`
 
-**Accept:** An invitation remains waiting until access is actually verified.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F11.01](#f11-01)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+    **Deliver:** Record access readiness using safe external references; do not turn notes into a credential vault.
 
-#### F11.04 — Onboarding templates
+    **Flow and records:** Record access verification and safe external references only; repository/credential readiness is an owner assertion, not secret custody.
 
-- [ ] **S · Deliver:** Copy reviewed onboarding/project/task templates with correctly remapped IDs.
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-**Flow and records:** Copy a versioned onboarding/project/checklist instance with remapped references and preserve answers independently of later template revisions.
+    **Accept:** An invitation remains waiting until access is actually verified.
 
-**Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
+    **Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-**Accept:** Updating a template cannot erase a prior engagement's submitted response.
+  - [ ] <a id="f11-04"></a>**F11.04 — Onboarding templates** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F11.01](#f11-01)
 
-#### F11.05 — Engagement-to-project handoff
+    **Deliver:** Copy reviewed onboarding/project/task templates with correctly remapped IDs.
 
-- [ ] **S · Deliver:** Accepted-version-to-project conversion with one handoff per source version and retry-safe mapping.
+    **Flow and records:** Copy a versioned onboarding/project/checklist instance with remapped references and preserve answers independently of later template revisions.
 
-**Flow and records:** Preview projects/tasks/milestones from one selected accepted source and commit source mapping with the created result.
+    **Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
 
-**Documented constraints:** Source mapping and project creation are atomic or resumable under one handoff key; accepted amendments require reviewed scope changes.
+    **Accept:** Updating a template cannot erase a prior engagement's submitted response.
 
-**Accept:** Two Create project attempts return one mapped project and one task set.
+    **Docs basis:** Documented parent requirement/contract: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
 
-**Docs basis:** Documented parent requirement/contract: [CRM-009 — Accepted-engagement handoff, loss, and reopen](docs/specs/client-lifecycle.md#crm-009--accepted-engagement-handoff-loss-and-reopen).
+  - [ ] <a id="f11-05"></a>**F11.05 — Engagement-to-project handoff** · `S`
 
-#### F11.06 — Accepted scope baseline
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F10.06](#f10-06), [F12.01](#f12-01)
 
-- [ ] **S · Deliver:** Preserve accepted scope, commercial terms and source-document links in project baselines.
+    **Deliver:** Accepted-version-to-project conversion with one handoff per source version and retry-safe mapping.
 
-**Flow and records:** Preserve accepted commercial versions, exclusions, effort/budget baseline and change history separately from current working estimates.
+    **Flow and records:** Preview projects/tasks/milestones from one selected accepted source and commit source mapping with the created result.
 
-**Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+    **Documented constraints:** Source mapping and project creation are atomic or resumable under one handoff key; accepted amendments require reviewed scope changes.
 
-**Accept:** A later amendment enters scope-change review rather than overwriting the original agreement.
+    **Accept:** Two Create project attempts return one mapped project and one task set.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
+    **Docs basis:** Documented parent requirement/contract: [CRM-009 — Accepted-engagement handoff, loss, and reopen](docs/specs/client-lifecycle.md#crm-009--accepted-engagement-handoff-loss-and-reopen).
 
-#### F11.07 — Engagement reopening
+  - [ ] <a id="f11-06"></a>**F11.06 — Accepted scope baseline** · `S`
 
-- [ ] **S · Deliver:** Track lost/reopened engagement cycles and explain project creation/close decisions.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F11.05](#f11-05)
 
-**Flow and records:** Reopen commercial work through a new cycle/revision; retain earlier won/lost outcomes, deliverables and financial evidence.
+    **Deliver:** Preserve accepted scope, commercial terms and source-document links in project baselines.
 
-**Documented constraints:** Source mapping and project creation are atomic or resumable under one handoff key; accepted amendments require reviewed scope changes.
+    **Flow and records:** Preserve accepted commercial versions, exclusions, effort/budget baseline and change history separately from current working estimates.
 
-**Accept:** A lost engagement with a discovery invoice keeps the invoice readable.
+    **Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-009 — Accepted-engagement handoff, loss, and reopen](docs/specs/client-lifecycle.md#crm-009--accepted-engagement-handoff-loss-and-reopen).
+    **Accept:** A later amendment enters scope-change review rather than overwriting the original agreement.
 
-#### F11.08 — Renewal reviews
+    **Docs basis:** Documented parent requirement/contract: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
 
-- [ ] **S · Deliver:** Renewal/account-review reminders and relationship health with visible evidence/override reasons.
+  - [ ] <a id="f11-07"></a>**F11.07 — Engagement reopening** · `S`
 
-**Flow and records:** Drive renewal/account-review notices from recorded dates and source-linked deterministic health context, with visible reasons and stale coverage.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F10.06](#f10-06)
 
-**Documented constraints:** Health links to dated source evidence; missing history means unknown, and renewal opportunities never renew contracts or charge clients.
+    **Deliver:** Track lost/reopened engagement cycles and explain project creation/close decisions.
 
-**Accept:** Creating a renewal opportunity cannot renew a contract or charge the client.
+    **Flow and records:** Reopen commercial work through a new cycle/revision; retain earlier won/lost outcomes, deliverables and financial evidence.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-010 — Renewals, account reviews, and explainable health](docs/specs/client-lifecycle.md#crm-010--renewals-account-reviews-and-explainable-health).
+    **Documented constraints:** Source mapping and project creation are atomic or resumable under one handoff key; accepted amendments require reviewed scope changes.
 
-#### F11.09 — Client welcome packet
+    **Accept:** A lost engagement with a discovery invoice keeps the invoice readable.
 
-- [ ] **E · Deliver:** Welcome packet and client setup checklist published through the portal.
+    **Docs basis:** Documented parent requirement/contract: [CRM-009 — Accepted-engagement handoff, loss, and reopen](docs/specs/client-lifecycle.md#crm-009--accepted-engagement-handoff-loss-and-reopen).
 
-**Proposed flow and records:** Welcome packets remain proposed portal publications with deliberate audience, version and selected content; internal onboarding notes stay private.
+  - [ ] <a id="f11-08"></a>**F11.08 — Renewal reviews** · `S`
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F10.09](#f10-09), [F06.06](#f06-06)
 
-**Accept:** Changing an internal checklist cannot silently republish client-visible instructions.
+    **Deliver:** Renewal/account-review reminders and relationship health with visible evidence/override reasons.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Flow and records:** Drive renewal/account-review notices from recorded dates and source-linked deterministic health context, with visible reasons and stale coverage.
 
-#### F11.10 — Client offboarding
+    **Documented constraints:** Health links to dated source evidence; missing history means unknown, and renewal opportunities never renew contracts or charge clients.
 
-- [ ] **E · Deliver:** Reusable client handover/offboarding checklist including file delivery and access-removal confirmations.
+    **Accept:** Creating a renewal opportunity cannot renew a contract or charge the client.
 
-**Proposed flow and records:** Offboarding checklists remain proposed evidence of handover and access-removal review, without storing passwords or claiming an external transfer happened automatically.
+    **Docs basis:** Documented parent requirement/contract: [CRM-010 — Renewals, account reviews, and explainable health](docs/specs/client-lifecycle.md#crm-010--renewals-account-reviews-and-explainable-health).
 
-**Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+  - [ ] <a id="f11-09"></a>**F11.09 — Client welcome packet** · `E`
 
-**Accept:** Confirming a checklist cannot delete member time or an outstanding invoice.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F11.01](#f11-01), [F27.03](#f27-03)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+    **Deliver:** Welcome packet and client setup checklist published through the portal.
+
+    **Proposed flow and records:** Welcome packets remain proposed portal publications with deliberate audience, version and selected content; internal onboarding notes stay private.
+
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+
+    **Accept:** Changing an internal checklist cannot silently republish client-visible instructions.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+
+  - [ ] <a id="f11-10"></a>**F11.10 — Client offboarding** · `E`
+
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F12.07](#f12-07), [F07.06](#f07-06)
+
+    **Deliver:** Reusable client handover/offboarding checklist including file delivery and access-removal confirmations.
+
+    **Proposed flow and records:** Offboarding checklists remain proposed evidence of handover and access-removal review, without storing passwords or claiming an external transfer happened automatically.
+
+    **Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+
+    **Accept:** Confirming a checklist cannot delete member time or an outstanding invoice.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
 
 <a id="category-12"></a>
 
 ### 9.12 Projects, portfolios and commercial scope
 
-**Owner/package:** P03. **Prerequisites for each phase:** F07.01/F03.06; finance summaries require authoritative P05 source facts. **Optional extension wave:** X1.
+**Owner/package:** P03. **Original branch context (specific Requires below governs feature order):** F07.01/F03.06; finance summaries require authoritative P05 source facts. **Optional extension wave:** X1.
 
 **Packages:** P03.1/P03.4. **Baseline links:** WRK-001/008/012–014.
 
 **Required group acceptance:** Close or transfer a project with active time and invoices; preserve links and deny unauthorized cost access.
 
-#### F12.01 — Project lifecycle
+- **F12 — Projects, portfolios and commercial scope**
 
-- [ ] **S · Deliver:** Project create/edit lifecycle with client, owner/members, timezone, dates and explicit permissions.
+  - [ ] <a id="f12-01"></a>**F12.01 — Project lifecycle** · `S`
 
-**Flow and records:** Create a client-linked or explicitly internal project with title, owner/grants, timezone, dates, billing context and planned/active/on-hold/completed state.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04)
 
-**Documented constraints:** Project lifecycle and archive differ; completion reviews unresolved work and an archived project rejects new work until restored.
+    **Deliver:** Project create/edit lifecycle with client, owner/members, timezone, dates and explicit permissions.
 
-**Accept:** An archived project rejects new work and proposal retry returns the original created project.
+    **Flow and records:** Create a client-linked or explicitly internal project with title, owner/grants, timezone, dates, billing context and planned/active/on-hold/completed state.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-001 — Project creation and lifecycle](docs/specs/work-management.md#wrk-001--project-creation-and-lifecycle).
+    **Documented constraints:** Project lifecycle and archive differ; completion reviews unresolved work and an archived project rejects new work until restored.
 
-#### F12.02 — Project overview
+    **Accept:** An archived project rejects new work and proposal retry returns the original created project.
 
-- [ ] **S · Deliver:** Project summary, status/health, linked commercial documents and work/time/finance tabs filtered by grants.
+    **Docs basis:** Documented parent requirement/contract: [WRK-001 — Project creation and lifecycle](docs/specs/work-management.md#wrk-001--project-creation-and-lifecycle).
 
-**Flow and records:** Compose project tabs from authorized work/time/finance projections; summary status is not permission to expose private source fields.
+  - [ ] <a id="f12-02"></a>**F12.02 — Project overview** · `S`
 
-**Documented constraints:** Project lifecycle and archive differ; completion reviews unresolved work and an archived project rejects new work until restored.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01)
 
-**Accept:** A Contributor can read assigned work without receiving restricted profitability props.
+    **Deliver:** Project summary, status/health, linked commercial documents and work/time/finance tabs filtered by grants.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-001 — Project creation and lifecycle](docs/specs/work-management.md#wrk-001--project-creation-and-lifecycle).
+    **Flow and records:** Compose project tabs from authorized work/time/finance projections; summary status is not permission to expose private source fields.
 
-#### F12.03 — Project billing model
+    **Documented constraints:** Project lifecycle and archive differ; completion reviews unresolved work and an archived project rejects new work until restored.
 
-- [ ] **S · Deliver:** Hourly/fixed/milestone/mixed billing context with versioned budgets/rate references.
+    **Accept:** A Contributor can read assigned work without receiving restricted profitability props.
 
-**Flow and records:** Store the selected billing model/currency and versioned budget/rate references; distinguish estimates, actual time, invoices and cash.
+    **Docs basis:** Documented parent requirement/contract: [WRK-001 — Project creation and lifecycle](docs/specs/work-management.md#wrk-001--project-creation-and-lifecycle).
 
-**Documented constraints:** Budget is a versioned plan; time, issued revenue, collected cash and commitments differ, and billing changes cannot reprice history.
+  - [ ] <a id="f12-03"></a>**F12.03 — Project billing model** · `S`
 
-**Accept:** Recording fixed-fee effort does not generate an hourly invoice automatically.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01), [F19.02](#f19-02)
 
-**Docs basis:** Documented parent requirement/contract: [WRK-012 — Budgets, rates and profitability context](docs/specs/work-management.md#wrk-012--budgets-rates-and-profitability-context).
+    **Deliver:** Hourly/fixed/milestone/mixed billing context with versioned budgets/rate references.
 
-#### F12.04 — Scope change requests
+    **Flow and records:** Store the selected billing model/currency and versioned budget/rate references; distinguish estimates, actual time, invoices and cash.
 
-- [ ] **S · Deliver:** Scope/effort/budget baselines and change requests with authorized approval of the exact proposed revision.
+    **Documented constraints:** Budget is a versioned plan; time, issued revenue, collected cash and commitments differ, and billing changes cannot reprice history.
 
-**Flow and records:** Submit requester/reason, affected scope, price/effort/date impact and options; apply only the reviewed approved baseline revision.
+    **Accept:** Recording fixed-fee effort does not generate an hourly invoice automatically.
 
-**Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+    **Docs basis:** Documented parent requirement/contract: [WRK-012 — Budgets, rates and profitability context](docs/specs/work-management.md#wrk-012--budgets-rates-and-profitability-context).
 
-**Accept:** Applying against a changed affected baseline requires another review.
+  - [ ] <a id="f12-04"></a>**F12.04 — Scope change requests** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01)
 
-#### F12.05 — Project portfolio
+    **Deliver:** Scope/effort/budget baselines and change requests with authorized approval of the exact proposed revision.
 
-- [ ] **S · Deliver:** Project portfolio filters, delivery risks, issues/decisions and explainable health overrides.
+    **Flow and records:** Submit requester/reason, affected scope, price/effort/date impact and options; apply only the reviewed approved baseline revision.
 
-**Flow and records:** Filter permitted projects by client/owner/health/stage/target period and link risks/issues/decisions to supporting work.
+    **Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
 
-**Documented constraints:** Health/risk claims expose sources and assumptions; missing dates are not on-time delivery and overrides carry reason/expiry.
+    **Accept:** Applying against a changed affected baseline requires another review.
 
-**Accept:** A missing due date does not appear as on-time delivery.
+    **Docs basis:** Documented parent requirement/contract: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
 
-**Docs basis:** Documented parent requirement/contract: [WRK-013 — Portfolio, risks and decision records](docs/specs/work-management.md#wrk-013--portfolio-risks-and-decision-records).
+  - [ ] <a id="f12-05"></a>**F12.05 — Project portfolio** · `S`
 
-#### F12.06 — Budget indicators
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01)
 
-- [ ] **S · Deliver:** Estimate/actual/budget indicators and threshold alerts with incomplete-data disclosure.
+    **Deliver:** Project portfolio filters, delivery risks, issues/decisions and explainable health overrides.
 
-**Flow and records:** Compare recorded actuals against a specific plan revision and expose incomplete cost data with deduplicated threshold alerts.
+    **Flow and records:** Filter permitted projects by client/owner/health/stage/target period and link risks/issues/decisions to supporting work.
 
-**Documented constraints:** Budget is a versioned plan; time, issued revenue, collected cash and commitments differ, and billing changes cannot reprice history.
+    **Documented constraints:** Health/risk claims expose sources and assumptions; missing dates are not on-time delivery and overrides carry reason/expiry.
 
-**Accept:** Crossing one threshold repeatedly for the same revision cannot flood notices.
+    **Accept:** A missing due date does not appear as on-time delivery.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-012 — Budgets, rates and profitability context](docs/specs/work-management.md#wrk-012--budgets-rates-and-profitability-context).
+    **Docs basis:** Documented parent requirement/contract: [WRK-013 — Portfolio, risks and decision records](docs/specs/work-management.md#wrk-013--portfolio-risks-and-decision-records).
 
-#### F12.07 — Project closure and recovery
+  - [ ] <a id="f12-06"></a>**F12.06 — Budget indicators** · `S`
 
-- [ ] **S · Deliver:** Project archive/restore/transfer/closure and impact review for timers, allocated time and pending obligations.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01), [F19.03](#f19-03)
 
-**Flow and records:** Preview member/task/timer/review/billing effects when archiving, closing or transferring; retain referenced historical identity and documents.
+    **Deliver:** Estimate/actual/budget indicators and threshold alerts with incomplete-data disclosure.
 
-**Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+    **Flow and records:** Compare recorded actuals against a specific plan revision and expose incomplete cost data with deduplicated threshold alerts.
 
-**Accept:** Member removal requires reassignment review without deleting their time/audit actor.
+    **Documented constraints:** Budget is a versioned plan; time, issued revenue, collected cash and commitments differ, and billing changes cannot reprice history.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+    **Accept:** Crossing one threshold repeatedly for the same revision cannot flood notices.
 
-#### F12.08 — Project templates
+    **Docs basis:** Documented parent requirement/contract: [WRK-012 — Budgets, rates and profitability context](docs/specs/work-management.md#wrk-012--budgets-rates-and-profitability-context).
 
-- [ ] **S · Deliver:** Reusable project templates, milestones and correctly remapped child records.
+  - [ ] <a id="f12-07"></a>**F12.07 — Project closure and recovery** · `S`
 
-**Flow and records:** Copy versioned project content and remap tasks, dependencies, fields and milestones into the new allowed project scope.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01)
 
-**Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
+    **Deliver:** Project archive/restore/transfer/closure and impact review for timers, allocated time and pending obligations.
 
-**Accept:** A cloned dependency never points to an unrelated tenant's task.
+    **Flow and records:** Preview member/task/timer/review/billing effects when archiving, closing or transferring; retain referenced historical identity and documents.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
+    **Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
 
-#### F12.09 — Project handover
+    **Accept:** Member removal requires reassignment review without deleting their time/audit actor.
 
-- [ ] **S · Deliver:** Project handover with exact deliverable/source references and scoped private costs.
+    **Docs basis:** Documented parent requirement/contract: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
 
-**Flow and records:** Review membership, task ownership, files and open obligations in handover while leaving financial/legal evidence immutable.
+  - [ ] <a id="f12-08"></a>**F12.08 — Project templates** · `S`
 
-**Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01)
 
-**Accept:** A handover cannot detach an issued invoice from its source project history.
+    **Deliver:** Reusable project templates, milestones and correctly remapped child records.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+    **Flow and records:** Copy versioned project content and remap tasks, dependencies, fields and milestones into the new allowed project scope.
 
-#### F12.10 — Program grouping
+    **Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
 
-- [ ] **E · Deliver:** Program/project grouping with rolled-up status and currency-safe budget summaries.
+    **Accept:** A cloned dependency never points to an unrelated tenant's task.
 
-**Proposed flow and records:** Program grouping is proposed portfolio organization; rollups inherit current project grants and separate currencies/financial bases.
+    **Docs basis:** Documented parent requirement/contract: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
 
-**Documented constraints:** Health/risk claims expose sources and assumptions; missing dates are not on-time delivery and overrides carry reason/expiry.
+  - [ ] <a id="f12-09"></a>**F12.09 — Project handover** · `S`
 
-**Accept:** A group total cannot reveal a hidden project or add unlike currencies.
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01), [F03.08](#f03-08)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-013 — Portfolio, risks and decision records](docs/specs/work-management.md#wrk-013--portfolio-risks-and-decision-records).
+    **Deliver:** Project handover with exact deliverable/source references and scoped private costs.
 
-#### F12.11 — Published project status
+    **Flow and records:** Review membership, task ownership, files and open obligations in handover while leaving financial/legal evidence immutable.
 
-- [ ] **E · Deliver:** Client-facing project status summaries based only on deliberately published fields.
+    **Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
 
-**Proposed flow and records:** External progress uses deliberately published snapshots rather than a broad internal project serializer.
+    **Accept:** A handover cannot detach an issued invoice from its source project history.
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Docs basis:** Documented parent requirement/contract: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
 
-**Accept:** A client sees no unpublished risk commentary, cost or member list.
+  - [ ] <a id="f12-10"></a>**F12.10 — Program grouping** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.05](#f12-05)
 
-#### F12.12 — Project risk scoring
+    **Deliver:** Program/project grouping with rolled-up status and currency-safe budget summaries.
 
-- [ ] **E · Deliver:** Project health checklists and configurable risk scoring with visible formula/override.
+    **Proposed flow and records:** Program grouping is proposed portfolio organization; rollups inherit current project grants and separate currencies/financial bases.
 
-**Proposed flow and records:** Any proposed score must name rules, source age and reason/expiry for overrides, consistent with documented explainable health.
+    **Documented constraints:** Health/risk claims expose sources and assumptions; missing dates are not on-time delivery and overrides carry reason/expiry.
 
-**Documented constraints:** Health/risk claims expose sources and assumptions; missing dates are not on-time delivery and overrides carry reason/expiry.
+    **Accept:** A group total cannot reveal a hidden project or add unlike currencies.
 
-**Accept:** Missing inputs show unknown coverage instead of a confident score.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-013 — Portfolio, risks and decision records](docs/specs/work-management.md#wrk-013--portfolio-risks-and-decision-records).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-013 — Portfolio, risks and decision records](docs/specs/work-management.md#wrk-013--portfolio-risks-and-decision-records).
+  - [ ] <a id="f12-11"></a>**F12.11 — Published project status** · `E`
 
-#### F12.13 — Project planning scenarios
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01), [F29.02](#f29-02)
 
-- [ ] **E · Deliver:** Baseline/scenario comparison for proposed dates, effort and budget without changing accepted plans.
+    **Deliver:** Client-facing project status summaries based only on deliberately published fields.
 
-**Proposed flow and records:** Proposed scenarios compare remaining effort/capacity/date assumptions without changing agreed commitments until reviewed acceptance.
+    **Proposed flow and records:** External progress uses deliberately published snapshots rather than a broad internal project serializer.
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Accept:** Trying a scenario cannot overwrite the accepted delivery baseline.
+    **Accept:** A client sees no unpublished risk commentary, cost or member list.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+
+  - [ ] <a id="f12-12"></a>**F12.12 — Project risk scoring** · `E`
+
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.01](#f12-01)
+
+    **Deliver:** Project health checklists and configurable risk scoring with visible formula/override.
+
+    **Proposed flow and records:** Any proposed score must name rules, source age and reason/expiry for overrides, consistent with documented explainable health.
+
+    **Documented constraints:** Health/risk claims expose sources and assumptions; missing dates are not on-time delivery and overrides carry reason/expiry.
+
+    **Accept:** Missing inputs show unknown coverage instead of a confident score.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-013 — Portfolio, risks and decision records](docs/specs/work-management.md#wrk-013--portfolio-risks-and-decision-records).
+
+  - [ ] <a id="f12-13"></a>**F12.13 — Project planning scenarios** · `E`
+
+    **Requires:** [F07.01](#f07-01), [F03.06](#f03-06), [F38.04](#f38-04), [F12.06](#f12-06), [F14.04](#f14-04)
+
+    **Deliver:** Baseline/scenario comparison for proposed dates, effort and budget without changing accepted plans.
+
+    **Proposed flow and records:** Proposed scenarios compare remaining effort/capacity/date assumptions without changing agreed commitments until reviewed acceptance.
+
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+
+    **Accept:** Trying a scenario cannot overwrite the accepted delivery baseline.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
 <a id="category-13"></a>
 
 ### 9.13 Tasks, checklists and personal work
 
-**Owner/package:** P03. **Prerequisites for each phase:** F12.01/F03.06; recurrence additionally P01.3 durable jobs. **Optional extension wave:** X1.
+**Owner/package:** P03. **Original branch context (specific Requires below governs feature order):** F12.01/F03.06; recurrence additionally P01.3 durable jobs. **Optional extension wave:** X1.
 
 **Packages:** P03.2/P03.3. **Baseline links:** WRK-002–004/006/007.
 
 **Required group acceptance:** Try concurrent cyclic relationships and mixed-scope bulk actions; preserve time references and report denied items.
 
-#### F13.01 — Task records
+- **F13 — Tasks, checklists and personal work**
 
-- [ ] **S · Deliver:** Task title/description, project, parent, assignee, status, priority, start/due dates and estimates.
+  - [ ] <a id="f13-01"></a>**F13.01 — Task records** · `S`
 
-**Flow and records:** Keep title, safe description, project, owner/collaborators, priority/status, estimates/dates/labels and recurring origin in the scoped task revision.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06)
 
-**Documented constraints:** Task hierarchy is bounded and acyclic; statuses map to semantic states, and task completion never generates time automatically.
+    **Deliver:** Task title/description, project, parent, assignee, status, priority, start/due dates and estimates.
 
-**Accept:** An unassigned task remains visible in permitted triage and no completion action creates time.
+    **Flow and records:** Keep title, safe description, project, owner/collaborators, priority/status, estimates/dates/labels and recurring origin in the scoped task revision.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-002 — Tasks and hierarchy](docs/specs/work-management.md#wrk-002--tasks-and-hierarchy).
+    **Documented constraints:** Task hierarchy is bounded and acyclic; statuses map to semantic states, and task completion never generates time automatically.
 
-#### F13.02 — Task hierarchy and checklists
+    **Accept:** An unassigned task remains visible in permitted triage and no completion action creates time.
 
-- [ ] **S · Deliver:** Subtasks and checklists with cycle prevention and validated same-project hierarchy.
+    **Docs basis:** Documented parent requirement/contract: [WRK-002 — Tasks and hierarchy](docs/specs/work-management.md#wrk-002--tasks-and-hierarchy).
 
-**Flow and records:** Use same-project bounded parent relationships and explicit behavior for unfinished child/checklist items at completion.
+  - [ ] <a id="f13-02"></a>**F13.02 — Task hierarchy and checklists** · `S`
 
-**Documented constraints:** Task hierarchy is bounded and acyclic; statuses map to semantic states, and task completion never generates time automatically.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Accept:** A concurrent parent edit cannot introduce a hierarchy cycle.
+    **Deliver:** Subtasks and checklists with cycle prevention and validated same-project hierarchy.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-002 — Tasks and hierarchy](docs/specs/work-management.md#wrk-002--tasks-and-hierarchy).
+    **Flow and records:** Use same-project bounded parent relationships and explicit behavior for unfinished child/checklist items at completion.
 
-#### F13.03 — Task workflow states
+    **Documented constraints:** Task hierarchy is bounded and acyclic; statuses map to semantic states, and task completion never generates time automatically.
 
-- [ ] **S · Deliver:** Semantic statuses mapped from configurable workflow states; distinct completion/archive semantics.
+    **Accept:** A concurrent parent edit cannot introduce a hierarchy cycle.
 
-**Flow and records:** Map custom states to documented Backlog/To do/In progress/Blocked/In review/Done/Cancelled meanings and retain reopen history.
+    **Docs basis:** Documented parent requirement/contract: [WRK-002 — Tasks and hierarchy](docs/specs/work-management.md#wrk-002--tasks-and-hierarchy).
 
-**Documented constraints:** Task hierarchy is bounded and acyclic; statuses map to semantic states, and task completion never generates time automatically.
+  - [ ] <a id="f13-03"></a>**F13.03 — Task workflow states** · `S`
 
-**Accept:** Archiving cannot masquerade as Done or erase cancellation history.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Docs basis:** Documented parent requirement/contract: [WRK-002 — Tasks and hierarchy](docs/specs/work-management.md#wrk-002--tasks-and-hierarchy).
+    **Deliver:** Semantic statuses mapped from configurable workflow states; distinct completion/archive semantics.
 
-#### F13.04 — Task list and board
+    **Flow and records:** Map custom states to documented Backlog/To do/In progress/Blocked/In review/Done/Cancelled meanings and retain reopen history.
 
-- [ ] **S · Deliver:** List/Kanban views with filtering by assignee, project, status, dates and other approved metadata.
+    **Documented constraints:** Task hierarchy is bounded and acyclic; statuses map to semantic states, and task completion never generates time automatically.
 
-**Flow and records:** List and board share the same allowed records, filters and status transitions rather than maintaining two competing task stores.
+    **Accept:** Archiving cannot masquerade as Done or erase cancellation history.
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Docs basis:** Documented parent requirement/contract: [WRK-002 — Tasks and hierarchy](docs/specs/work-management.md#wrk-002--tasks-and-hierarchy).
 
-**Accept:** A no-match board shows active filters and reset instead of onboarding.
+  - [ ] <a id="f13-04"></a>**F13.04 — Task list and board** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.03](#f13-03)
 
-#### F13.05 — Keyboard task movement
+    **Deliver:** List/Kanban views with filtering by assignee, project, status, dates and other approved metadata.
 
-- [ ] **S · Deliver:** Keyboard card movement, accessible status forms and visual rollback on failed saves.
+    **Flow and records:** List and board share the same allowed records, filters and status transitions rather than maintaining two competing task stores.
 
-**Flow and records:** Provide visible forms/buttons for card moves, preserve focus and restore prior status when a save is rejected.
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Accept:** A no-match board shows active filters and reset instead of onboarding.
 
-**Accept:** A keyboard move that fails leaves the task and unsaved description recoverable.
+    **Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
-**Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+  - [ ] <a id="f13-05"></a>**F13.05 — Keyboard task movement** · `S`
 
-#### F13.06 — Task dependencies
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.04](#f13-04)
 
-- [ ] **S · Deliver:** Dependencies, blockers and linked milestones with cycle checks under concurrent edits.
+    **Deliver:** Keyboard card movement, accessible status forms and visual rollback on failed saves.
 
-**Flow and records:** Start with finish-to-start dependency semantics and versioned milestone links; validate cycles on every mutation/import/sync path.
+    **Flow and records:** Provide visible forms/buttons for card moves, preserve focus and restore prior status when a save is rejected.
 
-**Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
 
-**Accept:** A→B→C rejects C→A without changing existing edges.
+    **Accept:** A keyboard move that fails leaves the task and unsaved description recoverable.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
+    **Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
-#### F13.07 — Task bulk actions
+  - [ ] <a id="f13-06"></a>**F13.06 — Task dependencies** · `S`
 
-- [ ] **S · Deliver:** Bulk assignment/status/date/archive with permission-aware per-item failure results.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Flow and records:** Preview selected/excluded rows and return exact per-record outcomes with stable retry identity for partial updates.
+    **Deliver:** Dependencies, blockers and linked milestones with cycle checks under concurrent edits.
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Flow and records:** Start with finish-to-start dependency semantics and versioned milestone links; validate cycles on every mutation/import/sync path.
 
-**Accept:** A bulk change cannot edit a private project or repeat successful rows blindly.
+    **Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Accept:** A→B→C rejects C→A without changing existing edges.
 
-#### F13.08 — Personal assigned work
+    **Docs basis:** Documented parent requirement/contract: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
 
-- [ ] **S · Deliver:** Personal assigned-work/saved views and current task timer linkage.
+  - [ ] <a id="f13-07"></a>**F13.07 — Task bulk actions** · `S`
 
-**Flow and records:** Filter assigned work by current grants and link the selected task to authorized timer context without duplicating task data.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Deliver:** Bulk assignment/status/date/archive with permission-aware per-item failure results.
 
-**Accept:** Losing a task grant removes its personal-view entry and prevents timer start for it.
+    **Flow and records:** Preview selected/excluded rows and return exact per-record outcomes with stable retry identity for partial updates.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
 
-#### F13.09 — Task planning templates
+    **Accept:** A bulk change cannot edit a private project or repeat successful rows blindly.
 
-- [ ] **S · Deliver:** Task templates, recurring tasks, sprint/cycle assignment and stable occurrence IDs.
+    **Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
-**Flow and records:** Templates/cycle assignment and recurrence keep version/occurrence provenance; unfinished cycle carryover remains explicit.
+  - [ ] <a id="f13-08"></a>**F13.08 — Personal assigned work** · `S`
 
-**Documented constraints:** Carryover is explicit; recurrence uses stable occurrence keys, previews calendar exceptions and runs enabled schedules on the server.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Accept:** Retried recurring generation creates one instance without editing completed earlier instances.
+    **Deliver:** Personal assigned-work/saved views and current task timer linkage.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-006 — Sprints, cycles and recurring work](docs/specs/work-management.md#wrk-006--sprints-cycles-and-recurring-work).
+    **Flow and records:** Filter assigned work by current grants and link the selected task to authorized timer context without duplicating task data.
 
-#### F13.10 — Task custom fields
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
 
-- [ ] **S · Deliver:** Validated custom fields with bounded data types/choices and scoped visibility.
+    **Accept:** Losing a task grant removes its personal-view entry and prevents timer start for it.
 
-**Flow and records:** Use documented bounded field types and financial classification; used definitions archive/migrate with historical values retained.
+    **Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
-**Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
+  - [ ] <a id="f13-09"></a>**F13.09 — Task planning templates** · `S`
 
-**Accept:** A field deletion cannot erase a previously exported value or expose a private field.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.02](#f13-02), [F12.08](#f12-08)
 
-**Docs basis:** Documented parent requirement/contract: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
+    **Deliver:** Task templates, recurring tasks, sprint/cycle assignment and stable occurrence IDs.
 
-#### F13.11 — Task move and recovery
+    **Flow and records:** Templates/cycle assignment and recurrence keep version/occurrence provenance; unfinished cycle carryover remains explicit.
 
-- [ ] **S · Deliver:** Move/duplicate/archive/restore actions preserving linked time and financial references.
+    **Documented constraints:** Carryover is explicit; recurrence uses stable occurrence keys, previews calendar exceptions and runs enabled schedules on the server.
 
-**Flow and records:** Preview client/currency/source implications for moves; duplicates are new records and referenced originals archive rather than disappear.
+    **Accept:** Retried recurring generation creates one instance without editing completed earlier instances.
 
-**Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+    **Docs basis:** Documented parent requirement/contract: [WRK-006 — Sprints, cycles and recurring work](docs/specs/work-management.md#wrk-006--sprints-cycles-and-recurring-work).
 
-**Accept:** A task with locked allocated time cannot be moved into conflicting billing scope.
+  - [ ] <a id="f13-10"></a>**F13.10 — Task custom fields** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-#### F13.12 — Task subscriptions
+    **Deliver:** Validated custom fields with bounded data types/choices and scoped visibility.
 
-- [ ] **E · Deliver:** Watch/follow tasks and explicit personal reminder subscriptions.
+    **Flow and records:** Use documented bounded field types and financial classification; used definitions archive/migrate with historical values retained.
 
-**Proposed flow and records:** Watch/follow behavior is proposed personal routing; mention/thread read access remains required and subscriptions cannot expand scope.
+    **Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
 
-**Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+    **Accept:** A field deletion cannot erase a previously exported value or expose a private field.
 
-**Accept:** Removing the project grant prevents new subscribed comment content.
+    **Docs basis:** Documented parent requirement/contract: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
+  - [ ] <a id="f13-11"></a>**F13.11 — Task move and recovery** · `S`
 
-#### F13.13 — Related and duplicate tasks
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-- [ ] **E · Deliver:** Additional typed task relationships such as duplicate/related, separate from blocking dependencies.
+    **Deliver:** Move/duplicate/archive/restore actions preserving linked time and financial references.
 
-**Proposed flow and records:** Additional related/duplicate edges remain proposals beyond initial scheduling semantics; define their cycle/transfer behavior before activation.
+    **Flow and records:** Preview client/currency/source implications for moves; duplicates are new records and referenced originals archive rather than disappear.
 
-**Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
+    **Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
 
-**Accept:** A related edge cannot silently become a scheduling blocker or create time.
+    **Accept:** A task with locked allocated time cannot be moved into conflicting billing scope.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
+    **Docs basis:** Documented parent requirement/contract: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
 
-#### F13.14 — Quick-capture inbox
+  - [ ] <a id="f13-12"></a>**F13.12 — Task subscriptions** · `E`
 
-- [ ] **E · Deliver:** Personal quick-capture inbox with review before assigning a project/client.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01), [F06.01](#f06-01)
 
-**Proposed flow and records:** Quick capture is proposed input awaiting explicit project/client assignment; it cannot become authoritative billable work from a partial note.
+    **Deliver:** Watch/follow tasks and explicit personal reminder subscriptions.
 
-**Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+    **Proposed flow and records:** Watch/follow behavior is proposed personal routing; mention/thread read access remains required and subscriptions cannot expand scope.
 
-**Accept:** Failed capture preserves input without showing a server-saved task.
+    **Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+    **Accept:** Removing the project grant prevents new subscribed comment content.
 
-#### F13.15 — Cross-project board customization
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
 
-- [ ] **E · Deliver:** Saved cross-project board layouts and configurable task forms using the same authorized schema.
+  - [ ] <a id="f13-13"></a>**F13.13 — Related and duplicate tasks** · `E`
 
-**Proposed flow and records:** Store cross-project filter/group/sort/column choices and use the same field schema and granted record set as ordinary views.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Deliver:** Additional typed task relationships such as duplicate/related, separate from blocking dependencies.
 
-**Accept:** A custom form cannot set a hidden cost field through an extra payload key.
+    **Proposed flow and records:** Additional related/duplicate edges remain proposals beyond initial scheduling semantics; define their cycle/transfer behavior before activation.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
+
+    **Accept:** A related edge cannot silently become a scheduling blocker or create time.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
+
+  - [ ] <a id="f13-14"></a>**F13.14 — Quick-capture inbox** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
+
+    **Deliver:** Personal quick-capture inbox with review before assigning a project/client.
+
+    **Proposed flow and records:** Quick capture is proposed input awaiting explicit project/client assignment; it cannot become authoritative billable work from a partial note.
+
+    **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+
+    **Accept:** Failed capture preserves input without showing a server-saved task.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+
+  - [ ] <a id="f13-15"></a>**F13.15 — Cross-project board customization** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.04](#f13-04), [F04.07](#f04-07)
+
+    **Deliver:** Saved cross-project board layouts and configurable task forms using the same authorized schema.
+
+    **Proposed flow and records:** Store cross-project filter/group/sort/column choices and use the same field schema and granted record set as ordinary views.
+
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+
+    **Accept:** A custom form cannot set a hidden cost field through an extra payload key.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
 <a id="category-14"></a>
 
 ### 9.14 Scheduling, capacity and delivery planning
 
-**Owner/package:** P03. **Prerequisites for each phase:** F12.01/F13.01; approved capacity policy Q-14; connected calendar F28.03/F28.04. **Optional extension wave:** X1.
+**Owner/package:** P03. **Original branch context (specific Requires below governs feature order):** F12.01/F13.01; approved capacity policy Q-14; connected calendar F28.03/F28.04. **Optional extension wave:** X1.
 
 **Package:** P03.3; reporting in P06.3. **Baseline links:** WRK-003/005/006, INS-005, Q-14.
 
-**Research context:** [Paymo feature list](https://www.paymoapp.com/complete-feature-list/). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Use DST, leave and missing estimates; display incomplete capacity and never turn a plan into billable time.
 
-#### F14.01 — Work calendar and timeline
+- **F14 — Scheduling, capacity and delivery planning**
 
-- [ ] **S · Deliver:** Project/task calendar and timeline views with explicit timezone/date semantics.
+  - [ ] <a id="f14-01"></a>**F14.01 — Work calendar and timeline** · `S`
 
-**Flow and records:** Use one task/project record set across calendar/timeline and list/board with explicit dates, timezone and undated buckets.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01)
 
-**Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
+    **Deliver:** Project/task calendar and timeline views with explicit timezone/date semantics.
 
-**Accept:** Changing view cannot hide otherwise permitted undated work or expose another project's task.
+    **Flow and records:** Use one task/project record set across calendar/timeline and list/board with explicit dates, timezone and undated buckets.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
+    **Documented constraints:** Views contain the same permitted records; saved views store configuration, bulk failures identify exact rows and keyboard alternatives accompany dragging.
 
-#### F14.02 — Delivery milestones
+    **Accept:** Changing view cannot hide otherwise permitted undated work or expose another project's task.
 
-- [ ] **S · Deliver:** Milestones and dependencies with blocked/at-risk/complete context.
+    **Docs basis:** Documented parent requirement/contract: [WRK-004 — Views and filters](docs/specs/work-management.md#wrk-004--views-and-filters).
 
-**Flow and records:** Track milestone target, included work, review criteria and accepted/cancelled evidence separately from task completion.
+  - [ ] <a id="f14-02"></a>**F14.02 — Delivery milestones** · `S`
 
-**Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F13.06](#f13-06)
 
-**Accept:** A canceled dependency produces a repair choice rather than auto-accepting the milestone.
+    **Deliver:** Milestones and dependencies with blocked/at-risk/complete context.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
+    **Flow and records:** Track milestone target, included work, review criteria and accepted/cancelled evidence separately from task completion.
 
-#### F14.03 — Working-time calendar
+    **Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
 
-- [ ] **S · Deliver:** Working days/hours, holidays and leave calendars under approved capacity policy.
+    **Accept:** A canceled dependency produces a repair choice rather than auto-accepting the milestone.
 
-**Flow and records:** Maintain member working timezone/hours and approved leave assumptions; calendar policy and limits remain Q-14.
+    **Docs basis:** Documented parent requirement/contract: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+  - [ ] <a id="f14-03"></a>**F14.03 — Working-time calendar** · `S`
 
-**Accept:** Capacity calculations distinguish no configured calendar from zero available hours.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F03.06](#f03-06)
 
-**Docs basis:** Documented parent requirement/contract: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Deliver:** Working days/hours, holidays and leave calendars under approved capacity policy.
 
-#### F14.04 — Workload capacity
+    **Flow and records:** Maintain member working timezone/hours and approved leave assumptions; calendar policy and limits remain Q-14.
 
-- [ ] **S · Deliver:** Member/project workload and estimated/remaining capacity, labeling missing estimates.
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
 
-**Flow and records:** Compute planned/remaining effort against available capacity and explicitly count missing estimates rather than guessing workload.
+    **Accept:** Capacity calculations distinguish no configured calendar from zero available hours.
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Docs basis:** Documented parent requirement/contract: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Accept:** 28 planned hours against 20 available shows 8 overload and separate missing-estimate coverage.
+  - [ ] <a id="f14-04"></a>**F14.04 — Workload capacity** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F14.03](#f14-03)
 
-#### F14.05 — Sprint planning
+    **Deliver:** Member/project workload and estimated/remaining capacity, labeling missing estimates.
 
-- [ ] **S · Deliver:** Sprint/cycle planning, carryover and completion history distinct from client acceptance.
+    **Flow and records:** Compute planned/remaining effort against available capacity and explicitly count missing estimates rather than guessing workload.
 
-**Flow and records:** Freeze cycle planned set/goals and completion history; moving unfinished work to the next cycle is an explicit action.
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
 
-**Documented constraints:** Carryover is explicit; recurrence uses stable occurrence keys, previews calendar exceptions and runs enabled schedules on the server.
+    **Accept:** 28 planned hours against 20 available shows 8 overload and separate missing-estimate coverage.
 
-**Accept:** Carryover preserves the previous cycle snapshot and does not mark unfinished work delivered.
+    **Docs basis:** Documented parent requirement/contract: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Docs basis:** Documented parent requirement/contract: [WRK-006 — Sprints, cycles and recurring work](docs/specs/work-management.md#wrk-006--sprints-cycles-and-recurring-work).
+  - [ ] <a id="f14-05"></a>**F14.05 — Sprint planning** · `S`
 
-#### F14.06 — Recurring work schedule
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F13.03](#f13-03)
 
-- [ ] **S · Deliver:** Recurring work cadence, exceptions, pause/end and missed-occurrence review.
+    **Deliver:** Sprint/cycle planning, carryover and completion history distinct from client acceptance.
 
-**Flow and records:** Persist recurrence anchor, rule, timezone, end condition and occurrence identity; preview month-end/holiday and missed-run choices.
+    **Flow and records:** Freeze cycle planned set/goals and completion history; moving unfinished work to the next cycle is an explicit action.
 
-**Documented constraints:** Carryover is explicit; recurrence uses stable occurrence keys, previews calendar exceptions and runs enabled schedules on the server.
+    **Documented constraints:** Carryover is explicit; recurrence uses stable occurrence keys, previews calendar exceptions and runs enabled schedules on the server.
 
-**Accept:** Closing the tab does not stop an enabled server schedule or create duplicate catch-up occurrences.
+    **Accept:** Carryover preserves the previous cycle snapshot and does not mark unfinished work delivered.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-006 — Sprints, cycles and recurring work](docs/specs/work-management.md#wrk-006--sprints-cycles-and-recurring-work).
+    **Docs basis:** Documented parent requirement/contract: [WRK-006 — Sprints, cycles and recurring work](docs/specs/work-management.md#wrk-006--sprints-cycles-and-recurring-work).
 
-#### F14.07 — Remaining effort
+  - [ ] <a id="f14-06"></a>**F14.06 — Recurring work schedule** · `S`
 
-- [ ] **S · Deliver:** Estimate/actual/remaining effort and scope-change effects using source facts.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F30.05](#f30-05)
 
-**Flow and records:** Compare source estimates, recorded work and remaining assumptions with approved scope/budget changes while preserving the accepted baseline.
+    **Deliver:** Recurring work cadence, exceptions, pause/end and missed-occurrence review.
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Flow and records:** Persist recurrence anchor, rule, timezone, end condition and occurrence identity; preview month-end/holiday and missed-run choices.
 
-**Accept:** A changed estimate cannot rewrite previously reported actual seconds.
+    **Documented constraints:** Carryover is explicit; recurrence uses stable occurrence keys, previews calendar exceptions and runs enabled schedules on the server.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Accept:** Closing the tab does not stop an enabled server schedule or create duplicate catch-up occurrences.
 
-#### F14.08 — Tentative resource bookings
+    **Docs basis:** Documented parent requirement/contract: [WRK-006 — Sprints, cycles and recurring work](docs/specs/work-management.md#wrk-006--sprints-cycles-and-recurring-work).
 
-- [ ] **E · Deliver:** Tentative resource reservations and scenario planning before committed assignments.
+  - [ ] <a id="f14-07"></a>**F14.07 — Remaining effort** · `S`
 
-**Proposed flow and records:** Tentative reservations/scenarios remain proposed capacity plans; accepted assignment must still review availability and agreed dates.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F16.10](#f16-10)
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Deliver:** Estimate/actual/remaining effort and scope-change effects using source facts.
 
-**Accept:** A tentative booking does not create worked time or change a committed delivery date.
+    **Flow and records:** Compare source estimates, recorded work and remaining assumptions with approved scope/budget changes while preserving the accepted baseline.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
 
-#### F14.09 — Critical path
+    **Accept:** A changed estimate cannot rewrite previously reported actual seconds.
 
-- [ ] **E · Deliver:** Critical-path indicators calculated from supported dependency/date rules.
+    **Docs basis:** Documented parent requirement/contract: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Proposed flow and records:** Critical-path analysis is proposed beyond the initial graph rule; supported relation/date assumptions need their own approved fixtures.
+  - [ ] <a id="f14-08"></a>**F14.08 — Tentative resource bookings** · `E`
 
-**Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F14.04](#f14-04)
 
-**Accept:** An unsupported dependency type cannot silently produce a trusted critical-path date.
+    **Deliver:** Tentative resource reservations and scenario planning before committed assignments.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
+    **Proposed flow and records:** Tentative reservations/scenarios remain proposed capacity plans; accepted assignment must still review availability and agreed dates.
 
-#### F14.10 — Busy-time availability
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
 
-- [ ] **E · Deliver:** Availability sharing using busy intervals without leaking private event titles.
+    **Accept:** A tentative booking does not create worked time or change a committed delivery date.
 
-**Proposed flow and records:** Share reviewed busy intervals from selected calendars with source/timezone, without revealing event titles when only availability is authorized.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+  - [ ] <a id="f14-09"></a>**F14.09 — Critical path** · `E`
 
-**Accept:** A private meeting title never enters a shared availability response.
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F13.06](#f13-06), [F14.07](#f14-07)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Deliver:** Critical-path indicators calculated from supported dependency/date rules.
 
-#### F14.11 — Leave review
+    **Proposed flow and records:** Critical-path analysis is proposed beyond the initial graph rule; supported relation/date assumptions need their own approved fixtures.
 
-- [ ] **E · Deliver:** Team availability/leave approval workflow without payroll/employee-surveillance functions.
+    **Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
 
-**Proposed flow and records:** Leave approval is an extension to capacity records, not a payroll/attendance subsystem; reviewers and remaining-capacity rules need selection.
+    **Accept:** An unsupported dependency type cannot silently produce a trusted critical-path date.
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
 
-**Accept:** An unapproved leave rule cannot silently reduce a contractual work schedule.
+  - [ ] <a id="f14-10"></a>**F14.10 — Busy-time availability** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F28.03](#f28-03)
 
-#### F14.12 — External meeting coordination
+    **Deliver:** Availability sharing using busy intervals without leaking private event titles.
 
-- [ ] **E · Deliver:** External meeting/booking coordination through approved calendar integration, never automatic billable time.
+    **Proposed flow and records:** Share reviewed busy intervals from selected calendars with source/timezone, without revealing event titles when only availability is authorized.
 
-**Proposed flow and records:** External booking/event coordination uses mapped event IDs/revisions and separately enabled invite actions.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Accept:** A private meeting title never enters a shared availability response.
 
-**Accept:** A canceled remote event is reconciled and never becomes automatically billed time.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+  - [ ] <a id="f14-11"></a>**F14.11 — Leave review** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F14.03](#f14-03)
+
+    **Deliver:** Team availability/leave approval workflow without payroll/employee-surveillance functions.
+
+    **Proposed flow and records:** Leave approval is an extension to capacity records, not a payroll/attendance subsystem; reviewers and remaining-capacity rules need selection.
+
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+
+    **Accept:** An unapproved leave rule cannot silently reduce a contractual work schedule.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+
+  - [ ] <a id="f14-12"></a>**F14.12 — External meeting coordination** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F13.01](#f13-01), [F32.03](#f32-03)
+
+    **Deliver:** External meeting/booking coordination through approved calendar integration, never automatic billable time.
+
+    **Proposed flow and records:** External booking/event coordination uses mapped event IDs/revisions and separately enabled invite actions.
+
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+
+    **Accept:** A canceled remote event is reconciled and never becomes automatically billed time.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
 <a id="category-15"></a>
 
 ### 9.15 Collaboration, reviews, files and knowledge links
 
-**Owner/package:** P03/P08. **Prerequisites for each phase:** F12.01/F03.06 and P01.6 private files; external reviews F29.01. **Optional extension wave:** X3.
+**Owner/package:** P03/P08. **Original branch context (specific Requires below governs feature order):** F12.01/F03.06 and P01.6 private files; external reviews F29.01. **Optional extension wave:** X3.
 
 **Packages:** P03.4, P01.6, P08.2. **Baseline links:** WRK-009–011.
 
-**Research context:** [Paymo file proofing](https://www.paymoapp.com/file-proofing/). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Upload unsafe content, replace a version and revoke a reviewer; no public file or inherited acceptance may remain.
 
-#### F15.01 — Internal comments and activity
+- **F15 — Collaboration, reviews, files and knowledge links**
 
-- [ ] **S · Deliver:** Revisioned comments/notes, mentions, permitted activity timeline and clear internal/client visibility.
+  - [ ] <a id="f15-01"></a>**F15.01 — Internal comments and activity** · `S`
 
-**Flow and records:** Maintain scoped threads, mentions, edit history/resolution and explicit internal/client-visible classification; default disclosure stays internal.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06)
 
-**Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+    **Deliver:** Revisioned comments/notes, mentions, permitted activity timeline and clear internal/client visibility.
 
-**Accept:** A client-facing flag cannot expose a thread whose publication was never authorized.
+    **Flow and records:** Maintain scoped threads, mentions, edit history/resolution and explicit internal/client-visible classification; default disclosure stays internal.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
+    **Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
 
-#### F15.02 — Scoped file attachments
+    **Accept:** A client-facing flag cannot expose a thread whose publication was never authorized.
 
-- [ ] **S · Deliver:** Scoped files attached to clients/projects/tasks/documents with immutable object/version references.
+    **Docs basis:** Documented parent requirement/contract: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
 
-**Flow and records:** Reference a particular private object/version with hash, type, size, upload state and scope rather than a permanent public URL.
+  - [ ] <a id="f15-02"></a>**F15.02 — Scoped file attachments** · `S`
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.03](#f15-03)
 
-**Accept:** Editing an object identifier cannot fetch a sibling client's bytes.
+    **Deliver:** Scoped files attached to clients/projects/tasks/documents with immutable object/version references.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Flow and records:** Reference a particular private object/version with hash, type, size, upload state and scope rather than a permanent public URL.
 
-#### F15.03 — Validated file uploads
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-- [ ] **S · Deliver:** Bounded staged upload, content validation/quarantine policy, integrity verification and safe download names.
+    **Accept:** Editing an object identifier cannot fetch a sibling client's bytes.
 
-**Flow and records:** Validate supported bytes/type/size/quota and integrity before committing a file reference; scanning/publication remains separately gated.
+    **Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+  - [ ] <a id="f15-03"></a>**F15.03 — Validated file uploads** · `S`
 
-**Accept:** An unverified or unsafe upload cannot appear as a downloadable committed deliverable.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F38.05](#f38-05)
 
-**Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Deliver:** Bounded staged upload, content validation/quarantine policy, integrity verification and safe download names.
 
-#### F15.04 — File transfer recovery
+    **Flow and records:** Validate supported bytes/type/size/quota and integrity before committing a file reference; scanning/publication remains separately gated.
 
-- [ ] **S · Deliver:** Upload progress/failure/retry and missing-file repair states without fake committed attachments.
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-**Flow and records:** Expose staging/uploading/verified/failed outcomes and proven retry behavior without inventing resumability before implementation.
+    **Accept:** An unverified or unsafe upload cannot appear as a downloadable committed deliverable.
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Accept:** An interrupted upload keeps its repair state and cannot duplicate final references.
+  - [ ] <a id="f15-04"></a>**F15.04 — File transfer recovery** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.03](#f15-03)
 
-#### F15.05 — Deliverable review requests
+    **Deliver:** Upload progress/failure/retry and missing-file repair states without fake committed attachments.
 
-- [ ] **S · Deliver:** Internal deliverable review requests with assigned reviewers and exact reviewed revision.
+    **Flow and records:** Expose staging/uploading/verified/failed outcomes and proven retry behavior without inventing resumability before implementation.
 
-**Flow and records:** Assign permitted internal reviewers to one exact deliverable revision and its criteria before ready/publication transitions.
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Accept:** An interrupted upload keeps its repair state and cannot duplicate final references.
 
-**Accept:** An old review cannot approve replacement bytes under the same display name.
+    **Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+  - [ ] <a id="f15-05"></a>**F15.05 — Deliverable review requests** · `S`
 
-#### F15.06 — Published deliverable versions
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.02](#f15-02)
 
-- [ ] **S · Deliver:** Publish selected deliverable versions; comments/acceptance/change requests reference that version.
+    **Deliver:** Internal deliverable review requests with assigned reviewers and exact reviewed revision.
 
-**Flow and records:** Publish selected artifact/version/recipients online and bind acceptance/change requests to that exact publication.
+    **Flow and records:** Assign permitted internal reviewers to one exact deliverable revision and its criteria before ready/publication transitions.
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Accept:** Client A cannot review an unshared version by changing a URL parameter.
+    **Accept:** An old review cannot approve replacement bytes under the same display name.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+    **Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-#### F15.07 — Approval-preserving revisions
+  - [ ] <a id="f15-06"></a>**F15.06 — Published deliverable versions** · `S`
 
-- [ ] **S · Deliver:** New file/deliverable revisions preserve prior evidence and do not inherit previous approval silently.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.05](#f15-05)
 
-**Flow and records:** Save replacements as new versions, preserving previous files and approval evidence with visible reapproval requirements.
+    **Deliver:** Publish selected deliverable versions; comments/acceptance/change requests reference that version.
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Flow and records:** Publish selected artifact/version/recipients online and bind acceptance/change requests to that exact publication.
 
-**Accept:** Replacing approved v1 produces v2 awaiting its own required review.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+    **Accept:** Client A cannot review an unshared version by changing a URL parameter.
 
-#### F15.08 — Linked knowledge
+    **Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-- [ ] **S · Deliver:** Link project notes/runbooks/decisions to source work and knowledge entries under current grants.
+  - [ ] <a id="f15-07"></a>**F15.07 — Approval-preserving revisions** · `S`
 
-**Flow and records:** Link project notes/runbooks/decisions to permitted knowledge records and preserve note revision/access classification.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.06](#f15-06)
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Deliver:** New file/deliverable revisions preserve prior evidence and do not inherit previous approval silently.
 
-**Accept:** A search or note link cannot reveal internal knowledge to a guest.
+    **Flow and records:** Save replacements as new versions, preserving previous files and approval evidence with visible reapproval requirements.
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-#### F15.09 — Safe mention notifications
+    **Accept:** Replacing approved v1 produces v2 awaiting its own required review.
 
-- [ ] **S · Deliver:** Mention/review notifications exclude restricted snippets and respect revocation.
+    **Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-**Flow and records:** Resolve mentioned people against source read permission and revalidate before building notice snippets or external delivery.
+  - [ ] <a id="f15-08"></a>**F15.08 — Linked knowledge** · `S`
 
-**Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F26.01](#f26-01)
 
-**Accept:** A removed reviewer receives no fresh restricted comment excerpt.
+    **Deliver:** Link project notes/runbooks/decisions to source work and knowledge entries under current grants.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
+    **Flow and records:** Link project notes/runbooks/decisions to permitted knowledge records and preserve note revision/access classification.
 
-#### F15.10 — Threaded discussions
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-- [ ] **E · Deliver:** Threaded discussions, resolved discussion markers and explicit task creation from a comment.
+    **Accept:** A search or note link cannot reveal internal knowledge to a guest.
 
-**Proposed flow and records:** Threading/resolution is documented collaboration behavior; creating a task from a comment remains an extension requiring an explicit project/task action.
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-**Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+  - [ ] <a id="f15-09"></a>**F15.09 — Safe mention notifications** · `S`
 
-**Accept:** Resolving a thread cannot accept client delivery or fabricate a billable task interval.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.01](#f15-01), [F06.07](#f06-07)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
+    **Deliver:** Mention/review notifications exclude restricted snippets and respect revocation.
 
-#### F15.11 — Artifact annotations
+    **Flow and records:** Resolve mentioned people against source read permission and revalidate before building notice snippets or external delivery.
 
-- [ ] **E · Deliver:** Annotated review on supported PDF/image artifacts with safe rendering and version-bound coordinates.
+    **Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
 
-**Proposed flow and records:** Artifact annotation is proposed; a future supported format must bind comments to immutable file/version coordinates and safe rendering.
+    **Accept:** A removed reviewer receives no fresh restricted comment excerpt.
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Docs basis:** Documented parent requirement/contract: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
 
-**Accept:** An annotation on v1 cannot silently move to different v2 content.
+  - [ ] <a id="f15-10"></a>**F15.10 — Threaded discussions** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.01](#f15-01)
 
-#### F15.12 — Multi-step review
+    **Deliver:** Threaded discussions, resolved discussion markers and explicit task creation from a comment.
 
-- [ ] **E · Deliver:** Reviewer checklists/multiple approval steps and documented conflict/delegation policy.
+    **Proposed flow and records:** Threading/resolution is documented collaboration behavior; creating a task from a comment remains an extension requiring an explicit project/task action.
 
-**Proposed flow and records:** Multi-step approval is proposed and needs reviewer/delegation/conflict policy; each approved decision still identifies its exact version.
+    **Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Accept:** Resolving a thread cannot accept client delivery or fabricate a billable task interval.
 
-**Accept:** A removed reviewer or modified artifact cannot satisfy a stale approval step.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+  - [ ] <a id="f15-11"></a>**F15.11 — Artifact annotations** · `E`
 
-#### F15.13 — File comparison
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.02](#f15-02)
 
-- [ ] **E · Deliver:** File version comparison and external-link attachments with safe URL handling and access disclosure.
+    **Deliver:** Annotated review on supported PDF/image artifacts with safe rendering and version-bound coordinates.
 
-**Proposed flow and records:** File comparison/external-link previews are proposed additions over versioned references; safe URL access cannot widen file grants.
+    **Proposed flow and records:** Artifact annotation is proposed; a future supported format must bind comments to immutable file/version coordinates and safe rendering.
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Accept:** An external preview cannot fetch an arbitrary private-network URL.
+    **Accept:** An annotation on v1 cannot silently move to different v2 content.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-#### F15.14 — Transient presence
+  - [ ] <a id="f15-12"></a>**F15.12 — Multi-step review** · `E`
 
-- [ ] **E · Deliver:** Transient presence/editing indicators with minimal retention; no employee monitoring or automatic merge claims.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.05](#f15-05)
 
-**Proposed flow and records:** Show opt-out advisory presence only; it neither proves saved edits nor measures attendance, keystrokes or employee productivity.
+    **Deliver:** Reviewer checklists/multiple approval steps and documented conflict/delegation policy.
 
-**Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+    **Proposed flow and records:** Multi-step approval is proposed and needs reviewer/delegation/conflict policy; each approved decision still identifies its exact version.
 
-**Accept:** Presence loss does not discard a draft or imply a user stopped billable work.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
+    **Accept:** A removed reviewer or modified artifact cannot satisfy a stale approval step.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+
+  - [ ] <a id="f15-13"></a>**F15.13 — File comparison** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.02](#f15-02)
+
+    **Deliver:** File version comparison and external-link attachments with safe URL handling and access disclosure.
+
+    **Proposed flow and records:** File comparison/external-link previews are proposed additions over versioned references; safe URL access cannot widen file grants.
+
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+
+    **Accept:** An external preview cannot fetch an arbitrary private-network URL.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+
+  - [ ] <a id="f15-14"></a>**F15.14 — Transient presence** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.01](#f15-01), [F05.12](#f05-12)
+
+    **Deliver:** Transient presence/editing indicators with minimal retention; no employee monitoring or automatic merge claims.
+
+    **Proposed flow and records:** Show opt-out advisory presence only; it neither proves saved edits nor measures attendance, keystrokes or employee productivity.
+
+    **Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+
+    **Accept:** Presence loss does not discard a draft or imply a user stopped billable work.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
 
 <a id="category-16"></a>
 
 ### 9.16 Timers, work evidence and recovery
 
-**Owner/package:** P04. **Prerequisites for each phase:** F12.01/F03.06/P01.3; Q-04; offline capture additionally F05.01. **Optional extension wave:** X2.
+**Owner/package:** P04. **Original branch context (specific Requires below governs feature order):** F12.01/F03.06/P01.3; Q-04; offline capture additionally F05.01. **Optional extension wave:** X2.
 
 **Packages:** P04.1/P04.2. **Baseline links:** TIM-001–008/015/016/022–024.
 
-**Research context:** [Harvest navigation](https://support.getharvest.com/hc/en-us/articles/44165229587469-Navigating-Harvest). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Race two tabs, lose the stop response and sleep across DST; retain exact confirmed seconds without duplicate billing.
 
-#### F16.01 — Timer start
+- **F16 — Timers, work evidence and recovery**
 
-- [ ] **S · Deliver:** Start timer for an authorized active project/optional task with description and billable flag.
+  - [ ] <a id="f16-01"></a>**F16.01 — Timer start** · `S`
 
-**Flow and records:** Select an active permitted project and optional same-project task, description and billable flag; persist server start before showing confirmed running state.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05)
 
-**Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
+    **Deliver:** Start timer for an authorized active project/optional task with description and billable flag.
 
-**Accept:** A mismatched task/project is rejected without creating a timer.
+    **Flow and records:** Select an active permitted project and optional same-project task, description and billable flag; persist server start before showing confirmed running state.
 
-**Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
+    **Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
 
-#### F16.02 — Timer pause and switch
+    **Accept:** A mismatched task/project is rejected without creating a timer.
 
-- [ ] **S · Deliver:** Pause/resume segments and atomic switch between work contexts.
+    **Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
 
-**Flow and records:** Pause closes a segment, resume opens a new one and switching commits old-segment close plus new-context start atomically.
+  - [ ] <a id="f16-02"></a>**F16.02 — Timer pause and switch** · `S`
 
-**Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.01](#f16-01), [F16.03](#f16-03)
 
-**Accept:** Paused gaps contribute zero duration and a failed switch keeps the prior authoritative state.
+    **Deliver:** Pause/resume segments and atomic switch between work contexts.
 
-**Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
+    **Flow and records:** Pause closes a segment, resume opens a new one and switching commits old-segment close plus new-context start atomically.
 
-#### F16.03 — Single authoritative timer
+    **Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
 
-- [ ] **S · Deliver:** Transaction-enforced one authoritative online timer per workspace user across tabs/devices.
+    **Accept:** Paused gaps contribute zero duration and a failed switch keeps the prior authoritative state.
 
-**Flow and records:** Enforce one authoritative online timer for a workspace user using server transactions/revisions, independent of local tab-channel delivery.
+    **Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
 
-**Documented constraints:** Server acknowledgements establish confirmed evidence; tab suspension/clock gaps require review and browser channel hints are not global timer authority.
+  - [ ] <a id="f16-03"></a>**F16.03 — Single authoritative timer** · `S`
 
-**Accept:** Racing starts on two devices produce one confirmed timer and a reviewable conflict.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.01](#f16-01)
 
-**Docs basis:** Documented parent requirement/contract: [Persistence, clocks, and recovery](docs/specs/time-and-productivity.md#persistence-clocks-and-recovery).
+    **Deliver:** Transaction-enforced one authoritative online timer per workspace user across tabs/devices.
 
-#### F16.04 — Idempotent timer stop
+    **Flow and records:** Enforce one authoritative online timer for a workspace user using server transactions/revisions, independent of local tab-channel delivery.
 
-- [ ] **S · Deliver:** Stop into one recoverable entry; duplicate click/retry cannot create duplicate work.
+    **Documented constraints:** Server acknowledgements establish confirmed evidence; tab suspension/clock gaps require review and browser channel hints are not global timer authority.
 
-**Flow and records:** Stop commits entry/segment evidence and clears active state together, with the original operation identity retained across retries.
+    **Accept:** Racing starts on two devices produce one confirmed timer and a reviewable conflict.
 
-**Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
+    **Docs basis:** Documented parent requirement/contract: [Persistence, clocks, and recovery](docs/specs/time-and-productivity.md#persistence-clocks-and-recovery).
 
-**Accept:** A double stop or lost response cannot create two time records.
+  - [ ] <a id="f16-04"></a>**F16.04 — Idempotent timer stop** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.01](#f16-01), [F16.03](#f16-03)
 
-#### F16.05 — Visible timer controls
+    **Deliver:** Stop into one recoverable entry; duplicate click/retry cannot create duplicate work.
 
-- [ ] **S · Deliver:** Persistent visible timer with keyboard controls and honest server acknowledgment.
+    **Flow and records:** Stop commits entry/segment evidence and clears active state together, with the original operation identity retained across retries.
 
-**Flow and records:** Keep keyboard-accessible timer context/elapsed state visible; announce state changes without continuously flooding live regions.
+    **Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Accept:** A double stop or lost response cannot create two time records.
 
-**Accept:** Navigating between routes preserves confirmed timer context and focus usability.
+    **Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+  - [ ] <a id="f16-05"></a>**F16.05 — Visible timer controls** · `S`
 
-#### F16.06 — Timer recovery
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.01](#f16-01), [F04.04](#f04-04)
 
-- [ ] **S · Deliver:** Reload/crash/tab-close/device-sleep recovery showing confirmed evidence and uncertain gaps.
+    **Deliver:** Persistent visible timer with keyboard controls and honest server acknowledgment.
 
-**Flow and records:** Recover acknowledged segments after reload/crash/sleep and present unknown clock/suspension intervals for explicit review.
+    **Flow and records:** Keep keyboard-accessible timer context/elapsed state visible; announce state changes without continuously flooding live regions.
 
-**Documented constraints:** Server acknowledgements establish confirmed evidence; tab suspension/clock gaps require review and browser channel hints are not global timer authority.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Accept:** Reopening a suspended page never silently bills the full unknown gap.
+    **Accept:** Navigating between routes preserves confirmed timer context and focus usability.
 
-**Docs basis:** Documented parent requirement/contract: [Persistence, clocks, and recovery](docs/specs/time-and-productivity.md#persistence-clocks-and-recovery).
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-#### F16.07 — Clock anomaly review
+  - [ ] <a id="f16-06"></a>**F16.06 — Timer recovery** · `S`
 
-- [ ] **S · Deliver:** Clock-jump/backward-time detection with review before affected time can be billed.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.01](#f16-01)
 
-**Flow and records:** Compare clock evidence and mark backward jumps or unexplained intervals as uncertain instead of treating wall-clock movement as worked duration.
+    **Deliver:** Reload/crash/tab-close/device-sleep recovery showing confirmed evidence and uncertain gaps.
 
-**Documented constraints:** Server acknowledgements establish confirmed evidence; tab suspension/clock gaps require review and browser channel hints are not global timer authority.
+    **Flow and records:** Recover acknowledged segments after reload/crash/sleep and present unknown clock/suspension intervals for explicit review.
 
-**Accept:** Moving the client clock backward cannot create negative or fabricated billable seconds.
+    **Documented constraints:** Server acknowledgements establish confirmed evidence; tab suspension/clock gaps require review and browser channel hints are not global timer authority.
 
-**Docs basis:** Documented parent requirement/contract: [Persistence, clocks, and recovery](docs/specs/time-and-productivity.md#persistence-clocks-and-recovery).
+    **Accept:** Reopening a suspended page never silently bills the full unknown gap.
 
-#### F16.08 — Uncertain interval resolution
+    **Docs basis:** Documented parent requirement/contract: [Persistence, clocks, and recovery](docs/specs/time-and-productivity.md#persistence-clocks-and-recovery).
 
-- [ ] **S · Deliver:** Explicit keep/discard/split/revise review of uncertain or optional in-site inactivity intervals.
+  - [ ] <a id="f16-07"></a>**F16.07 — Clock anomaly review** · `S`
 
-**Flow and records:** Offer keep/discard/split/revise choices for suspected intervals under the selected review policy and preserve the decision history.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.06](#f16-06)
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Deliver:** Clock-jump/backward-time detection with review before affected time can be billed.
 
-**Accept:** Discarding uncertain time leaves confirmed segments and their exact duration intact.
+    **Flow and records:** Compare clock evidence and mark backward jumps or unexplained intervals as uncertain instead of treating wall-clock movement as worked duration.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Documented constraints:** Server acknowledgements establish confirmed evidence; tab suspension/clock gaps require review and browser channel hints are not global timer authority.
 
-#### F16.09 — Provisional offline time
+    **Accept:** Moving the client clock backward cannot create negative or fabricated billable seconds.
 
-- [ ] **S · Deliver:** Provisional offline capture only under the draft contract; reconcile overlaps before billing.
+    **Docs basis:** Documented parent requirement/contract: [Persistence, clocks, and recovery](docs/specs/time-and-productivity.md#persistence-clocks-and-recovery).
 
-**Flow and records:** Allow only eligible gated local capture as provisional evidence and reconcile overlap/current grants when submitting online.
+  - [ ] <a id="f16-08"></a>**F16.08 — Uncertain interval resolution** · `S`
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.07](#f16-07)
 
-**Accept:** An offline candidate cannot supersede the server timer or reserve invoice sources.
+    **Deliver:** Explicit keep/discard/split/revise review of uncertain or optional in-site inactivity intervals.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Flow and records:** Offer keep/discard/split/revise choices for suspected intervals under the selected review policy and preserve the decision history.
 
-#### F16.10 — Manual time entry
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-- [ ] **S · Deliver:** Manual duration-only and start/end interval entries with original source/timezone/work date.
+    **Accept:** Discarding uncertain time leaves confirmed segments and their exact duration intact.
 
-**Flow and records:** Support positive duration-only or consistent start/end entries with project, work date, source and timezone; disclose unverifiable overlap for duration-only entries.
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+  - [ ] <a id="f16-09"></a>**F16.09 — Provisional offline time** · `S`
 
-**Accept:** DST/cross-midnight input preserves actual seconds and the explicitly chosen work-date semantics.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F05.02](#f05-02), [F16.06](#f16-06)
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Deliver:** Provisional offline capture only under the draft contract; reconcile overlaps before billing.
 
-#### F16.11 — Time entry revisions
+    **Flow and records:** Allow only eligible gated local capture as provisional evidence and reconcile overlap/current grants when submitting online.
 
-- [ ] **S · Deliver:** Entry edit/split/merge/duplicate/move/undo with exact second conservation and source eligibility checks.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Flow and records:** Preview split/merge/duplicate/move/undo, conserving seconds and checking matching scope/rate/approval/allocation conditions.
+    **Accept:** An offline candidate cannot supersede the server timer or reserve invoice sources.
 
-**Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-**Accept:** Splits sum to the original source; copying creates new unbilled evidence rather than copied allocation ownership.
+  - [ ] <a id="f16-10"></a>**F16.10 — Manual time entry** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05)
 
-#### F16.12 — Overlap resolution
+    **Deliver:** Manual duration-only and start/end interval entries with original source/timezone/work date.
 
-- [ ] **S · Deliver:** Overlap detection and documented exceptions; duration-only records disclose unprovable interval coverage.
+    **Flow and records:** Support positive duration-only or consistent start/end entries with project, work date, source and timezone; disclose unverifiable overlap for duration-only entries.
 
-**Flow and records:** Explain overlapping intervals for the same user and require resolution or an allowed reviewed exception before billing.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Accept:** DST/cross-midnight input preserves actual seconds and the explicitly chosen work-date semantics.
 
-**Accept:** Overlap cannot be hidden by converting display hours or changing a filter.
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+  - [ ] <a id="f16-11"></a>**F16.11 — Time entry revisions** · `S`
 
-#### F16.13 — Timezone and DST handling
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.10](#f16-10)
 
-- [ ] **S · Deliver:** Cross-midnight/DST buckets sum to original duration independently of displayed rounded hours.
+    **Deliver:** Entry edit/split/merge/duplicate/move/undo with exact second conservation and source eligibility checks.
 
-**Flow and records:** Keep UTC instants, source timezone and work date distinct and aggregate source seconds before localized display buckets.
+    **Flow and records:** Preview split/merge/duplicate/move/undo, conserving seconds and checking matching scope/rate/approval/allocation conditions.
 
-**Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
+    **Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
 
-**Accept:** Cross-midnight/DST bucket totals equal the original record's exact seconds.
+    **Accept:** Splits sum to the original source; copying creates new unbilled evidence rather than copied allocation ownership.
 
-**Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
+    **Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
 
-#### F16.14 — Time record views
+  - [ ] <a id="f16-12"></a>**F16.12 — Overlap resolution** · `S`
 
-- [ ] **S · Deliver:** Filters/day-week calendars and source/review/allocation state, with raw-time import/export mapping.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.10](#f16-10)
 
-**Flow and records:** Offer documented scope, billable/review/approval/allocation/source filters and personal saved views without altering source evidence.
+    **Deliver:** Overlap detection and documented exceptions; duration-only records disclose unprovable interval coverage.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Flow and records:** Explain overlapping intervals for the same user and require resolution or an allowed reviewed exception before billing.
 
-**Accept:** A filtered total equals the matching raw seconds before display rounding.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Accept:** Overlap cannot be hidden by converting display hours or changing a filter.
 
-#### F16.15 — Favorite time entries
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-- [ ] **E · Deliver:** Reusable recent timer descriptions and favorites for starting authorized project/task work.
+  - [ ] <a id="f16-13"></a>**F16.13 — Timezone and DST handling** · `S`
 
-**Proposed flow and records:** Favorite descriptions/context remain proposed shortcuts to an ordinary authorized start command, never cached authority to a removed project.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.10](#f16-10)
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Deliver:** Cross-midnight/DST buckets sum to original duration independently of displayed rounded hours.
 
-**Accept:** A favorite cannot start time after the user's project grant is revoked.
+    **Flow and records:** Keep UTC instants, source timezone and work date distinct and aggregate source seconds before localized display buckets.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
 
-#### F16.16 — Explicit time suggestions
+    **Accept:** Cross-midnight/DST bucket totals equal the original record's exact seconds.
 
-- [ ] **E · Deliver:** Explicit user-selected meeting/task-to-manual-entry suggestions; no unattended time fabrication.
+    **Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
 
-**Proposed flow and records:** Suggestions remain proposed user-reviewed context from meeting/task records; acceptance must deliberately create/assign actual work evidence.
+  - [ ] <a id="f16-14"></a>**F16.14 — Time record views** · `S`
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.10](#f16-10)
 
-**Accept:** A calendar event or completed task alone creates zero billable seconds.
+    **Deliver:** Filters/day-week calendars and source/review/allocation state, with raw-time import/export mapping.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Flow and records:** Offer documented scope, billable/review/approval/allocation/source filters and personal saved views without altering source evidence.
+
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+
+    **Accept:** A filtered total equals the matching raw seconds before display rounding.
+
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+
+  - [ ] <a id="f16-15"></a>**F16.15 — Favorite time entries** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.10](#f16-10)
+
+    **Deliver:** Reusable recent timer descriptions and favorites for starting authorized project/task work.
+
+    **Proposed flow and records:** Favorite descriptions/context remain proposed shortcuts to an ordinary authorized start command, never cached authority to a removed project.
+
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+
+    **Accept:** A favorite cannot start time after the user's project grant is revoked.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+
+  - [ ] <a id="f16-16"></a>**F16.16 — Explicit time suggestions** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F05.05](#f05-05), [F16.10](#f16-10)
+
+    **Deliver:** Explicit user-selected meeting/task-to-manual-entry suggestions; no unattended time fabrication.
+
+    **Proposed flow and records:** Suggestions remain proposed user-reviewed context from meeting/task records; acceptance must deliberately create/assign actual work evidence.
+
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+
+    **Accept:** A calendar event or completed task alone creates zero billable seconds.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
 <a id="category-17"></a>
 
 ### 9.17 Rates, timesheets and billing evidence
 
-**Owner/package:** P04/P05. **Prerequisites for each phase:** F16.01/F16.10; Q-03/Q-05; monetary calculation P05.1. **Optional extension wave:** X2.
+**Owner/package:** P04/P05. **Original branch context (specific Requires below governs feature order):** F16.01/F16.10; Q-03/Q-05; monetary calculation P05.1. **Optional extension wave:** X2.
 
 **Authority:** TIM-009–014/019–021; FIN-004/006/029.
 
-**Research context:** [Toggl rounding](https://docs.toggl.com/rounding). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F17.01 — Dated billing rates
+- **F17 — Rates, timesheets and billing evidence**
 
-- [ ] **S · Deliver:** Resolve entry, task, project, client and workspace rates with explicit precedence and matching currency.
+  - [ ] <a id="f17-01"></a>**F17.01 — Dated billing rates** · `S`
 
-**Flow and records:** Resolve the documented proposed override chain using effective date and explicit currency; persist the chosen rate policy rather than relying on current defaults.
+    **Requires:** [F03.06](#f03-06), [F12.01](#f12-01), [F19.03](#f19-03)
 
-**Documented constraints:** Use effective-dated rate snapshots and explicit missing-rate handling; billed facts are corrected through audited adjustments rather than ordinary edits.
+    **Deliver:** Resolve entry, task, project, client and workspace rates with explicit precedence and matching currency.
 
-**Accept:** A missing rate blocks billing instead of silently choosing zero.
+    **Flow and records:** Resolve the documented proposed override chain using effective date and explicit currency; persist the chosen rate policy rather than relying on current defaults.
 
-**Docs basis:** Documented parent requirement/contract: [Rates, corrections, and billing handoff](docs/specs/time-and-productivity.md#rates-corrections-and-billing-handoff).
+    **Documented constraints:** Use effective-dated rate snapshots and explicit missing-rate handling; billed facts are corrected through audited adjustments rather than ordinary edits.
 
-#### F17.02 — Private internal cost rates
+    **Accept:** A missing rate blocks billing instead of silently choosing zero.
 
-- [ ] **S · Deliver:** Version labor costs separately from selling rates and apply restricted projections.
+    **Docs basis:** Documented parent requirement/contract: [Rates, corrections, and billing handoff](docs/specs/time-and-productivity.md#rates-corrections-and-billing-handoff).
 
-**Flow and records:** Keep internal labor costs distinct, private and versioned for permitted margin reports; display/export only allowed cost projections.
+  - [ ] <a id="f17-02"></a>**F17.02 — Private internal cost rates** · `S`
 
-**Documented constraints:** Service margin uses the stated revenue basis minus known direct costs; missing cost is incomplete and no denominator means No data.
+    **Requires:** [F03.06](#f03-06), [F12.01](#f12-01), [F19.03](#f19-03)
 
-**Accept:** A Contributor cannot infer cost from API, export, tooltip or task totals.
+    **Deliver:** Version labor costs separately from selling rates and apply restricted projections.
 
-**Docs basis:** Documented parent requirement/contract: [INS-003 — Profitability and effective rates](docs/specs/insights-and-knowledge.md#ins-003--profitability-and-effective-rates).
+    **Flow and records:** Keep internal labor costs distinct, private and versioned for permitted margin reports; display/export only allowed cost projections.
 
-#### F17.03 — Billing rounding profiles
+    **Documented constraints:** Service margin uses the stated revenue basis minus known direct costs; missing cost is incomplete and no denominator means No data.
 
-- [ ] **S · Deliver:** Version grouping, minimum and rounding policies while retaining raw integer seconds.
+    **Accept:** A Contributor cannot infer cost from API, export, tooltip or task totals.
 
-**Flow and records:** Preview raw seconds, grouped billed quantity, rounding difference and policy version before selecting sources for an invoice.
+    **Docs basis:** Documented parent requirement/contract: [INS-003 — Profitability and effective rates](docs/specs/insights-and-knowledge.md#ins-003--profitability-and-effective-rates).
 
-**Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
+  - [ ] <a id="f17-03"></a>**F17.03 — Billing rounding profiles** · `S`
 
-**Accept:** 90 source seconds at 120.00/hour yields 3.00 under the unrounded approved profile.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03)
 
-**Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
+    **Deliver:** Version grouping, minimum and rounding policies while retaining raw integer seconds.
 
-#### F17.04 — Billable eligibility
+    **Flow and records:** Preview raw seconds, grouped billed quantity, rounding difference and policy version before selecting sources for an invoice.
 
-- [ ] **S · Deliver:** Separate billability, review, approval and allocation; fixed-fee time remains cost evidence.
+    **Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
 
-**Flow and records:** Show billable, ready/reviewed, approval and allocated dimensions independently; a fixed-fee record remains cost evidence unless explicitly billed by time.
+    **Accept:** 90 source seconds at 120.00/hour yields 3.00 under the unrounded approved profile.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
 
-**Accept:** Changing approval alone never releases consumed seconds.
+  - [ ] <a id="f17-04"></a>**F17.04 — Billable eligibility** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Requires:** [F03.06](#f03-06), [F16.10](#f16-10), [F17.01](#f17-01)
 
-#### F17.05 — Timesheet submission
+    **Deliver:** Separate billability, review, approval and allocation; fixed-fee time remains cost evidence.
 
-- [ ] **S · Deliver:** Submit an exact period and source revisions with optional reviewer policy.
+    **Flow and records:** Show billable, ready/reviewed, approval and allocated dimensions independently; a fixed-fee record remains cost evidence unless explicitly billed by time.
 
-**Flow and records:** Submit a particular period and source revisions; freeze the comparison set and record withdrawal before ordinary edits can proceed.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
+    **Accept:** Changing approval alone never releases consumed seconds.
 
-**Accept:** An edit after submission requires withdrawal or a new review revision.
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-**Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
+  - [ ] <a id="f17-05"></a>**F17.05 — Timesheet submission** · `S`
 
-#### F17.06 — Timesheet approval
+    **Requires:** [F03.06](#f03-06), [F16.10](#f16-10)
 
-- [ ] **S · Deliver:** Approve, reject with reason or delegate review under current project grants.
+    **Deliver:** Submit an exact period and source revisions with optional reviewer policy.
 
-**Flow and records:** Record reviewer identity, decision/reason and the reviewed revisions; changed approved work requires the selected new review path.
+    **Flow and records:** Submit a particular period and source revisions; freeze the comparison set and record withdrawal before ordinary edits can proceed.
 
-**Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
+    **Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
 
-**Accept:** A removed reviewer cannot approve a stale open timesheet.
+    **Accept:** An edit after submission requires withdrawal or a new review revision.
 
-**Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
+    **Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
 
-#### F17.07 — Time locking and correction
+  - [ ] <a id="f17-06"></a>**F17.06 — Timesheet approval** · `S`
 
-- [ ] **S · Deliver:** Lock invoiced source facts; use audited adjustments for billed corrections.
+    **Requires:** [F03.06](#f03-06), [F17.05](#f17-05)
 
-**Flow and records:** Keep allocated source facts locked and route corrections through adjustment plus any required credit/replacement instead of normal edit.
+    **Deliver:** Approve, reject with reason or delegate review under current project grants.
 
-**Documented constraints:** Use effective-dated rate snapshots and explicit missing-rate handling; billed facts are corrected through audited adjustments rather than ordinary edits.
+    **Flow and records:** Record reviewer identity, decision/reason and the reviewed revisions; changed approved work requires the selected new review path.
 
-**Accept:** Editing a billed entry cannot alter the issued PDF or expose the same seconds again.
+    **Documented constraints:** Timer Running/Paused/RecoveryReview is separate from entry review, optional approval and financial allocation; one state never implies another.
 
-**Docs basis:** Documented parent requirement/contract: [Rates, corrections, and billing handoff](docs/specs/time-and-productivity.md#rates-corrections-and-billing-handoff).
+    **Accept:** A removed reviewer cannot approve a stale open timesheet.
 
-#### F17.08 — Unbilled work queue
+    **Docs basis:** Documented parent requirement/contract: [State model](docs/specs/time-and-productivity.md#state-model).
 
-- [ ] **S · Deliver:** Show eligible seconds, age, missing rates and active reservations by client/project.
+  - [ ] <a id="f17-07"></a>**F17.07 — Time locking and correction** · `S`
 
-**Flow and records:** Derive eligible unconsumed seconds with missing rate/review/approval blockers and visible draft reservations; summaries link to their sources.
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01), [F21.06](#f21-06)
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Deliver:** Lock invoiced source facts; use audited adjustments for billed corrections.
 
-**Accept:** Its total reconciles to eligible sources and excludes already-consumed time.
+    **Flow and records:** Keep allocated source facts locked and route corrections through adjustment plus any required credit/replacement instead of normal edit.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Documented constraints:** Use effective-dated rate snapshots and explicit missing-rate handling; billed facts are corrected through audited adjustments rather than ordinary edits.
 
-#### F17.09 — Whole-entry invoice reservations
+    **Accept:** Editing a billed entry cannot alter the issued PDF or expose the same seconds again.
 
-- [ ] **S · Deliver:** Reserve time for a draft and revalidate ownership at issuance.
+    **Docs basis:** Documented parent requirement/contract: [Rates, corrections, and billing handoff](docs/specs/time-and-productivity.md#rates-corrections-and-billing-handoff).
 
-**Flow and records:** Reserve acknowledged whole entries for a draft; revalidate permissions, policy/revisions and consumption in the issue transaction.
+  - [ ] <a id="f17-08"></a>**F17.08 — Unbilled work queue** · `S`
 
-**Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
+    **Requires:** [F03.06](#f03-06), [F17.04](#f17-04)
 
-**Accept:** Two draft finalizations racing for one entry yield one consumption.
+    **Deliver:** Show eligible seconds, age, missing rates and active reservations by client/project.
 
-**Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
+    **Flow and records:** Derive eligible unconsumed seconds with missing rate/review/approval blockers and visible draft reservations; summaries link to their sources.
 
-#### F17.10 — Partial time allocations
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-- [ ] **S · Deliver:** Allocate supported second ranges or quantities with exact conservation and visible remainder.
+    **Accept:** Its total reconciles to eligible sources and excludes already-consumed time.
 
-**Flow and records:** Track exact consumed portions/remainder and immutable invoice ownership for advanced partial allocation; release requires an explicit correction rule.
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-**Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
+  - [ ] <a id="f17-09"></a>**F17.09 — Whole-entry invoice reservations** · `S`
 
-**Accept:** Successive partial allocations never exceed original eligible seconds.
+    **Requires:** [F03.06](#f03-06), [F17.04](#f17-04), [F19.10](#f19-10), [F38.04](#f38-04)
 
-**Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
+    **Deliver:** Reserve time for a draft and revalidate ownership at issuance.
 
-#### F17.11 — Time import
+    **Flow and records:** Reserve acknowledged whole entries for a draft; revalidate permissions, policy/revisions and consumption in the issue transaction.
 
-- [ ] **S · Deliver:** Preview unit/timezone mapping, external IDs, row errors and duplicate handling.
+    **Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
 
-**Flow and records:** Preview source IDs, timezone, units, mappings, row errors and duplicates before accepting imported time; preserve provenance and permitted rollback boundary.
+    **Accept:** Two draft finalizations racing for one entry yield one consumption.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
 
-**Accept:** Importing the same source batch twice creates no new entries.
+  - [ ] <a id="f17-10"></a>**F17.10 — Partial time allocations** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Requires:** [F03.06](#f03-06), [F17.09](#f17-09)
 
-#### F17.12 — Raw time export
+    **Deliver:** Allocate supported second ranges or quantities with exact conservation and visible remainder.
 
-- [ ] **S · Deliver:** Export scoped source seconds, revisions, timezone and allocation metadata.
+    **Flow and records:** Track exact consumed portions/remainder and immutable invoice ownership for advanced partial allocation; release requires an explicit correction rule.
 
-**Flow and records:** Export filtered original seconds and source/review/allocation metadata with the correct privacy projection and declared date basis.
+    **Documented constraints:** Aggregate raw seconds before display rounding; approved billing policy controls grouping and allocations cannot consume more eligible source time.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Accept:** Successive partial allocations never exceed original eligible seconds.
 
-**Accept:** Summed exported seconds equal the filtered server records before display rounding.
+    **Docs basis:** Documented parent requirement/contract: [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy).
 
-**Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+  - [ ] <a id="f17-11"></a>**F17.11 — Time import** · `S`
 
-#### F17.13 — Time correction review
+    **Requires:** [F03.06](#f03-06), [F16.10](#f16-10), [F34.01](#f34-01)
 
-- [ ] **E · Deliver:** Route unusual adjustments to an authorized reviewer with reason and preserved evidence.
+    **Deliver:** Preview unit/timezone mapping, external IDs, row errors and duplicate handling.
 
-**Proposed flow and records:** Unusual-adjustment review remains an extension; use existing revision/audit/financial-lock boundaries and decide reviewer policy before adding a new state.
+    **Flow and records:** Preview source IDs, timezone, units, mappings, row errors and duplicates before accepting imported time; preserve provenance and permitted rollback boundary.
 
-**Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Accept:** A manager cannot approve adjustments outside assigned projects.
+    **Accept:** Importing the same source batch twice creates no new entries.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
 
-#### F17.14 — Client timesheet review
+  - [ ] <a id="f17-12"></a>**F17.12 — Raw time export** · `S`
 
-- [ ] **E · Deliver:** Publish selected timesheet snapshots for client acknowledgement separately from internal approval.
+    **Requires:** [F03.06](#f03-06), [F16.10](#f16-10), [F34.04](#f34-04)
 
-**Proposed flow and records:** External timesheet acknowledgement remains an extension separate from internal time approval; publishing must expose only selected source versions and permitted fields.
+    **Deliver:** Export scoped source seconds, revisions, timezone and allocation metadata.
 
-**Documented constraints:** Every client read/download/action rechecks recipient/resource/version scope; external acknowledgement is separate from internal time approval and cannot change allocation authority.
+    **Flow and records:** Export filtered original seconds and source/review/allocation metadata with the correct privacy projection and declared date basis.
 
-**Accept:** Client acknowledgement cannot change rate or financial allocation ownership.
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review); [State model](docs/specs/time-and-productivity.md#state-model).
+    **Accept:** Summed exported seconds equal the filtered server records before display rounding.
+
+    **Docs basis:** Documented parent requirement/contract: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+
+  - [ ] <a id="f17-13"></a>**F17.13 — Time correction review** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F17.07](#f17-07)
+
+    **Deliver:** Route unusual adjustments to an authorized reviewer with reason and preserved evidence.
+
+    **Proposed flow and records:** Unusual-adjustment review remains an extension; use existing revision/audit/financial-lock boundaries and decide reviewer policy before adding a new state.
+
+    **Documented constraints:** Retain original integer seconds and source metadata; uncertain or overlapping work requires review before billing and financial allocation locks evidence.
+
+    **Accept:** A manager cannot approve adjustments outside assigned projects.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Requirements and user behavior](docs/specs/time-and-productivity.md#requirements-and-user-behavior).
+
+  - [ ] <a id="f17-14"></a>**F17.14 — Client timesheet review** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F17.06](#f17-06), [F29.02](#f29-02)
+
+    **Deliver:** Publish selected timesheet snapshots for client acknowledgement separately from internal approval.
+
+    **Proposed flow and records:** External timesheet acknowledgement remains an extension separate from internal time approval; publishing must expose only selected source versions and permitted fields.
+
+    **Documented constraints:** Every client read/download/action rechecks recipient/resource/version scope; external acknowledgement is separate from internal time approval and cannot change allocation authority.
+
+    **Accept:** Client acknowledgement cannot change rate or financial allocation ownership.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review); [State model](docs/specs/time-and-productivity.md#state-model).
 
 <a id="category-18"></a>
 
 ### 9.18 Personal focus and sustainable work
 
-**Owner/package:** P04/P06. **Prerequisites for each phase:** F16.01/F13.01; personal preferences; source-linked reports. **Optional extension wave:** X2.
+**Owner/package:** P04/P06. **Original branch context (specific Requires below governs feature order):** F16.01/F13.01; personal preferences; source-linked reports. **Optional extension wave:** X2.
 
 **Authority:** TIM-015/018/021/024; INS-010. Optional personal tools; no surveillance.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F18.01 — Focus sessions
+- **F18 — Personal focus and sustainable work**
 
-- [ ] **S · Deliver:** Run opt-in focus intervals linked to selected work only through explicit user action.
+  - [ ] <a id="f18-01"></a>**F18.01 — Focus sessions** · `S`
 
-**Flow and records:** Start optional personal focus periods with explicit selected task context; any link to billable work requires a deliberate time-entry action.
+    **Requires:** [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Deliver:** Run opt-in focus intervals linked to selected work only through explicit user action.
 
-**Accept:** Completing a focus interval alone creates no billable time.
+    **Flow and records:** Start optional personal focus periods with explicit selected task context; any link to billable work requires a deliberate time-entry action.
 
-**Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
 
-#### F18.02 — Break reminders
+    **Accept:** Completing a focus interval alone creates no billable time.
 
-- [ ] **S · Deliver:** Offer dismissible break notices using browser capability limits.
+    **Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
-**Flow and records:** Offer optional break prompts through supported page/browser signals; explain suspension/closed-tab limits and keep an in-site fallback.
+  - [ ] <a id="f18-02"></a>**F18.02 — Break reminders** · `S`
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Requires:** [F03.06](#f03-06), [F18.01](#f18-01), [F06.06](#f06-06)
 
-**Accept:** A closed tab makes no promise of a running reminder process.
+    **Deliver:** Offer dismissible break notices using browser capability limits.
 
-**Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Flow and records:** Offer optional break prompts through supported page/browser signals; explain suspension/closed-tab limits and keep an in-site fallback.
 
-#### F18.03 — Daily time goals
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
 
-- [ ] **S · Deliver:** Track optional personal targets from reviewed records using an explicit work date.
+    **Accept:** A closed tab makes no promise of a running reminder process.
 
-**Flow and records:** Compare personal reviewed work-date totals with a selected target; goal tracking never rewrites the time source or rate.
+    **Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+  - [ ] <a id="f18-03"></a>**F18.03 — Daily time goals** · `S`
 
-**Accept:** Moving timezone does not double-count a cross-midnight entry.
+    **Requires:** [F03.06](#f03-06), [F16.10](#f16-10)
 
-**Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Deliver:** Track optional personal targets from reviewed records using an explicit work date.
 
-#### F18.04 — Weekly work review
+    **Flow and records:** Compare personal reviewed work-date totals with a selected target; goal tracking never rewrites the time source or rate.
 
-- [ ] **S · Deliver:** Review uncertain time, unbilled work and upcoming commitments in one personal flow.
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
 
-**Flow and records:** Review uncertain gaps, approvals/unbilled evidence and upcoming commitments; keep focus-session completion separate from time approval.
+    **Accept:** Moving timezone does not double-count a cross-midnight entry.
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
-**Accept:** Review completion does not approve another member's time.
+  - [ ] <a id="f18-04"></a>**F18.04 — Weekly work review** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Requires:** [F03.06](#f03-06), [F16.14](#f16-14)
 
-#### F18.05 — Personal time budgets
+    **Deliver:** Review uncertain time, unbilled work and upcoming commitments in one personal flow.
 
-- [ ] **E · Deliver:** Set private category or project targets with visible scope and source totals.
+    **Flow and records:** Review uncertain gaps, approvals/unbilled evidence and upcoming commitments; keep focus-session completion separate from time approval.
 
-**Proposed flow and records:** Private personal category targets remain proposed goal configuration; do not infer team performance, absence or attendance from the comparison.
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Accept:** Review completion does not approve another member's time.
 
-**Accept:** Personal targets do not become team performance rankings.
+    **Docs basis:** Documented parent requirement/contract: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+  - [ ] <a id="f18-05"></a>**F18.05 — Personal time budgets** · `E`
 
-#### F18.06 — Workday start and wrap-up
+    **Requires:** [F03.06](#f03-06), [F18.03](#f18-03)
 
-- [ ] **E · Deliver:** Offer a personal checklist for planned work, timers and outstanding drafts.
+    **Deliver:** Set private category or project targets with visible scope and source totals.
 
-**Proposed flow and records:** Start/wrap-up checklists remain proposed guidance; show unresolved timers/drafts and retain recoverable work through any failed state change.
+    **Proposed flow and records:** Private personal category targets remain proposed goal configuration; do not infer team performance, absence or attendance from the comparison.
 
-**Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
 
-**Accept:** Wrapping up warns about a running timer without discarding it.
+    **Accept:** Personal targets do not become team performance rankings.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
-#### F18.07 — Manual distraction notes
+  - [ ] <a id="f18-06"></a>**F18.06 — Workday start and wrap-up** · `E`
 
-- [ ] **E · Deliver:** Record user-entered interruptions without collecting browsing or app usage.
+    **Requires:** [F03.06](#f03-06), [F04.02](#f04-02)
 
-**Proposed flow and records:** Interruption notes remain proposed explicitly entered personal content; no browser history or application-activity collection is implied.
+    **Deliver:** Offer a personal checklist for planned work, timers and outstanding drafts.
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Proposed flow and records:** Start/wrap-up checklists remain proposed guidance; show unresolved timers/drafts and retain recoverable work through any failed state change.
 
-**Accept:** Deleting a private note does not remove linked time evidence.
+    **Documented constraints:** Distinguish unsaved/local/queued/accepted/conflict/failure, preserve valid input and use real empty/no-match/error states rather than fictional data.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Accept:** Wrapping up warns about a running timer without discarding it.
 
-#### F18.08 — Personal focus history
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Editor and status rules](docs/product/ux-and-localization.md#editor-and-status-rules).
 
-- [ ] **E · Deliver:** Show optional session/break history with clear distinction from work evidence.
+  - [ ] <a id="f18-07"></a>**F18.07 — Manual distraction notes** · `E`
 
-**Proposed flow and records:** Optional focus-history reporting remains proposed; distinguish its sessions/breaks from confirmed time, approval and financial allocation states.
+    **Requires:** [F03.06](#f03-06), [F18.01](#f18-01)
 
-**Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+    **Deliver:** Record user-entered interruptions without collecting browsing or app usage.
 
-**Accept:** A session history export contains no inferred attendance.
+    **Proposed flow and records:** Interruption notes remain proposed explicitly entered personal content; no browser history or application-activity collection is implied.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+
+    **Accept:** Deleting a private note does not remove linked time evidence.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
+
+  - [ ] <a id="f18-08"></a>**F18.08 — Personal focus history** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F18.01](#f18-01)
+
+    **Deliver:** Show optional session/break history with clear distinction from work evidence.
+
+    **Proposed flow and records:** Optional focus-history reporting remains proposed; distinguish its sessions/breaks from confirmed time, approval and financial allocation states.
+
+    **Documented constraints:** Focus/reminders/goals are optional personal aids; activity signals, commits or calendar events never fabricate billable time or attendance.
+
+    **Accept:** A session history export contains no inferred attendance.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Productivity and reporting definitions](docs/specs/time-and-productivity.md#productivity-and-reporting-definitions).
 
 <a id="category-19"></a>
 
 ### 9.19 Invoice configuration, arithmetic and drafts
 
-**Owner/package:** P05. **Prerequisites for each phase:** F07.01/F12.01; P01.3 command authority; Q-01/Q-03. **Optional extension wave:** X2.
+**Owner/package:** P05. **Original branch context (specific Requires below governs feature order):** F07.01/F12.01; P01.3 command authority; Q-01/Q-03. **Optional extension wave:** X2.
 
 **Authority:** FIN-001/004/005/016–018/031/034; money policy is approved before activation.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F19.01 — Seller billing profile
+- **F19 — Invoice configuration, arithmetic and drafts**
 
-- [ ] **S · Deliver:** Configure legal identity, registrations, billing contacts, payment instructions and document defaults.
+  - [ ] <a id="f19-01"></a>**F19.01 — Seller billing profile** · `S`
 
-**Flow and records:** Maintain seller legal/address/registration/contact/payment defaults and branding; freeze the selected customer-visible values at document issuance.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Deliver:** Configure legal identity, registrations, billing contacts, payment instructions and document defaults.
 
-**Accept:** Updating the profile leaves issued seller snapshots unchanged.
+    **Flow and records:** Maintain seller legal/address/registration/contact/payment defaults and branding; freeze the selected customer-visible values at document issuance.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-#### F19.02 — Currency metadata
+    **Accept:** Updating the profile leaves issued seller snapshots unchanged.
 
-- [ ] **S · Deliver:** Validate supported currency exponent, exact range and allowed precision per document.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-**Flow and records:** Associate currency code/exponent with every monetary record; validate precision/range before exact conversion to the declared minor-unit representation.
+  - [ ] <a id="f19-02"></a>**F19.02 — Currency metadata** · `S`
 
-**Documented constraints:** Posted amounts use currency-specific minor units; rates/quantities are exact values and excess precision or invalid range is rejected, never truncated.
+    **Requires:** [F03.06](#f03-06)
 
-**Accept:** Zero- and three-decimal currency fixtures reject excess precision without truncation.
+    **Deliver:** Validate supported currency exponent, exact range and allowed precision per document.
 
-**Docs basis:** Documented parent requirement/contract: [Representation and precision](docs/specs/finance.md#representation-and-precision).
+    **Flow and records:** Associate currency code/exponent with every monetary record; validate precision/range before exact conversion to the declared minor-unit representation.
 
-#### F19.03 — Exact money calculator
+    **Documented constraints:** Posted amounts use currency-specific minor units; rates/quantities are exact values and excess precision or invalid range is rejected, never truncated.
 
-- [ ] **S · Deliver:** Use integer minor-unit postings and exact quantities/rates with versioned policy.
+    **Accept:** Zero- and three-decimal currency fixtures reject excess precision without truncation.
 
-**Flow and records:** Calculate quantities/rates exactly, round only at approved component boundaries and retain calculation-policy identity for later explanation.
+    **Docs basis:** Documented parent requirement/contract: [Representation and precision](docs/specs/finance.md#representation-and-precision).
 
-**Documented constraints:** Posted amounts use currency-specific minor units; rates/quantities are exact values and excess precision or invalid range is rejected, never truncated.
+  - [ ] <a id="f19-03"></a>**F19.03 — Exact money calculator** · `S`
 
-**Accept:** Invoice line components sum exactly under the approved arithmetic fixtures.
+    **Requires:** [F03.06](#f03-06), [F19.02](#f19-02)
 
-**Docs basis:** Documented parent requirement/contract: [Representation and precision](docs/specs/finance.md#representation-and-precision).
+    **Deliver:** Use integer minor-unit postings and exact quantities/rates with versioned policy.
 
-#### F19.04 — Line discounts
+    **Flow and records:** Calculate quantities/rates exactly, round only at approved component boundaries and retain calculation-policy identity for later explanation.
 
-- [ ] **S · Deliver:** Support permitted fixed or percentage line discounts with exact bounds.
+    **Documented constraints:** Posted amounts use currency-specific minor units; rates/quantities are exact values and excess precision or invalid range is rejected, never truncated.
 
-**Flow and records:** Validate fixed/percentage line discounts against eligible base and use the approved order before calculating the saved tax basis.
+    **Accept:** Invoice line components sum exactly under the approved arithmetic fixtures.
 
-**Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
+    **Docs basis:** Documented parent requirement/contract: [Representation and precision](docs/specs/finance.md#representation-and-precision).
 
-**Accept:** A discount exceeding the eligible base is rejected before issue.
+  - [ ] <a id="f19-04"></a>**F19.04 — Line discounts** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03)
 
-#### F19.05 — Document discounts
+    **Deliver:** Support permitted fixed or percentage line discounts with exact bounds.
 
-- [ ] **S · Deliver:** Allocate document discounts deterministically over eligible lines.
+    **Flow and records:** Validate fixed/percentage line discounts against eligible base and use the approved order before calculating the saved tax basis.
 
-**Flow and records:** Distribute document discount over eligible remaining lines using the approved deterministic remainder rule and stable tie-breaking order.
+    **Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
 
-**Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
+    **Accept:** A discount exceeding the eligible base is rejected before issue.
 
-**Accept:** One minor unit split across equal lines conserves exactly one unit.
+    **Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
 
-**Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
+  - [ ] <a id="f19-05"></a>**F19.05 — Document discounts** · `S`
 
-#### F19.06 — Exclusive taxes
+    **Requires:** [F03.06](#f03-06), [F19.04](#f19-04)
 
-- [ ] **S · Deliver:** Apply approved dated tax components with exemption evidence and explicit basis.
+    **Deliver:** Allocate document discounts deterministically over eligible lines.
 
-**Flow and records:** Version tax labels/rates, exemption evidence and exclusive basis; market eligibility/registration and effective-date treatment need Q-01/Q-03.
+    **Flow and records:** Distribute document discount over eligible remaining lines using the approved deterministic remainder rule and stable tie-breaking order.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
 
-**Accept:** A rate change after issue never recalculates past tax.
+    **Accept:** One minor unit split across equal lines conserves exactly one unit.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
 
-#### F19.07 — Inclusive taxes
+  - [ ] <a id="f19-06"></a>**F19.06 — Exclusive taxes** · `S`
 
-- [ ] **S · Deliver:** Extract included tax under a reviewed rounding profile.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03)
 
-**Flow and records:** Extract inclusive tax only under a selected tested rounding/basis profile; the saved net/tax components must reconstruct original gross exactly.
+    **Deliver:** Apply approved dated tax components with exemption evidence and explicit basis.
 
-**Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
+    **Flow and records:** Version tax labels/rates, exemption evidence and exclusive basis; market eligibility/registration and effective-date treatment need Q-01/Q-03.
 
-**Accept:** Net plus included tax exactly equals the stored gross total.
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-**Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
+    **Accept:** A rate change after issue never recalculates past tax.
 
-#### F19.08 — Compound taxes
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-- [ ] **S · Deliver:** Apply only expressly enabled ordered tax components.
+  - [ ] <a id="f19-07"></a>**F19.07 — Inclusive taxes** · `S`
 
-**Flow and records:** Enable compound calculations only after explicit ordered-component approval and fixtures; do not derive tax order from label sorting.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03)
 
-**Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
+    **Deliver:** Extract included tax under a reviewed rounding profile.
 
-**Accept:** Reordering components changes the preview and requires a new policy version.
+    **Flow and records:** Extract inclusive tax only under a selected tested rounding/basis profile; the saved net/tax components must reconstruct original gross exactly.
 
-**Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
+    **Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
 
-#### F19.09 — Cash rounding
+    **Accept:** Net plus included tax exactly equals the stored gross total.
 
-- [ ] **E · Deliver:** Itemize jurisdiction-approved cash adjustments separately from invoice arithmetic.
+    **Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
 
-**Proposed flow and records:** A separate cash-rounding component is a proposed market-specific policy; keep it visible and unavailable until the actual jurisdiction rules are reviewed.
+  - [ ] <a id="f19-08"></a>**F19.08 — Compound taxes** · `S`
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Requires:** [F03.06](#f03-06), [F19.06](#f19-06)
 
-**Accept:** The adjustment is visible and never silently modifies line net amounts.
+    **Deliver:** Apply only expressly enabled ordered tax components.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Flow and records:** Enable compound calculations only after explicit ordered-component approval and fixtures; do not derive tax order from label sorting.
 
-#### F19.10 — Invoice draft editor
+    **Documented constraints:** Calculation order is proposed pending Q-03; deterministic discounts, saved tax bases/order and component rounding must reconcile to the document total.
 
-- [ ] **S · Deliver:** Create and preserve incomplete drafts with seller, client, dates, terms and lines.
+    **Accept:** Reordering components changes the preview and requires a new policy version.
 
-**Flow and records:** Keep incomplete draft parties, dates, terms and lines editable with visible validation issues; allocating a number waits for online finalization.
+    **Docs basis:** Documented parent requirement/contract: [Proposed calculation order](docs/specs/finance.md#proposed-calculation-order).
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+  - [ ] <a id="f19-09"></a>**F19.09 — Cash rounding** · `E`
 
-**Accept:** A failed save retains input and never allocates a permanent number.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03)
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+    **Deliver:** Itemize jurisdiction-approved cash adjustments separately from invoice arithmetic.
 
-#### F19.11 — Fixed-fee invoice lines
+    **Proposed flow and records:** A separate cash-rounding component is a proposed market-specific policy; keep it visible and unavailable until the actual jurisdiction rules are reviewed.
 
-- [ ] **S · Deliver:** Create exact fixed service lines with explicit project and scope reference.
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
 
-**Flow and records:** Store selected fixed scope/amount and project reference as a draft line; a project estimate or completion status is not authorization to invoice.
+    **Accept:** The adjustment is visible and never silently modifies line net amounts.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
 
-**Accept:** A project budget cannot silently become a charge.
+  - [ ] <a id="f19-10"></a>**F19.10 — Invoice draft editor** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Requires:** [F03.06](#f03-06), [F07.01](#f07-01), [F19.01](#f19-01), [F19.03](#f19-03), [F05.05](#f05-05)
 
-#### F19.12 — Time-based invoice lines
+    **Deliver:** Create and preserve incomplete drafts with seller, client, dates, terms and lines.
 
-- [ ] **S · Deliver:** Preview raw seconds, policy-rounded quantity, rate and source reservations.
+    **Flow and records:** Keep incomplete draft parties, dates, terms and lines editable with visible validation issues; allocating a number waits for online finalization.
 
-**Flow and records:** Reference eligible exact time and dated selling rate; show raw and rounded quantity and recheck source ownership at online issuance.
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
 
-**Documented constraints:** Use effective-dated rate snapshots and explicit missing-rate handling; billed facts are corrected through audited adjustments rather than ordinary edits.
+    **Accept:** A failed save retains input and never allocates a permanent number.
 
-**Accept:** Rounded display hours cannot change trusted monetary calculation.
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
 
-**Docs basis:** Documented parent requirement/contract: [Rates, corrections, and billing handoff](docs/specs/time-and-productivity.md#rates-corrections-and-billing-handoff); [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
+  - [ ] <a id="f19-11"></a>**F19.11 — Fixed-fee invoice lines** · `S`
 
-#### F19.13 — Milestone invoice lines
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10)
 
-- [ ] **S · Deliver:** Reference an approved milestone and tracked amount already converted.
+    **Deliver:** Create exact fixed service lines with explicit project and scope reference.
 
-**Flow and records:** Select compatible approved milestone source/amount for conversion and retain consumed identity; milestone acceptance does not mean money was received.
+    **Flow and records:** Store selected fixed scope/amount and project reference as a draft line; a project estimate or completion status is not authorization to invoice.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-**Accept:** Repeated milestone conversion cannot invoice the same amount twice.
+    **Accept:** A project budget cannot silently become a charge.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-#### F19.14 — Mixed invoice lines
+  - [ ] <a id="f19-12"></a>**F19.12 — Time-based invoice lines** · `S`
 
-- [ ] **S · Deliver:** Combine fixed, milestone, time and approved expenses for one client/currency.
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10), [F17.09](#f17-09)
 
-**Flow and records:** Permit compatible hourly/fixed/milestone/expense lines only for one customer and document currency, with source references retained by type.
+    **Deliver:** Preview raw seconds, policy-rounded quantity, rate and source reservations.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Flow and records:** Reference eligible exact time and dated selling rate; show raw and rounded quantity and recheck source ownership at online issuance.
 
-**Accept:** A cross-client or cross-currency source is rejected.
+    **Documented constraints:** Use effective-dated rate snapshots and explicit missing-rate handling; billed facts are corrected through audited adjustments rather than ordinary edits.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Accept:** Rounded display hours cannot change trusted monetary calculation.
 
-#### F19.15 — Invoice draft duplication
+    **Docs basis:** Documented parent requirement/contract: [Rates, corrections, and billing handoff](docs/specs/time-and-productivity.md#rates-corrections-and-billing-handoff); [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
 
-- [ ] **S · Deliver:** Copy permitted content into a new unnumbered draft.
+  - [ ] <a id="f19-13"></a>**F19.13 — Milestone invoice lines** · `S`
 
-**Flow and records:** Copy only permitted draft content into a new unnumbered record; exclude issued number, source ownership, payment history and provider identity.
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10), [F14.02](#f14-02)
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+    **Deliver:** Reference an approved milestone and tracked amount already converted.
 
-**Accept:** No settlement, allocation ownership, provider ID or delivery history is copied.
+    **Flow and records:** Select compatible approved milestone source/amount for conversion and retain consumed identity; milestone acceptance does not mean money was received.
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-#### F19.16 — Invoice templates
+    **Accept:** Repeated milestone conversion cannot invoice the same amount twice.
 
-- [ ] **S · Deliver:** Version supported layouts, notes, payment fields and hidden internal notes.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
 
-**Flow and records:** Version invoice/estimate/credit layout, locale, notes and approved payment fields separately from financial calculations and internal-only annotations.
+  - [ ] <a id="f19-14"></a>**F19.14 — Mixed invoice lines** · `S`
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Requires:** [F03.06](#f03-06), [F19.11](#f19-11), [F19.12](#f19-12), [F19.13](#f19-13)
 
-**Accept:** Template changes preserve issued snapshot values and render version.
+    **Deliver:** Combine fixed, milestone, time and approved expenses for one client/currency.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+    **Flow and records:** Permit compatible hourly/fixed/milestone/expense lines only for one customer and document currency, with source references retained by type.
 
-#### F19.17 — Invoice readiness check
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-- [ ] **S · Deliver:** Show blocking missing terms, unresolved sources, dates and calculation failures.
+    **Accept:** A cross-client or cross-currency source is rejected.
 
-**Flow and records:** Check required parties, nonzero valid lines, selected policy, dates/terms and unresolved source conflicts against the draft's expected revision.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+  - [ ] <a id="f19-15"></a>**F19.15 — Invoice draft duplication** · `S`
 
-**Accept:** Direct issuance rejects the same invalid input as the editor.
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10)
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+    **Deliver:** Copy permitted content into a new unnumbered draft.
 
-#### F19.18 — Purchase order references
+    **Flow and records:** Copy only permitted draft content into a new unnumbered record; exclude issued number, source ownership, payment history and provider identity.
 
-- [ ] **E · Deliver:** Store client PO/reference fields and optional contractual limits per engagement.
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
 
-**Proposed flow and records:** PO/references remain proposed supporting client metadata; any limit enforcement or legal meaning needs a separate approved agreement/profile rule.
+    **Accept:** No settlement, allocation ownership, provider ID or delivery history is copied.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
 
-**Accept:** Editing a PO does not rewrite prior invoices or imply external authorization.
+  - [ ] <a id="f19-16"></a>**F19.16 — Invoice templates** · `S`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10)
+
+    **Deliver:** Version supported layouts, notes, payment fields and hidden internal notes.
+
+    **Flow and records:** Version invoice/estimate/credit layout, locale, notes and approved payment fields separately from financial calculations and internal-only annotations.
+
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+
+    **Accept:** Template changes preserve issued snapshot values and render version.
+
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+
+  - [ ] <a id="f19-17"></a>**F19.17 — Invoice readiness check** · `S`
+
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10), [F19.11](#f19-11)
+
+    **Deliver:** Show blocking missing terms, unresolved sources, dates and calculation failures.
+
+    **Flow and records:** Check required parties, nonzero valid lines, selected policy, dates/terms and unresolved source conflicts against the draft's expected revision.
+
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+
+    **Accept:** Direct issuance rejects the same invalid input as the editor.
+
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+
+  - [ ] <a id="f19-18"></a>**F19.18 — Purchase order references** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.10](#f19-10)
+
+    **Deliver:** Store client PO/reference fields and optional contractual limits per engagement.
+
+    **Proposed flow and records:** PO/references remain proposed supporting client metadata; any limit enforcement or legal meaning needs a separate approved agreement/profile rule.
+
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+
+    **Accept:** Editing a PO does not rewrite prior invoices or imply external authorization.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
 <a id="category-20"></a>
 
 ### 9.20 Issuance, documents and immutable history
 
-**Owner/package:** P05/P09. **Prerequisites for each phase:** F19.03/F19.10/F19.17; F17.09 for time; Q-01/Q-03. **Optional extension wave:** X2.
+**Owner/package:** P05/P09. **Original branch context (specific Requires below governs feature order):** F19.03/F19.10/F19.17; F17.09 for time; Q-01/Q-03. **Optional extension wave:** X2.
 
 **Authority:** FIN-006–009/029–031/033/034; P01.3 and P01.6 own shared transactions/files.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F20.01 — Atomic invoice issuance
+- **F20 — Issuance, documents and immutable history**
 
-- [ ] **S · Deliver:** Validate current references and commit number, snapshot, allocation, audit and receipt together.
+  - [ ] <a id="f20-01"></a>**F20.01 — Atomic invoice issuance** · `S`
 
-**Flow and records:** Use expected draft revision, preview and original operation key; commit trusted snapshot, number, allocations, audit/receipt/outbox together or roll back.
+    **Requires:** [F03.06](#f03-06), [F19.17](#f19-17), [F20.02](#f20-02), [F05.05](#f05-05)
 
-**Documented constraints:** One online transaction validates revisions, snapshots, number and source ownership; reuse the original receipt after timeout and review numbering after restore.
+    **Deliver:** Validate current references and commit number, snapshot, allocation, audit and receipt together.
 
-**Accept:** A rollback leaves no partial posting; lost-response retry returns the same invoice.
+    **Flow and records:** Use expected draft revision, preview and original operation key; commit trusted snapshot, number, allocations, audit/receipt/outbox together or roll back.
 
-**Docs basis:** Documented parent requirement/contract: [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
+    **Documented constraints:** One online transaction validates revisions, snapshots, number and source ownership; reuse the original receipt after timeout and review numbering after restore.
 
-#### F20.02 — Numbering series
+    **Accept:** A rollback leaves no partial posting; lost-response retry returns the same invoice.
 
-- [ ] **S · Deliver:** Scope sequences by approved seller/type/period policy without number reuse.
+    **Docs basis:** Documented parent requirement/contract: [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
 
-**Flow and records:** Select an approved seller/type/period/sequence scope and formatting; preserve issued/voided/reserved numbering history across failures and restoration review.
+  - [ ] <a id="f20-02"></a>**F20.02 — Numbering series** · `S`
 
-**Documented constraints:** One online transaction validates revisions, snapshots, number and source ownership; reuse the original receipt after timeout and review numbering after restore.
+    **Requires:** [F03.06](#f03-06), [F19.01](#f19-01), [F38.04](#f38-04)
 
-**Accept:** Concurrent issuance and year-boundary fixtures preserve uniqueness.
+    **Deliver:** Scope sequences by approved seller/type/period policy without number reuse.
 
-**Docs basis:** Documented parent requirement/contract: [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
+    **Flow and records:** Select an approved seller/type/period/sequence scope and formatting; preserve issued/voided/reserved numbering history across failures and restoration review.
 
-#### F20.03 — Issued document viewer
+    **Documented constraints:** One online transaction validates revisions, snapshots, number and source ownership; reuse the original receipt after timeout and review numbering after restore.
 
-- [ ] **S · Deliver:** Show frozen parties, lines, totals, terms and linked correction history.
+    **Accept:** Concurrent issuance and year-boundary fixtures preserve uniqueness.
 
-**Flow and records:** Display the saved issue snapshot and linked corrections rather than recomputing parties, prices or terms from mutable master data.
+    **Docs basis:** Documented parent requirement/contract: [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+  - [ ] <a id="f20-03"></a>**F20.03 — Issued document viewer** · `S`
 
-**Accept:** Editing client or rate master data leaves the view unchanged.
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01)
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+    **Deliver:** Show frozen parties, lines, totals, terms and linked correction history.
 
-#### F20.04 — Bilingual PDF rendering
+    **Flow and records:** Display the saved issue snapshot and linked corrections rather than recomputing parties, prices or terms from mutable master data.
 
-- [ ] **S · Deliver:** Render English/Arabic snapshots with shaping, selectable text and stable amounts.
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
 
-**Flow and records:** Render the saved document with selected locale, tested Arabic shaping, selectable text and matching line/component totals using allowed assets only.
+    **Accept:** Editing client or rate master data leaves the view unchanged.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
 
-**Accept:** Long Arabic names and mixed IDs remain readable without clipped totals.
+  - [ ] <a id="f20-04"></a>**F20.04 — Bilingual PDF rendering** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+    **Requires:** [F03.06](#f03-06), [F20.03](#f20-03), [F30.05](#f30-05)
 
-#### F20.05 — PDF job recovery
+    **Deliver:** Render English/Arabic snapshots with shaping, selectable text and stable amounts.
 
-- [ ] **S · Deliver:** Render immutable snapshots with durable progress, retry and cleanup.
+    **Flow and records:** Render the saved document with selected locale, tested Arabic shaping, selectable text and matching line/component totals using allowed assets only.
 
-**Flow and records:** Retry artifact generation for the existing snapshot/number through bounded job state; renderer failure never changes the issued obligation.
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+    **Accept:** Long Arabic names and mixed IDs remain readable without clipped totals.
 
-**Accept:** A renderer failure does not unissue or renumber the document.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views); [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
+  - [ ] <a id="f20-05"></a>**F20.05 — PDF job recovery** · `S`
 
-#### F20.06 — Manual invoice sharing
+    **Requires:** [F03.06](#f03-06), [F20.04](#f20-04)
 
-- [ ] **S · Deliver:** Download/export the authorized artifact and separately record actual sharing evidence.
+    **Deliver:** Render immutable snapshots with durable progress, retry and cleanup.
 
-**Flow and records:** Export/download the authorized artifact and separately record actual sharing method/recipient; export itself is not verified sending or reading.
+    **Flow and records:** Retry artifact generation for the existing snapshot/number through bounded job state; renderer failure never changes the issued obligation.
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
 
-**Accept:** A download is never presented as verified delivery or client reading.
+    **Accept:** A renderer failure does not unissue or renumber the document.
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views); [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
 
-#### F20.07 — Invoice delivery history
+  - [ ] <a id="f20-06"></a>**F20.06 — Manual invoice sharing** · `S`
 
-- [ ] **S · Deliver:** Track delivery attempts independently of issue and settlement.
+    **Requires:** [F03.06](#f03-06), [F20.04](#f20-04)
 
-**Flow and records:** Record per-recipient attempt identity and provider outcome separately from issuance, settlement and dispute state; reconcile unknown handoff before resend.
+    **Deliver:** Download/export the authorized artifact and separately record actual sharing evidence.
 
-**Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
+    **Flow and records:** Export/download the authorized artifact and separately record actual sharing method/recipient; export itself is not verified sending or reading.
 
-**Accept:** A bounce leaves the issued receivable intact.
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-**Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
+    **Accept:** A download is never presented as verified delivery or client reading.
 
-#### F20.08 — Invoice print layout
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-- [ ] **S · Deliver:** Provide printable accessible output with controlled pagination and repeated identifiers.
+  - [ ] <a id="f20-07"></a>**F20.07 — Invoice delivery history** · `S`
 
-**Flow and records:** Use snapshot fields and supported template pagination/continuation behavior; verify long localized content against the unchanged document totals.
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01)
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Deliver:** Track delivery attempts independently of issue and settlement.
 
-**Accept:** A multi-page invoice retains all lines and matching final total.
+    **Flow and records:** Record per-recipient attempt identity and provider outcome separately from issuance, settlement and dispute state; reconcile unknown handoff before resend.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+    **Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
 
-#### F20.09 — Permitted invoice void
+    **Accept:** A bounce leaves the issued receivable intact.
 
-- [ ] **S · Deliver:** Allow only approved jurisdiction/state rules with reason and explicit allocation policy.
+    **Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
 
-**Flow and records:** Gate void by approved jurisdiction/state/reason and deliberate source-release policy; paid/credited/disputed invoices cannot bypass correction rules.
+  - [ ] <a id="f20-08"></a>**F20.08 — Invoice print layout** · `S`
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+    **Requires:** [F03.06](#f03-06), [F20.04](#f20-04)
 
-**Accept:** A paid, credited or disputed invoice cannot be voided by ordinary editing.
+    **Deliver:** Provide printable accessible output with controlled pagination and repeated identifiers.
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+    **Flow and records:** Use snapshot fields and supported template pagination/continuation behavior; verify long localized content against the unchanged document totals.
 
-#### F20.10 — Invoice replacement links
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-- [ ] **S · Deliver:** Link corrections/replacements to originals without overwriting history.
+    **Accept:** A multi-page invoice retains all lines and matching final total.
 
-**Flow and records:** Link replacement/correction records to their original number/version and preserve immutable prior terms and financial components for export.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
 
-**Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
+  - [ ] <a id="f20-09"></a>**F20.09 — Permitted invoice void** · `S`
 
-**Accept:** The original number remains traceable and cannot be reused.
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01)
 
-**Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
+    **Deliver:** Allow only approved jurisdiction/state rules with reason and explicit allocation policy.
 
-#### F20.11 — Document hashes and versions
+    **Flow and records:** Gate void by approved jurisdiction/state/reason and deliberate source-release policy; paid/credited/disputed invoices cannot bypass correction rules.
 
-- [ ] **S · Deliver:** Keep checksum, snapshot, renderer version and artifact references for reproducibility.
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
 
-**Flow and records:** Retain attachment/checksum and snapshot/render version references; show missing-file repair without reconstructing historical amounts from current settings.
+    **Accept:** A paid, credited or disputed invoice cannot be voided by ordinary editing.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
 
-**Accept:** A missing blob is repairable without reconstructing amounts from current master data.
+  - [ ] <a id="f20-10"></a>**F20.10 — Invoice replacement links** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01), [F21.06](#f21-06)
 
-#### F20.12 — Payment instruction QR
+    **Deliver:** Link corrections/replacements to originals without overwriting history.
 
-- [ ] **S · Deliver:** Include only approved payment URL/QR fields from the immutable document context.
+    **Flow and records:** Link replacement/correction records to their original number/version and preserve immutable prior terms and financial components for export.
 
-**Flow and records:** Include only configured approved payment instruction fields/URL/QR; QR appearance is not proof of payment or authorization to change the seller account.
+    **Documented constraints:** Draft/issued/void, delivery, settlement, dispute and overdue are separate; issued documents cannot be edited/deleted and voiding is jurisdiction-gated.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Accept:** The original number remains traceable and cannot be reused.
 
-**Accept:** An unsafe URL or stale provider account blocks publication.
+    **Docs basis:** Documented parent requirement/contract: [Documents, states, and derived views](docs/specs/finance.md#documents-states-and-derived-views).
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+  - [ ] <a id="f20-11"></a>**F20.11 — Document hashes and versions** · `S`
 
-#### F20.13 — Structured e-invoice export
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01)
 
-- [ ] **E · Deliver:** Support a separately reviewed format and jurisdiction profile when required.
+    **Deliver:** Keep checksum, snapshot, renderer version and artifact references for reproducibility.
 
-**Proposed flow and records:** Structured e-invoice formats remain proposed market-specific profiles; Q-01 decides authority/schema, mandatory fields, validation and archival requirements.
+    **Flow and records:** Retain attachment/checksum and snapshot/render version references; show missing-file repair without reconstructing historical amounts from current settings.
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-**Accept:** Official format fixtures and specialist review pass before the profile is advertised.
+    **Accept:** A missing blob is repairable without reconstructing amounts from current master data.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-#### F20.14 — E-invoice submission adapter
+  - [ ] <a id="f20-12"></a>**F20.12 — Payment instruction QR** · `S`
 
-- [ ] **E · Deliver:** Submit through an approved authority/provider with explicit acknowledgement states.
+    **Requires:** [F03.06](#f03-06), [F20.04](#f20-04)
 
-**Proposed flow and records:** Authority submission remains a proposed provider workflow; determine country/provider/acknowledgement and legal issuance meaning before enabling it.
+    **Deliver:** Include only approved payment URL/QR fields from the immutable document context.
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Flow and records:** Include only configured approved payment instruction fields/URL/QR; QR appearance is not proof of payment or authorization to change the seller account.
 
-**Accept:** A rejected or unknown submission never masquerades as authority acceptance.
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Accept:** An unsafe URL or stale provider account blocks publication.
 
-#### F20.15 — Financial document register
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-- [ ] **S · Deliver:** Filter issued documents and corrections by client, date, type, currency and lifecycle.
+  - [ ] <a id="f20-13"></a>**F20.13 — Structured e-invoice export** · `E`
 
-**Flow and records:** Query scoped document type, currency, dates, issue/correction/lifecycle and consistent as-of results with bounded pagination and source-linked totals.
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01)
 
-**Documented constraints:** Use allowlisted filters and stable bounded cursors; scope counts/files/exports and expose revision/as-of rather than mixing pending and committed totals.
+    **Deliver:** Support a separately reviewed format and jurisdiction profile when required.
 
-**Accept:** Registry totals and permissions match the underlying issued records.
+    **Proposed flow and records:** Structured e-invoice formats remain proposed market-specific profiles; Q-01 decides authority/schema, mandatory fields, validation and archival requirements.
 
-**Docs basis:** Documented parent requirement/contract: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+
+    **Accept:** Official format fixtures and specialist review pass before the profile is advertised.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+
+  - [ ] <a id="f20-14"></a>**F20.14 — E-invoice submission adapter** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F20.13](#f20-13), [F27.02](#f27-02), [F30.05](#f30-05)
+
+    **Deliver:** Submit through an approved authority/provider with explicit acknowledgement states.
+
+    **Proposed flow and records:** Authority submission remains a proposed provider workflow; determine country/provider/acknowledgement and legal issuance meaning before enabling it.
+
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+
+    **Accept:** A rejected or unknown submission never masquerades as authority acceptance.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+
+  - [ ] <a id="f20-15"></a>**F20.15 — Financial document register** · `S`
+
+    **Requires:** [F03.06](#f03-06), [F20.01](#f20-01)
+
+    **Deliver:** Filter issued documents and corrections by client, date, type, currency and lifecycle.
+
+    **Flow and records:** Query scoped document type, currency, dates, issue/correction/lifecycle and consistent as-of results with bounded pagination and source-linked totals.
+
+    **Documented constraints:** Use allowlisted filters and stable bounded cursors; scope counts/files/exports and expose revision/as-of rather than mixing pending and committed totals.
+
+    **Accept:** Registry totals and permissions match the underlying issued records.
+
+    **Docs basis:** Documented parent requirement/contract: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
 
 <a id="category-21"></a>
 
 ### 9.21 Payments, credits and collections
 
-**Owner/package:** P05/P07. **Prerequisites for each phase:** F20.01/F19.03; current Finance grants; Q-01/Q-03. **Optional extension wave:** X2.
+**Owner/package:** P05/P07. **Original branch context (specific Requires below governs feature order):** F20.01/F19.03; current Finance grants; Q-01/Q-03. **Optional extension wave:** X2.
 
 **Authority:** FIN-010–015/023/027/028/032; manual records first, money movement only via approved adapters.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F21.01 — Manual payment recording
+- **F21 — Payments, credits and collections**
 
-- [ ] **S · Deliver:** Post exact dated payments with payer, method, reference, currency and source evidence.
+  - [ ] <a id="f21-01"></a>**F21.01 — Manual payment recording** · `S`
 
-**Flow and records:** Post dated exact cash evidence with payer, method, currency, reference and attachments; allocation is explicit and provider execution is a separate capability.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F20.01](#f20-01)
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Deliver:** Post exact dated payments with payer, method, reference, currency and source evidence.
 
-**Accept:** Posting twice with the same operation ID produces one payment.
+    **Flow and records:** Post dated exact cash evidence with payer, method, currency, reference and attachments; allocation is explicit and provider execution is a separate capability.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-#### F21.02 — Partial payment allocation
+    **Accept:** Posting twice with the same operation ID produces one payment.
 
-- [ ] **S · Deliver:** Allocate payment amounts to one or more same-client/currency invoices.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Flow and records:** Preview one payment's portions over compatible same-client/currency invoices; allocated plus unapplied value cannot exceed the net available payment.
+  - [ ] <a id="f21-02"></a>**F21.02 — Partial payment allocation** · `S`
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01)
 
-**Accept:** Allocation totals cannot exceed available payment or invoice debt.
+    **Deliver:** Allocate payment amounts to one or more same-client/currency invoices.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Flow and records:** Preview one payment's portions over compatible same-client/currency invoices; allocated plus unapplied value cannot exceed the net available payment.
 
-#### F21.03 — Balance and overdue projections
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-- [ ] **S · Deliver:** Derive unpaid, partial, settled and overdue flags from postings and due dates.
+    **Accept:** Allocation totals cannot exceed available payment or invoice debt.
 
-**Flow and records:** Compute remaining obligation, outstanding and surplus from issued debt, valid reductions and net settlement; overdue is derived from due date, not a destructive lifecycle change.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+  - [ ] <a id="f21-03"></a>**F21.03 — Balance and overdue projections** · `S`
 
-**Accept:** A late payment clears overdue debt without rewriting invoice history.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.02](#f21-02)
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Deliver:** Derive unpaid, partial, settled and overdue flags from postings and due dates.
 
-#### F21.04 — Unapplied client credit
+    **Flow and records:** Compute remaining obligation, outstanding and surplus from issued debt, valid reductions and net settlement; overdue is derived from due date, not a destructive lifecycle change.
 
-- [ ] **S · Deliver:** Preserve overpayment as available client credit.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Flow and records:** Keep money exceeding an invoice's remaining debt as explicit unapplied client credit rather than hiding it inside a negative invoice balance.
+    **Accept:** A late payment clears overdue debt without rewriting invoice history.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Accept:** An overpayment never produces a negative invoice balance.
+  - [ ] <a id="f21-04"></a>**F21.04 — Unapplied client credit** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01)
 
-#### F21.05 — Client credit application
+    **Deliver:** Preserve overpayment as available client credit.
 
-- [ ] **S · Deliver:** Allocate available client credit with reviewed amounts and source references.
+    **Flow and records:** Keep money exceeding an invoice's remaining debt as explicit unapplied client credit rather than hiding it inside a negative invoice balance.
 
-**Flow and records:** Apply a selected available credit portion online with current invoice/credit revisions and unique ownership, preserving the remaining available balance.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Accept:** An overpayment never produces a negative invoice balance.
 
-**Accept:** Two concurrent applications cannot consume the same credit twice.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+  - [ ] <a id="f21-05"></a>**F21.05 — Client credit application** · `S`
 
-#### F21.06 — Credit note issuance
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.04](#f21-04), [F21.02](#f21-02)
 
-- [ ] **S · Deliver:** Issue partial/full reductions against original line, tax and discount components.
+    **Deliver:** Allocate available client credit with reviewed amounts and source references.
 
-**Flow and records:** Allocate partial/full credit to original saved line/tax/discount capacities and retain reason/source links; credit does not automatically release billed work.
+    **Flow and records:** Apply a selected available credit portion online with current invoice/credit revisions and unique ownership, preserving the remaining available balance.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Accept:** Repeated credit attempts cannot exceed original credited capacity.
+    **Accept:** Two concurrent applications cannot consume the same credit twice.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-#### F21.07 — Manual refund recording
+  - [ ] <a id="f21-06"></a>**F21.06 — Credit note issuance** · `S`
 
-- [ ] **S · Deliver:** Post a cash refund linked to original payment or available client credit.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F20.01](#f20-01), [F20.02](#f20-02)
 
-**Flow and records:** Record a refund against refundable original cash or client credit, previewing whether a linked debt reduction exists or the obligation will reopen.
+    **Deliver:** Issue partial/full reductions against original line, tax and discount components.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Flow and records:** Allocate partial/full credit to original saved line/tax/discount capacities and retain reason/source links; credit does not automatically release billed work.
 
-**Accept:** Recording a refund cannot silently void an invoice or contact a bank.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Accept:** Repeated credit attempts cannot exceed original credited capacity.
 
-#### F21.08 — Posting reversals
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-- [ ] **S · Deliver:** Correct payments/refunds/allocations with compensating events and reasons.
+  - [ ] <a id="f21-07"></a>**F21.07 — Manual refund recording** · `S`
 
-**Flow and records:** Use exact stored compensating events with reason and original references instead of editing/deleting posted payment, refund or allocation amounts.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01)
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Deliver:** Post a cash refund linked to original payment or available client credit.
 
-**Accept:** Reversal restores only the exact stored values and preserves original IDs.
+    **Flow and records:** Record a refund against refundable original cash or client credit, previewing whether a linked debt reduction exists or the obligation will reopen.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-#### F21.09 — Payment receipt documents
+    **Accept:** Recording a refund cannot silently void an invoice or contact a bank.
 
-- [ ] **E · Deliver:** Render a client-facing receipt from posted payment and allocation facts.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Proposed flow and records:** Payment receipt output is proposed presentation of immutable payment/allocation evidence; disclose linked reversal history without rewriting original cash events.
+  - [ ] <a id="f21-08"></a>**F21.08 — Posting reversals** · `S`
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01)
 
-**Accept:** A reversed payment is marked through linked history rather than a falsified original receipt.
+    **Deliver:** Correct payments/refunds/allocations with compensating events and reasons.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Flow and records:** Use exact stored compensating events with reason and original references instead of editing/deleting posted payment, refund or allocation amounts.
 
-#### F21.10 — Deposit schedules
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-- [ ] **S · Deliver:** Separate contracted deposit, invoice issued, cash received and final amount due.
+    **Accept:** Reversal restores only the exact stored values and preserves original IDs.
 
-**Flow and records:** Keep planned deposit, issued deposit invoice, cash receipt and remaining scope distinct; choose one approved final-billing deduction path for the same deposit.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+  - [ ] <a id="f21-09"></a>**F21.09 — Payment receipt documents** · `E`
 
-**Accept:** The deposit is deducted once in the final billing chain.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01), [F20.04](#f20-04)
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Deliver:** Render a client-facing receipt from posted payment and allocation facts.
 
-#### F21.11 — Collection reminders
+    **Proposed flow and records:** Payment receipt output is proposed presentation of immutable payment/allocation evidence; disclose linked reversal history without rewriting original cash events.
 
-- [ ] **S · Deliver:** Configure previewable schedules, quiet hours, suppression and send history.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Flow and records:** Configure previewable overdue schedules and suppression/history; pending reminder jobs recheck paid, disputed, voided and opted-out states just before dispatch.
+    **Accept:** A reversed payment is marked through linked history rather than a falsified original receipt.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Accept:** Paying or disputing an invoice before dispatch suppresses the pending reminder.
+  - [ ] <a id="f21-10"></a>**F21.10 — Deposit schedules** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F19.10](#f19-10)
 
-#### F21.12 — Promised payment tracking
+    **Deliver:** Separate contracted deposit, invoice issued, cash received and final amount due.
 
-- [ ] **S · Deliver:** Record promises and follow-up dates without changing contractual due dates.
+    **Flow and records:** Keep planned deposit, issued deposit invoice, cash receipt and remaining scope distinct; choose one approved final-billing deduction path for the same deposit.
 
-**Flow and records:** Record a promise and collection follow-up as subjective evidence separate from the contractual due date; forecasts must label its basis.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Accept:** The deposit is deducted once in the final billing chain.
 
-**Accept:** A promised date affects the labeled forecast but not the invoice snapshot.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+  - [ ] <a id="f21-11"></a>**F21.11 — Collection reminders** · `S`
 
-#### F21.13 — Invoice disputes
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.03](#f21-03), [F21.13](#f21-13), [F06.07](#f06-07), [F27.03](#f27-03), [F30.05](#f30-05)
 
-- [ ] **S · Deliver:** Record dispute scope, reason, evidence and resolution status.
+    **Deliver:** Configure previewable schedules, quiet hours, suppression and send history.
 
-**Flow and records:** Attach dispute reason, scope and permitted evidence to existing debt; resolution records a separate event and preserves original issuance.
+    **Flow and records:** Configure previewable overdue schedules and suppression/history; pending reminder jobs recheck paid, disputed, voided and opted-out states just before dispatch.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-**Accept:** Open disputes suppress configured reminders and preserve the original debt history.
+    **Accept:** Paying or disputing an invoice before dispatch suppresses the pending reminder.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue); [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
 
-#### F21.14 — Write-off adjustments
+  - [ ] <a id="f21-12"></a>**F21.12 — Promised payment tracking** · `S`
 
-- [ ] **S · Deliver:** Require approval and reason for operational collection adjustments.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.03](#f21-03)
 
-**Flow and records:** Record approved write-off reductions separately from issued credit and cash, with no implicit tax-deductibility claim or repeated reduction of already-credited value.
+    **Deliver:** Record promises and follow-up dates without changing contractual due dates.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Flow and records:** Record a promise and collection follow-up as subjective evidence separate from the contractual due date; forecasts must label its basis.
 
-**Accept:** The UI makes no statutory deduction claim and retains the original invoice.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Accept:** A promised date affects the labeled forecast but not the invoice snapshot.
 
-#### F21.15 — Collection activity timeline
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-- [ ] **S · Deliver:** Link calls, reminders and outcomes under scoped finance access.
+  - [ ] <a id="f21-13"></a>**F21.13 — Invoice disputes** · `S`
 
-**Flow and records:** Link permitted collection activity to invoices and counterparties with occurred/recorded provenance; an internal logged message is not evidence of sending.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F20.01](#f20-01)
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Deliver:** Record dispute scope, reason, evidence and resolution status.
 
-**Accept:** A project-only contributor cannot retrieve collection notes by direct API.
+    **Flow and records:** Attach dispute reason, scope and permitted evidence to existing debt; resolution records a separate event and preserves original issuance.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-#### F21.16 — Payment plan schedules
+    **Accept:** Open disputes suppress configured reminders and preserve the original debt history.
 
-- [ ] **E · Deliver:** Track agreed instalments and allocated receipts separately from invoice totals.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Proposed flow and records:** Instalment plans remain proposed accepted schedules over existing obligations; allocations/receipts remain authoritative and rescheduling cannot recreate the same debt.
+  - [ ] <a id="f21-14"></a>**F21.14 — Write-off adjustments** · `S`
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.03](#f21-03)
 
-**Accept:** Missed instalments never duplicate or silently reissue original debt.
+    **Deliver:** Require approval and reason for operational collection adjustments.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Flow and records:** Record approved write-off reductions separately from issued credit and cash, with no implicit tax-deductibility claim or repeated reduction of already-credited value.
 
-#### F21.17 — Late fee policy
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-- [ ] **E · Deliver:** Apply only explicitly accepted, jurisdiction-reviewed terms through a separate approved charge.
+    **Accept:** The UI makes no statutory deduction claim and retains the original invoice.
 
-**Proposed flow and records:** Late charges remain proposed jurisdiction/contract policy; select eligibility, calculation, correction and disclosure before any separate charge is drafted or issued.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+  - [ ] <a id="f21-15"></a>**F21.15 — Collection activity timeline** · `S`
 
-**Accept:** Disputed or legally ineligible balances do not accrue automatic fees.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Deliver:** Link calls, reminders and outcomes under scoped finance access.
 
-#### F21.18 — Client statements
+    **Flow and records:** Link permitted collection activity to invoices and counterparties with occurred/recorded provenance; an internal logged message is not evidence of sending.
 
-- [ ] **E · Deliver:** Generate as-of statements with invoices, payments, credits and closing balances by currency.
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
 
-**Proposed flow and records:** Client statements remain proposed as-of projections grouped by currency; reconstruct opening/posting/credit/refund/closing positions from immutable source events.
+    **Accept:** A project-only contributor cannot retrieve collection notes by direct API.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Docs basis:** Documented parent requirement/contract: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
-**Accept:** The statement reconciles exactly to posted source records.
+  - [ ] <a id="f21-16"></a>**F21.16 — Payment plan schedules** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.03](#f21-03)
+
+    **Deliver:** Track agreed instalments and allocated receipts separately from invoice totals.
+
+    **Proposed flow and records:** Instalment plans remain proposed accepted schedules over existing obligations; allocations/receipts remain authoritative and rescheduling cannot recreate the same debt.
+
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+
+    **Accept:** Missed instalments never duplicate or silently reissue original debt.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+
+  - [ ] <a id="f21-17"></a>**F21.17 — Late fee policy** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.03](#f21-03)
+
+    **Deliver:** Apply only explicitly accepted, jurisdiction-reviewed terms through a separate approved charge.
+
+    **Proposed flow and records:** Late charges remain proposed jurisdiction/contract policy; select eligibility, calculation, correction and disclosure before any separate charge is drafted or issued.
+
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+
+    **Accept:** Disputed or legally ineligible balances do not accrue automatic fees.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+
+  - [ ] <a id="f21-18"></a>**F21.18 — Client statements** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.03](#f21-03), [F21.04](#f21-04)
+
+    **Deliver:** Generate as-of statements with invoices, payments, credits and closing balances by currency.
+
+    **Proposed flow and records:** Client statements remain proposed as-of projections grouped by currency; reconstruct opening/posting/credit/refund/closing positions from immutable source events.
+
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+
+    **Accept:** The statement reconciles exactly to posted source records.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
 <a id="category-22"></a>
 
 ### 9.22 Recurring services, retainers and subscriptions
 
-**Owner/package:** P05/P07. **Prerequisites for each phase:** F20.01/F21.01; P01.3 durable jobs; approved Q-03/Q-09. **Optional extension wave:** X2.
+**Owner/package:** P05/P07. **Original branch context (specific Requires below governs feature order):** F20.01/F21.01; P01.3 durable jobs; approved Q-03/Q-09. **Optional extension wave:** X2.
 
 **Authority:** FIN-019/020/032/035. These are services sold by the workspace, separate from SoloDesk subscription billing.
 
-**Research context:** [FreshBooks retainers](https://support.freshbooks.com/hc/en-us/articles/360015379391-What-are-retainers). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F22.01 — Recurring invoice schedules
+- **F22 — Recurring services, retainers and subscriptions**
 
-- [ ] **S · Deliver:** Configure versioned calendar rules, templates, start/end and timezone.
+  - [ ] <a id="f22-01"></a>**F22.01 — Recurring invoice schedules** · `S`
 
-**Flow and records:** Store cadence, timezone, original calendar anchor, period/end rule, template revision and generation mode; preview upcoming occurrences under the selected month-end policy.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F19.10](#f19-10), [F30.05](#f30-05)
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Deliver:** Configure versioned calendar rules, templates, start/end and timezone.
 
-**Accept:** Month-end and DST schedules resolve using explicit approved rules.
+    **Flow and records:** Store cadence, timezone, original calendar anchor, period/end rule, template revision and generation mode; preview upcoming occurrences under the selected month-end policy.
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-#### F22.02 — Recurring draft generation
+    **Accept:** Month-end and DST schedules resolve using explicit approved rules.
 
-- [ ] **S · Deliver:** Create one draft per stable schedule occurrence.
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
-**Flow and records:** Generate a draft for a stable accepted occurrence identity; server scheduling handles closed tabs and repeated/missed execution without duplicating a period.
+  - [ ] <a id="f22-02"></a>**F22.02 — Recurring draft generation** · `S`
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.01](#f22-01)
 
-**Accept:** Duplicate workers and missed-run catch-up cannot create duplicate periods.
+    **Deliver:** Create one draft per stable schedule occurrence.
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior); [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
+    **Flow and records:** Generate a draft for a stable accepted occurrence identity; server scheduling handles closed tabs and repeated/missed execution without duplicating a period.
 
-#### F22.03 — Recurring schedule lifecycle
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-- [ ] **S · Deliver:** Preview, pause, resume and end schedules while retaining existing obligations.
+    **Accept:** Duplicate workers and missed-run catch-up cannot create duplicate periods.
 
-**Flow and records:** Pause/resume/end prospective generation while retaining issued records; review missed create/skip/merge choices and recheck cancellation before any side effect.
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior); [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+  - [ ] <a id="f22-03"></a>**F22.03 — Recurring schedule lifecycle** · `S`
 
-**Accept:** Stopping a schedule during a leased run prevents an unauthorized future effect.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.01](#f22-01)
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Deliver:** Preview, pause, resume and end schedules while retaining existing obligations.
 
-#### F22.04 — Prepaid-money retainers
+    **Flow and records:** Pause/resume/end prospective generation while retaining issued records; review missed create/skip/merge choices and recheck cancellation before any side effect.
 
-- [ ] **S · Deliver:** Track receipt, allocation, remaining money and linked agreements in one currency.
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-**Flow and records:** Track agreed prepayment, receipts, allocations, replenishment/refund and remaining money in one explicit model with the selected reporting basis.
+    **Accept:** Stopping a schedule during a leased run prevents an unauthorized future effect.
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
-**Accept:** A retainer payment is not counted again as a new unrelated collection.
+  - [ ] <a id="f22-04"></a>**F22.04 — Prepaid-money retainers** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01)
 
-#### F22.05 — Included-unit retainers
+    **Deliver:** Track receipt, allocation, remaining money and linked agreements in one currency.
 
-- [ ] **S · Deliver:** Track included service units with explicit consumption and overage rules.
+    **Flow and records:** Track agreed prepayment, receipts, allocations, replenishment/refund and remaining money in one explicit model with the selected reporting basis.
 
-**Flow and records:** Track included hours/units by service period, approved source-second consumption, remaining allowance and explicit overage rather than treating units as cash.
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Accept:** A retainer payment is not counted again as a new unrelated collection.
 
-**Accept:** Unused units are not silently treated as a cash credit.
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+  - [ ] <a id="f22-05"></a>**F22.05 — Included-unit retainers** · `S`
 
-#### F22.06 — Retainer replenishment
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F17.04](#f17-04)
 
-- [ ] **S · Deliver:** Apply configured thresholds and reviewed top-up requests.
+    **Deliver:** Track included service units with explicit consumption and overage rules.
 
-**Flow and records:** Use accepted retainer terms to identify replenishment need and create only the permitted review/draft action; bank debit requires a separate approved provider.
+    **Flow and records:** Track included hours/units by service period, approved source-second consumption, remaining allowance and explicit overage rather than treating units as cash.
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-**Accept:** Crossing a threshold suggests or drafts a request without creating unauthorized cash.
+    **Accept:** Unused units are not silently treated as a cash credit.
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
-#### F22.07 — Retainer rollover and expiry
+  - [ ] <a id="f22-06"></a>**F22.06 — Retainer replenishment** · `S`
 
-- [ ] **S · Deliver:** Version permitted expiry, cancellation and rollover terms.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.04](#f22-04)
 
-**Flow and records:** Persist rollover cap/expiry/cancellation terms with their agreement version and distinguish expired service allowance from a cash-refund event.
+    **Deliver:** Apply configured thresholds and reviewed top-up requests.
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Flow and records:** Use accepted retainer terms to identify replenishment need and create only the permitted review/draft action; bank debit requires a separate approved provider.
 
-**Accept:** A terms change does not retroactively consume prior remaining units.
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Accept:** Crossing a threshold suggests or drafts a request without creating unauthorized cash.
 
-#### F22.08 — Service subscription plans
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
-- [ ] **S · Deliver:** Define agreed periods, quantities, prices and cancellation conditions.
+  - [ ] <a id="f22-07"></a>**F22.07 — Retainer rollover and expiry** · `S`
 
-**Flow and records:** Record accepted plan/version, quantity, currency, period anchor, advance/arrears mode and activation evidence with the documented subscription lifecycle.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.04](#f22-04)
 
-**Documented constraints:** Activation/changes are authorized online and effective-dated; proration is disabled until selected, and cancellation never silently erases debt.
+    **Deliver:** Version permitted expiry, cancellation and rollover terms.
 
-**Accept:** Plan changes preserve accepted terms and every issued period.
+    **Flow and records:** Persist rollover cap/expiry/cancellation terms with their agreement version and distinguish expired service allowance from a cash-refund event.
 
-**Docs basis:** Documented parent requirement/contract: [Client service subscriptions](docs/specs/finance.md#client-service-subscriptions).
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-#### F22.09 — Subscription plan changes
+    **Accept:** A terms change does not retroactively consume prior remaining units.
 
-- [ ] **S · Deliver:** Preview upgrades/downgrades and explicitly selected proration.
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
-**Flow and records:** Create effective-dated changes with separate next-period and selected current-period adjustment preview; proration stays disabled until its method is chosen.
+  - [ ] <a id="f22-08"></a>**F22.08 — Service subscription plans** · `S`
 
-**Documented constraints:** Activation/changes are authorized online and effective-dated; proration is disabled until selected, and cancellation never silently erases debt.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.01](#f22-01)
 
-**Accept:** A mid-period change cannot silently duplicate already-invoiced service.
+    **Deliver:** Define agreed periods, quantities, prices and cancellation conditions.
 
-**Docs basis:** Documented parent requirement/contract: [Client service subscriptions](docs/specs/finance.md#client-service-subscriptions).
+    **Flow and records:** Record accepted plan/version, quantity, currency, period anchor, advance/arrears mode and activation evidence with the documented subscription lifecycle.
 
-#### F22.10 — Subscription cancellation
+    **Documented constraints:** Activation/changes are authorized online and effective-dated; proration is disabled until selected, and cancellation never silently erases debt.
 
-- [ ] **S · Deliver:** Support agreed end-date or period-end termination with clear remaining obligations.
+    **Accept:** Plan changes preserve accepted terms and every issued period.
 
-**Flow and records:** Apply explicit agreement end/cancellation dates and any approved grace/service consequences; preserve already-issued periods and outstanding debt.
+    **Docs basis:** Documented parent requirement/contract: [Client service subscriptions](docs/specs/finance.md#client-service-subscriptions).
 
-**Documented constraints:** Activation/changes are authorized online and effective-dated; proration is disabled until selected, and cancellation never silently erases debt.
+  - [ ] <a id="f22-09"></a>**F22.09 — Subscription plan changes** · `S`
 
-**Accept:** Canceling does not delete invoices or fabricate a refund.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.08](#f22-08)
 
-**Docs basis:** Documented parent requirement/contract: [Client service subscriptions](docs/specs/finance.md#client-service-subscriptions).
+    **Deliver:** Preview upgrades/downgrades and explicitly selected proration.
 
-#### F22.11 — Retainer statements
+    **Flow and records:** Create effective-dated changes with separate next-period and selected current-period adjustment preview; proration stays disabled until its method is chosen.
 
-- [ ] **S · Deliver:** Publish period consumption and remaining balance with source drill-down.
+    **Documented constraints:** Activation/changes are authorized online and effective-dated; proration is disabled until selected, and cancellation never silently erases debt.
 
-**Flow and records:** Expose retainer period consumption/reversal and remainder with exact source links, preserving the distinction between prepaid money and service allowance.
+    **Accept:** A mid-period change cannot silently duplicate already-invoiced service.
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Docs basis:** Documented parent requirement/contract: [Client service subscriptions](docs/specs/finance.md#client-service-subscriptions).
 
-**Accept:** Summed consumption plus remainder reconciles to the agreement ledger.
+  - [ ] <a id="f22-10"></a>**F22.10 — Subscription cancellation** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.08](#f22-08)
 
-#### F22.12 — Service allowance alerts
+    **Deliver:** Support agreed end-date or period-end termination with clear remaining obligations.
 
-- [ ] **E · Deliver:** Notify an authorized owner/client before approved allowance limits are crossed.
+    **Flow and records:** Apply explicit agreement end/cancellation dates and any approved grace/service consequences; preserve already-issued periods and outstanding debt.
 
-**Proposed flow and records:** Allowance alerts remain proposed deterministic thresholds over the accepted retainer model; alerting alone cannot stop service or authorize overage billing.
+    **Documented constraints:** Activation/changes are authorized online and effective-dated; proration is disabled until selected, and cancellation never silently erases debt.
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Accept:** Canceling does not delete invoices or fabricate a refund.
 
-**Accept:** Alerts never auto-stop work or create an unapproved overage invoice.
+    **Docs basis:** Documented parent requirement/contract: [Client service subscriptions](docs/specs/finance.md#client-service-subscriptions).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+  - [ ] <a id="f22-11"></a>**F22.11 — Retainer statements** · `S`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.04](#f22-04)
+
+    **Deliver:** Publish period consumption and remaining balance with source drill-down.
+
+    **Flow and records:** Expose retainer period consumption/reversal and remainder with exact source links, preserving the distinction between prepaid money and service allowance.
+
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+
+    **Accept:** Summed consumption plus remainder reconciles to the agreement ledger.
+
+    **Docs basis:** Documented parent requirement/contract: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+
+  - [ ] <a id="f22-12"></a>**F22.12 — Service allowance alerts** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F22.05](#f22-05), [F06.06](#f06-06)
+
+    **Deliver:** Notify an authorized owner/client before approved allowance limits are crossed.
+
+    **Proposed flow and records:** Allowance alerts remain proposed deterministic thresholds over the accepted retainer model; alerting alone cannot stop service or authorize overage billing.
+
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+
+    **Accept:** Alerts never auto-stop work or create an unapproved overage invoice.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
 <a id="category-23"></a>
 
 ### 9.23 Expenses and subcontractor costs
 
-**Owner/package:** P05. **Prerequisites for each phase:** F07.01/F12.01/F19.03; private files P01.6; Q-03/Q-05. **Optional extension wave:** X2.
+**Owner/package:** P05. **Original branch context (specific Requires below governs feature order):** F07.01/F12.01/F19.03; private files P01.6; Q-03/Q-05. **Optional extension wave:** X2.
 
 **Authority:** FIN-021/022/024/025/033. No payroll or general ledger is implied.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F23.01 — Expense records
+- **F23 — Expenses and subcontractor costs**
 
-- [ ] **S · Deliver:** Record supplier, date, category, amount/currency, tax evidence, payment source and project.
+  - [ ] <a id="f23-01"></a>**F23.01 — Expense records** · `S`
 
-**Flow and records:** Record supplier/date/category, original amount/currency, tax evidence, payment source and project/client; label billable eligibility rather than inferring it from category.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F12.01](#f12-01)
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Deliver:** Record supplier, date, category, amount/currency, tax evidence, payment source and project.
 
-**Accept:** Original foreign-currency values remain intact after billing conversion.
+    **Flow and records:** Record supplier/date/category, original amount/currency, tax evidence, payment source and project/client; label billable eligibility rather than inferring it from category.
 
-**Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-#### F23.02 — Receipt attachments
+    **Accept:** Original foreign-currency values remain intact after billing conversion.
 
-- [ ] **S · Deliver:** Attach validated private receipts with checksum and source linkage.
+    **Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-**Flow and records:** Reference verified private receipt bytes/hash and scope; keep missing/quarantined attachment state visible independently from the recorded cost.
+  - [ ] <a id="f23-02"></a>**F23.02 — Receipt attachments** · `S`
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01), [F15.03](#f15-03)
 
-**Accept:** A missing or quarantined receipt shows repair status without deleting the expense.
+    **Deliver:** Attach validated private receipts with checksum and source linkage.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Flow and records:** Reference verified private receipt bytes/hash and scope; keep missing/quarantined attachment state visible independently from the recorded cost.
 
-#### F23.03 — Expense categories
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-- [ ] **S · Deliver:** Manage active/archive categories and permitted tax metadata.
+    **Accept:** A missing or quarantined receipt shows repair status without deleting the expense.
 
-**Flow and records:** Maintain category references and active/archive state while preserving historical expense labels, tax-policy versions and exportable original components.
+    **Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+  - [ ] <a id="f23-03"></a>**F23.03 — Expense categories** · `S`
 
-**Accept:** Archiving a category preserves earlier recorded labels and totals.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01)
 
-**Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Deliver:** Manage active/archive categories and permitted tax metadata.
 
-#### F23.04 — Expense submission
+    **Flow and records:** Maintain category references and active/archive state while preserving historical expense labels, tax-policy versions and exportable original components.
 
-- [ ] **S · Deliver:** Submit a frozen expense revision for optional reviewer approval.
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-**Flow and records:** When selected, submit the exact expense revision and evidence set; preserve the documented draft/recorded/submitted/approved/rejected distinction.
+    **Accept:** Archiving a category preserves earlier recorded labels and totals.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-**Accept:** A subsequent amount edit invalidates prior approval for new billing use.
+  - [ ] <a id="f23-04"></a>**F23.04 — Expense submission** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01)
 
-#### F23.05 — Expense approval
+    **Deliver:** Submit a frozen expense revision for optional reviewer approval.
 
-- [ ] **S · Deliver:** Approve/reject under current scope with reason and preserved history.
+    **Flow and records:** When selected, submit the exact expense revision and evidence set; preserve the documented draft/recorded/submitted/approved/rejected distinction.
 
-**Flow and records:** Approve/reject using current reviewer scope and reason; later amount/evidence changes require the applicable reviewed revision before invoice eligibility.
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Accept:** A subsequent amount edit invalidates prior approval for new billing use.
 
-**Accept:** A reviewer lacking the project grant cannot approve via direct invocation.
+    **Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-**Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+  - [ ] <a id="f23-05"></a>**F23.05 — Expense approval** · `S`
 
-#### F23.06 — Billable expense recovery
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.04](#f23-04)
 
-- [ ] **S · Deliver:** Convert approved expenses at cost or approved markup into invoice sources.
+    **Deliver:** Approve/reject under current scope with reason and preserved history.
 
-**Flow and records:** Reserve/consume approved eligible expense value once using at-cost/markup and explicit rebilling currency/rate; save original source and issue-time conversion.
+    **Flow and records:** Approve/reject using current reviewer scope and reason; later amount/evidence changes require the applicable reviewed revision before invoice eligibility.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-**Accept:** Two invoices cannot recover the same expense amount twice.
+    **Accept:** A reviewer lacking the project grant cannot approve via direct invocation.
 
-**Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-#### F23.07 — Employee reimbursement records
+  - [ ] <a id="f23-06"></a>**F23.06 — Billable expense recovery** · `S`
 
-- [ ] **E · Deliver:** Track reimbursement owed/recorded to a member as operational evidence.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.05](#f23-05), [F19.10](#f19-10)
 
-**Proposed flow and records:** Member reimbursement records remain proposed operational evidence; selecting a recipient or marking recorded cannot execute payroll or a bank payment.
+    **Deliver:** Convert approved expenses at cost or approved markup into invoice sources.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Flow and records:** Reserve/consume approved eligible expense value once using at-cost/markup and explicit rebilling currency/rate; save original source and issue-time conversion.
 
-**Accept:** Reimbursement status does not move money or run payroll.
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Accept:** Two invoices cannot recover the same expense amount twice.
 
-#### F23.08 — Recurring expense drafts
+    **Docs basis:** Documented parent requirement/contract: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-- [ ] **E · Deliver:** Create dated expense candidates from confirmed schedules.
+  - [ ] <a id="f23-07"></a>**F23.07 — Employee reimbursement records** · `E`
 
-**Proposed flow and records:** Recurring expense candidates remain an extension: recurring invoice schedules do not themselves define expense recurrence, recognition or paid status.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.05](#f23-05)
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+    **Deliver:** Track reimbursement owed/recorded to a member as operational evidence.
 
-**Accept:** A generated candidate is not presented as a paid expense.
+    **Proposed flow and records:** Member reimbursement records remain proposed operational evidence; selecting a recipient or marking recorded cannot execute payroll or a bank payment.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior); [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-#### F23.09 — Manual mileage expenses
+    **Accept:** Reimbursement status does not move money or run payroll.
 
-- [ ] **E · Deliver:** Calculate user-entered distance under approved units and reimbursement rates.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-**Proposed flow and records:** Mileage remains an extension without approved units/rates/tax treatment; use explicit manual evidence and select market-specific policy before calculation.
+  - [ ] <a id="f23-08"></a>**F23.08 — Recurring expense drafts** · `E`
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01), [F30.05](#f30-05)
 
-**Accept:** Unit conversion and rate-version changes preserve the original claim; no GPS is collected.
+    **Deliver:** Create dated expense candidates from confirmed schedules.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Proposed flow and records:** Recurring expense candidates remain an extension: recurring invoice schedules do not themselves define expense recurrence, recognition or paid status.
 
-#### F23.10 — Supplier directory
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
 
-- [ ] **E · Deliver:** Maintain vendor identity and safe contact references for costs.
+    **Accept:** A generated candidate is not presented as a paid expense.
 
-**Proposed flow and records:** A supplier directory is proposed reference data for existing supplier fields; account identity/access and financial visibility remain independent of a vendor name.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior); [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+  - [ ] <a id="f23-09"></a>**F23.09 — Manual mileage expenses** · `E`
 
-**Accept:** Supplier details remain private to permitted cost users.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Deliver:** Calculate user-entered distance under approved units and reimbursement rates.
 
-#### F23.11 — Subcontractor engagements
+    **Proposed flow and records:** Mileage remains an extension without approved units/rates/tax treatment; use explicit manual evidence and select market-specific policy before calculation.
 
-- [ ] **E · Deliver:** Link contractor terms, expected deliverables and manual costs to a project.
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
 
-**Proposed flow and records:** Subcontractor engagements remain proposed links to versioned agreement/delivery and expense facts; no employment classification, payroll or automatic workspace invitation is implied.
+    **Accept:** Unit conversion and rate-version changes preserve the original claim; no GPS is collected.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
 
-**Accept:** The feature neither grants workspace access nor posts payroll automatically.
+  - [ ] <a id="f23-10"></a>**F23.10 — Supplier directory** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01)
 
-#### F23.12 — Purchase commitments
+    **Deliver:** Maintain vendor identity and safe contact references for costs.
 
-- [ ] **E · Deliver:** Record approved planned costs separately from invoiced or paid expenses.
+    **Proposed flow and records:** A supplier directory is proposed reference data for existing supplier fields; account identity/access and financial visibility remain independent of a vendor name.
 
-**Proposed flow and records:** Track proposed planned commitments separately from recorded expenses and collected/paid cash; choose the forecasting basis before including them in margin views.
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Accept:** Supplier details remain private to permitted cost users.
 
-**Accept:** Forecast commitments never inflate recorded cash expenses.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+  - [ ] <a id="f23-11"></a>**F23.11 — Subcontractor engagements** · `E`
 
-#### F23.13 — Expense split allocation
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.10](#f23-10), [F12.01](#f12-01)
 
-- [ ] **E · Deliver:** Allocate one expense across projects using exact conserved proportions.
+    **Deliver:** Link contractor terms, expected deliverables and manual costs to a project.
 
-**Proposed flow and records:** Split one eligible expense into explicit project portions that sum exactly to the allocatable total, distinguishing personal/nonreimbursable parts and correction history.
+    **Proposed flow and records:** Subcontractor engagements remain proposed links to versioned agreement/delivery and expense facts; no employment classification, payroll or automatic workspace invitation is implied.
 
-**Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
 
-**Accept:** Allocated amounts sum to the original approved expense exactly.
+    **Accept:** The feature neither grants workspace access nor posts payroll automatically.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+
+  - [ ] <a id="f23-12"></a>**F23.12 — Purchase commitments** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.10](#f23-10)
+
+    **Deliver:** Record approved planned costs separately from invoiced or paid expenses.
+
+    **Proposed flow and records:** Track proposed planned commitments separately from recorded expenses and collected/paid cash; choose the forecasting basis before including them in margin views.
+
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+
+    **Accept:** Forecast commitments never inflate recorded cash expenses.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
+
+  - [ ] <a id="f23-13"></a>**F23.13 — Expense split allocation** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F23.01](#f23-01)
+
+    **Deliver:** Allocate one expense across projects using exact conserved proportions.
+
+    **Proposed flow and records:** Split one eligible expense into explicit project portions that sum exactly to the allocatable total, distinguishing personal/nonreimbursable parts and correction history.
+
+    **Documented constraints:** Original expense currency and rebilling conversions remain separate; allocated amounts conserve source value and credits do not silently reopen billing eligibility.
+
+    **Accept:** Allocated amounts sum to the original approved expense exactly.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Expenses, reimbursement, and profitability](docs/specs/finance.md#expenses-reimbursement-and-profitability).
 
 <a id="category-24"></a>
 
 ### 9.24 Reconciliation and accounting handoff
 
-**Owner/package:** P05/P07. **Prerequisites for each phase:** F21.01/F23.01/F19.03; approved opening balances Q-15. **Optional extension wave:** X2.
+**Owner/package:** P05/P07. **Original branch context (specific Requires below governs feature order):** F21.01/F23.01/F19.03; approved opening balances Q-15. **Optional extension wave:** X2.
 
 **Authority:** FIN-018/024/026/030; accounting exports precede provider connections.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F24.01 — Bank statement import
+- **F24 — Reconciliation and accounting handoff**
 
-- [ ] **S · Deliver:** Preview approved CSV formats, date/amount mapping and stable source IDs.
+  - [ ] <a id="f24-01"></a>**F24.01 — Bank statement import** · `S`
 
-**Flow and records:** Stage statement data with encoding/date/amount/currency/account mapping and original source identities; show duplicates, changed rows and private-field implications before commit.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F34.01](#f34-01)
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Deliver:** Preview approved CSV formats, date/amount mapping and stable source IDs.
 
-**Accept:** Reimporting a bank statement creates no duplicate transactions.
+    **Flow and records:** Stage statement data with encoding/date/amount/currency/account mapping and original source identities; show duplicates, changed rows and private-field implications before commit.
 
-**Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-#### F24.02 — Suggested payment matching
+    **Accept:** Reimporting a bank statement creates no duplicate transactions.
 
-- [ ] **S · Deliver:** Suggest matches by explicit date/reference/amount criteria for human confirmation.
+    **Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Flow and records:** Suggest source matches without posting them; human confirmation checks exact references/amounts and leaves ambiguous evidence in the unmatched set.
+  - [ ] <a id="f24-02"></a>**F24.02 — Suggested payment matching** · `S`
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.01](#f24-01), [F21.01](#f21-01)
 
-**Accept:** An ambiguous match stays unresolved and never settles an invoice automatically.
+    **Deliver:** Suggest matches by explicit date/reference/amount criteria for human confirmation.
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+    **Flow and records:** Suggest source matches without posting them; human confirmation checks exact references/amounts and leaves ambiguous evidence in the unmatched set.
 
-#### F24.03 — Split and combined matching
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-- [ ] **S · Deliver:** Match one statement row to multiple postings or multiple rows to one payment.
+    **Accept:** An ambiguous match stays unresolved and never settles an invoice automatically.
 
-**Flow and records:** Represent supported many-to-many matching with explicit fee/transfer/conversion components so every matched amount and remainder is explained.
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+  - [ ] <a id="f24-03"></a>**F24.03 — Split and combined matching** · `S`
 
-**Accept:** Exact matched components reconcile without inventing residual cash.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.02](#f24-02)
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+    **Deliver:** Match one statement row to multiple postings or multiple rows to one payment.
 
-#### F24.04 — Provider fee separation
+    **Flow and records:** Represent supported many-to-many matching with explicit fee/transfer/conversion components so every matched amount and remainder is explained.
 
-- [ ] **S · Deliver:** Record gross payment, fees and net payout as distinct facts.
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-**Flow and records:** Preserve gross captured cash, expense/fee components and net payout links; a reduced provider payout is not customer underpayment by itself.
+    **Accept:** Exact matched components reconcile without inventing residual cash.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-**Accept:** A fee does not reduce the customer's correctly paid invoice balance.
+  - [ ] <a id="f24-04"></a>**F24.04 — Provider fee separation** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.01](#f24-01), [F21.01](#f21-01)
 
-#### F24.05 — Unmatched transaction inbox
+    **Deliver:** Record gross payment, fees and net payout as distinct facts.
 
-- [ ] **S · Deliver:** Show unmatched items with original source and repair actions.
+    **Flow and records:** Preserve gross captured cash, expense/fee components and net payout links; a reduced provider payout is not customer underpayment by itself.
 
-**Flow and records:** Keep unmatched, disputed, personal/excluded and partial rows visible with source identity and review status; excluding a suggestion does not delete its evidence.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Accept:** A fee does not reduce the customer's correctly paid invoice balance.
 
-**Accept:** Dismissing a suggestion does not delete imported evidence.
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+  - [ ] <a id="f24-05"></a>**F24.05 — Unmatched transaction inbox** · `S`
 
-#### F24.06 — Reconciliation reversal
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.01](#f24-01)
 
-- [ ] **S · Deliver:** Undo confirmed matches through audited revisions.
+    **Deliver:** Show unmatched items with original source and repair actions.
 
-**Flow and records:** Undo matching through an audited relationship correction while retaining imported transactions and underlying posted payment/expense facts.
+    **Flow and records:** Keep unmatched, disputed, personal/excluded and partial rows visible with source identity and review status; excluding a suggestion does not delete its evidence.
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-**Accept:** Undo does not reverse the underlying real payment implicitly.
+    **Accept:** Dismissing a suggestion does not delete imported evidence.
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-#### F24.07 — Cross-currency settlement review
+  - [ ] <a id="f24-06"></a>**F24.06 — Reconciliation reversal** · `S`
 
-- [ ] **S · Deliver:** Require explicit rate, date, amounts and rounding evidence for approved conversion.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.02](#f24-02)
 
-**Flow and records:** Cross-currency review needs selected original/settlement amounts, source/date/rate and rounding policy; the ledger never assumes identical value from unlike currency codes.
+    **Deliver:** Undo confirmed matches through audited revisions.
 
-**Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
+    **Flow and records:** Undo matching through an audited relationship correction while retaining imported transactions and underlying posted payment/expense facts.
 
-**Accept:** A currency mismatch never becomes an automatic 1:1 allocation.
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-**Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
+    **Accept:** Undo does not reverse the underlying real payment implicitly.
 
-#### F24.08 — Accounting export
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-- [ ] **S · Deliver:** Export stable IDs, source refs, taxes, exact amounts and compensating entries.
+  - [ ] <a id="f24-07"></a>**F24.07 — Cross-currency settlement review** · `S`
 
-**Flow and records:** Export stable posting/source IDs, exact values, dates, currencies, component mappings and reversal links that reconcile to the selected snapshot.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.02](#f24-02)
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Deliver:** Require explicit rate, date, amounts and rounding evidence for approved conversion.
 
-**Accept:** An accountant can reconcile every row to an immutable source event.
+    **Flow and records:** Cross-currency review needs selected original/settlement amounts, source/date/rate and rounding policy; the ledger never assumes identical value from unlike currency codes.
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+    **Documented constraints:** FIN-001–035 preserve source identities, exact amounts and immutable issue/posting history; configurable policies require approval before activation.
 
-#### F24.09 — Accounting mapping versions
+    **Accept:** A currency mismatch never becomes an automatic 1:1 allocation.
 
-- [ ] **S · Deliver:** Version categories, tax codes and target account mappings.
+    **Docs basis:** Documented parent requirement/contract: [Requirements catalogue](docs/specs/finance.md#requirements-catalogue).
 
-**Flow and records:** Version target category/tax/account/currency mappings and preserve the mapping used for each acknowledged export rather than rewriting prior provider history.
+  - [ ] <a id="f24-08"></a>**F24.08 — Accounting export** · `S`
 
-**Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F21.01](#f21-01), [F34.04](#f34-04)
 
-**Accept:** Changing mappings does not alter previously acknowledged exports.
+    **Deliver:** Export stable IDs, source refs, taxes, exact amounts and compensating entries.
 
-**Docs basis:** Documented parent requirement/contract: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
+    **Flow and records:** Export stable posting/source IDs, exact values, dates, currencies, component mappings and reversal links that reconcile to the selected snapshot.
 
-#### F24.10 — Accounting sync acknowledgements
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-- [ ] **S · Deliver:** Track accepted/rejected rows with replay-safe identifiers.
+    **Accept:** An accountant can reconcile every row to an immutable source event.
 
-**Flow and records:** Track accepted/rejected external rows and stable acknowledgement identity; retry only the appropriate unresolved work under current connection/grants.
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-**Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
+  - [ ] <a id="f24-09"></a>**F24.09 — Accounting mapping versions** · `S`
 
-**Accept:** Retrying a rejected batch cannot duplicate previously accepted external rows.
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.08](#f24-08)
 
-**Docs basis:** Documented parent requirement/contract: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
+    **Deliver:** Version categories, tax codes and target account mappings.
 
-#### F24.11 — Opening balance migration
+    **Flow and records:** Version target category/tax/account/currency mappings and preserve the mapping used for each acknowledged export rather than rewriting prior provider history.
 
-- [ ] **E · Deliver:** Review imported receivables, credits, retainers and historical number ranges.
+    **Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
 
-**Proposed flow and records:** Historical receivables/credit/retainer/number migration remains an extension gated by Q-15; reconcile opening positions without recreating billable sources or sending old invoices.
+    **Accept:** Changing mappings does not alter previously acknowledged exports.
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Docs basis:** Documented parent requirement/contract: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
 
-**Accept:** Opening positions reconcile and cannot be reused as newly billable source work.
+  - [ ] <a id="f24-10"></a>**F24.10 — Accounting sync acknowledgements** · `S`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.09](#f24-09), [F27.11](#f27-11)
 
-#### F24.12 — Financial close review
+    **Deliver:** Track accepted/rejected rows with replay-safe identifiers.
 
-- [ ] **E · Deliver:** Freeze a reviewed operational period with controlled later adjustments.
+    **Flow and records:** Track accepted/rejected external rows and stable acknowledgement identity; retry only the appropriate unresolved work under current connection/grants.
 
-**Proposed flow and records:** Operational close is proposed review state; define authorized late adjustments/reopening before activation and never treat closing as permission to edit issued history.
+    **Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Accept:** Retrying a rejected batch cannot duplicate previously accepted external rows.
 
-**Accept:** A reopened period records actor/reason and does not edit issued documents.
+    **Docs basis:** Documented parent requirement/contract: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+  - [ ] <a id="f24-11"></a>**F24.11 — Opening balance migration** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.01](#f24-01), [F34.07](#f34-07)
+
+    **Deliver:** Review imported receivables, credits, retainers and historical number ranges.
+
+    **Proposed flow and records:** Historical receivables/credit/retainer/number migration remains an extension gated by Q-15; reconcile opening positions without recreating billable sources or sending old invoices.
+
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+
+    **Accept:** Opening positions reconcile and cannot be reused as newly billable source work.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+
+  - [ ] <a id="f24-12"></a>**F24.12 — Financial close review** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F19.03](#f19-03), [F24.02](#f24-02)
+
+    **Deliver:** Freeze a reviewed operational period with controlled later adjustments.
+
+    **Proposed flow and records:** Operational close is proposed review state; define authorized late adjustments/reopening before activation and never treat closing as permission to edit issued history.
+
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+
+    **Accept:** A reopened period records actor/reason and does not edit issued documents.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
 <a id="category-25"></a>
 
 ### 9.25 Dashboards, reports and forecasts
 
-**Owner/package:** P06. **Prerequisites for each phase:** Accepted P02–P05 source facts; F03.06; Q-14; snapshot engine for exports. **Optional extension wave:** X2.
+**Owner/package:** P06. **Original branch context (specific Requires below governs feature order):** Accepted P02–P05 source facts; F03.06; Q-14; snapshot engine for exports. **Optional extension wave:** X2.
 
 **Authority:** INS-001–006/009/010; FIN-025. Missing data is incomplete, never fabricated zero.
 
-**Research context:** [Productive budget forecasting](https://help.productive.io/en/articles/4611165-forecasting-and-profitability-charts-in-budgets). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F25.01 — Report definition registry
+- **F25 — Dashboards, reports and forecasts**
 
-- [ ] **S · Deliver:** Version date basis, timezone, filters, formulas, currency and as-of boundary.
+  - [ ] <a id="f25-01"></a>**F25.01 — Report definition registry** · `S`
 
-**Flow and records:** Record report version, date basis/timezone, scope, filters, currency inclusion/exclusion and consistent as-of boundary before computing or exporting totals.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+    **Deliver:** Version date basis, timezone, filters, formulas, currency and as-of boundary.
 
-**Accept:** Changing a formula leaves an already-exported snapshot reproducible.
+    **Flow and records:** Record report version, date basis/timezone, scope, filters, currency inclusion/exclusion and consistent as-of boundary before computing or exporting totals.
 
-**Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
 
-#### F25.02 — Revenue report
+    **Accept:** Changing a formula leaves an already-exported snapshot reproducible.
 
-- [ ] **S · Deliver:** Separate invoiced net services, credits and configured taxes.
+    **Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
 
-**Flow and records:** Project saved issued service components after selected discounts/credits and taxes according to the declared revenue basis, with authorized line-level drill-down.
+  - [ ] <a id="f25-02"></a>**F25.02 — Revenue report** · `S`
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F20.01](#f20-01)
 
-**Accept:** Totals reconcile to issued line components and source IDs.
+    **Deliver:** Separate invoiced net services, credits and configured taxes.
 
-**Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+    **Flow and records:** Project saved issued service components after selected discounts/credits and taxes according to the declared revenue basis, with authorized line-level drill-down.
 
-#### F25.03 — Cash collection report
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
 
-- [ ] **S · Deliver:** Show posted collections/refunds by receipt basis and currency.
+    **Accept:** Totals reconcile to issued line components and source IDs.
 
-**Flow and records:** Project net receipts/refunds by explicit collection date and currency, retaining unapplied/retainer distinctions rather than labeling invoices as received cash.
+    **Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+  - [ ] <a id="f25-03"></a>**F25.03 — Cash collection report** · `S`
 
-**Accept:** Collections never double-count retainers or unapplied cash.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F21.01](#f21-01)
 
-**Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+    **Deliver:** Show posted collections/refunds by receipt basis and currency.
 
-#### F25.04 — Receivables aging
+    **Flow and records:** Project net receipts/refunds by explicit collection date and currency, retaining unapplied/retainer distinctions rather than labeling invoices as received cash.
 
-- [ ] **S · Deliver:** Bucket debt by due-date basis with disputes and credits explicit.
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
 
-**Flow and records:** Bucket outstanding debt against the stored due date/report timezone; identify credits, disputes, void exclusions and exact source reconciliation.
+    **Accept:** Collections never double-count retainers or unapplied cash.
 
-**Documented constraints:** Aging reconciles to current debt; forecast separates contractual due amounts, promises, draft projections and subjective weighted pipeline.
+    **Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
 
-**Accept:** The bucket sum equals outstanding receivables at the same as-of instant.
+  - [ ] <a id="f25-04"></a>**F25.04 — Receivables aging** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [INS-004 — Receivables, aging and cash forecast](docs/specs/insights-and-knowledge.md#ins-004--receivables-aging-and-cash-forecast).
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F21.03](#f21-03)
 
-#### F25.05 — Cash forecast
+    **Deliver:** Bucket debt by due-date basis with disputes and credits explicit.
 
-- [ ] **S · Deliver:** Separate contracted due amounts, promises, recurring drafts and weighted opportunities.
+    **Flow and records:** Bucket outstanding debt against the stored due date/report timezone; identify credits, disputes, void exclusions and exact source reconciliation.
 
-**Flow and records:** Present contractual due amounts, subjective promised dates, recurring-draft projections and weighted open sales as separate forecast inputs with assumption/coverage labels.
+    **Documented constraints:** Aging reconciles to current debt; forecast separates contractual due amounts, promises, draft projections and subjective weighted pipeline.
 
-**Documented constraints:** Aging reconciles to current debt; forecast separates contractual due amounts, promises, draft projections and subjective weighted pipeline.
+    **Accept:** The bucket sum equals outstanding receivables at the same as-of instant.
 
-**Accept:** Changing a subjective promise never changes booked debt or guaranteed cash.
+    **Docs basis:** Documented parent requirement/contract: [INS-004 — Receivables, aging and cash forecast](docs/specs/insights-and-knowledge.md#ins-004--receivables-aging-and-cash-forecast).
 
-**Docs basis:** Documented parent requirement/contract: [INS-004 — Receivables, aging and cash forecast](docs/specs/insights-and-knowledge.md#ins-004--receivables-aging-and-cash-forecast).
+  - [ ] <a id="f25-05"></a>**F25.05 — Cash forecast** · `S`
 
-#### F25.06 — Project margin report
+    **Requires:** [F03.06](#f03-06), [F25.04](#f25-04), [F21.12](#f21-12)
 
-- [ ] **S · Deliver:** Subtract known direct expenses and versioned internal costs from the selected revenue basis.
+    **Deliver:** Separate contracted due amounts, promises, recurring drafts and weighted opportunities.
 
-**Flow and records:** Use stated invoiced or collection basis minus known direct expenses/versioned internal labor; expose missing allocations and keep cost values behind financial grants.
+    **Flow and records:** Present contractual due amounts, subjective promised dates, recurring-draft projections and weighted open sales as separate forecast inputs with assumption/coverage labels.
 
-**Documented constraints:** Service margin uses the stated revenue basis minus known direct costs; missing cost is incomplete and no denominator means No data.
+    **Documented constraints:** Aging reconciles to current debt; forecast separates contractual due amounts, promises, draft projections and subjective weighted pipeline.
 
-**Accept:** Missing labor costs produce incomplete margin rather than inflated profit.
+    **Accept:** Changing a subjective promise never changes booked debt or guaranteed cash.
 
-**Docs basis:** Documented parent requirement/contract: [INS-003 — Profitability and effective rates](docs/specs/insights-and-knowledge.md#ins-003--profitability-and-effective-rates).
+    **Docs basis:** Documented parent requirement/contract: [INS-004 — Receivables, aging and cash forecast](docs/specs/insights-and-knowledge.md#ins-004--receivables-aging-and-cash-forecast).
 
-#### F25.07 — Effective rate report
+  - [ ] <a id="f25-06"></a>**F25.06 — Project margin report** · `S`
 
-- [ ] **S · Deliver:** Show labeled billed/collected rate with known work allocation and denominator.
+    **Requires:** [F03.06](#f03-06), [F25.02](#f25-02), [F17.02](#f17-02), [F23.01](#f23-01)
 
-**Flow and records:** Divide the selected billed/collected amount by known reviewed attributable hours; a missing denominator produces No data and no surveillance interpretation.
+    **Deliver:** Subtract known direct expenses and versioned internal costs from the selected revenue basis.
 
-**Documented constraints:** Service margin uses the stated revenue basis minus known direct costs; missing cost is incomplete and no denominator means No data.
+    **Flow and records:** Use stated invoiced or collection basis minus known direct expenses/versioned internal labor; expose missing allocations and keep cost values behind financial grants.
 
-**Accept:** No reviewed hours yields No data rather than infinity or zero earnings.
+    **Documented constraints:** Service margin uses the stated revenue basis minus known direct costs; missing cost is incomplete and no denominator means No data.
 
-**Docs basis:** Documented parent requirement/contract: [INS-003 — Profitability and effective rates](docs/specs/insights-and-knowledge.md#ins-003--profitability-and-effective-rates).
+    **Accept:** Missing labor costs produce incomplete margin rather than inflated profit.
 
-#### F25.08 — Utilization report
+    **Docs basis:** Documented parent requirement/contract: [INS-003 — Profitability and effective rates](docs/specs/insights-and-knowledge.md#ins-003--profitability-and-effective-rates).
 
-- [ ] **S · Deliver:** Compare reviewed work and approved available capacity with explicit leave rules.
+  - [ ] <a id="f25-07"></a>**F25.07 — Effective rate report** · `S`
 
-**Flow and records:** Compare reviewed work against approved available capacity/leave policy and display formula/coverage; configured time targets are not inferred attendance.
+    **Requires:** [F03.06](#f03-06), [F25.03](#f25-03), [F16.10](#f16-10)
 
-**Documented constraints:** Task throughput, accepted delivery, capacity and effort are different measures; missing estimates remain visible and personnel surveillance is excluded.
+    **Deliver:** Show labeled billed/collected rate with known work allocation and denominator.
 
-**Accept:** Missing capacity cannot become an employee productivity score.
+    **Flow and records:** Divide the selected billed/collected amount by known reviewed attributable hours; a missing denominator produces No data and no surveillance interpretation.
 
-**Docs basis:** Documented parent requirement/contract: [INS-005 — Capacity and delivery insights](docs/specs/insights-and-knowledge.md#ins-005--capacity-and-delivery-insights); [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Documented constraints:** Service margin uses the stated revenue basis minus known direct costs; missing cost is incomplete and no denominator means No data.
 
-#### F25.09 — Estimate versus actual report
+    **Accept:** No reviewed hours yields No data rather than infinity or zero earnings.
 
-- [ ] **S · Deliver:** Compare accepted effort/budget baselines to exact work and approved scope changes.
+    **Docs basis:** Documented parent requirement/contract: [INS-003 — Profitability and effective rates](docs/specs/insights-and-knowledge.md#ins-003--profitability-and-effective-rates).
 
-**Flow and records:** Compare actual exact source effort/cost with the accepted estimate/budget revision and separately show later approved scope changes.
+  - [ ] <a id="f25-08"></a>**F25.08 — Utilization report** · `S`
 
-**Documented constraints:** Task throughput, accepted delivery, capacity and effort are different measures; missing estimates remain visible and personnel surveillance is excluded.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F16.10](#f16-10), [F14.03](#f14-03)
 
-**Accept:** A later estimate edit does not rewrite the original baseline variance.
+    **Deliver:** Compare reviewed work and approved available capacity with explicit leave rules.
 
-**Docs basis:** Documented parent requirement/contract: [INS-005 — Capacity and delivery insights](docs/specs/insights-and-knowledge.md#ins-005--capacity-and-delivery-insights).
+    **Flow and records:** Compare reviewed work against approved available capacity/leave policy and display formula/coverage; configured time targets are not inferred attendance.
 
-#### F25.10 — Delivery throughput report
+    **Documented constraints:** Task throughput, accepted delivery, capacity and effort are different measures; missing estimates remain visible and personnel surveillance is excluded.
 
-- [ ] **S · Deliver:** Report cycle completion, blocked aging and milestone variance with documented semantics.
+    **Accept:** Missing capacity cannot become an employee productivity score.
 
-**Flow and records:** Measure cycle completion, blocked aging, milestone variance and accepted delivery using explicit denominators rather than interchangeable task/time counts.
+    **Docs basis:** Documented parent requirement/contract: [INS-005 — Capacity and delivery insights](docs/specs/insights-and-knowledge.md#ins-005--capacity-and-delivery-insights); [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Documented constraints:** Task throughput, accepted delivery, capacity and effort are different measures; missing estimates remain visible and personnel surveillance is excluded.
+  - [ ] <a id="f25-09"></a>**F25.09 — Estimate versus actual report** · `S`
 
-**Accept:** Task completion and client acceptance remain different measurements.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F14.07](#f14-07)
 
-**Docs basis:** Documented parent requirement/contract: [INS-005 — Capacity and delivery insights](docs/specs/insights-and-knowledge.md#ins-005--capacity-and-delivery-insights).
+    **Deliver:** Compare accepted effort/budget baselines to exact work and approved scope changes.
 
-#### F25.11 — Expense report
+    **Flow and records:** Compare actual exact source effort/cost with the accepted estimate/budget revision and separately show later approved scope changes.
 
-- [ ] **S · Deliver:** Group original expense values by category, project and payment basis.
+    **Documented constraints:** Task throughput, accepted delivery, capacity and effort are different measures; missing estimates remain visible and personnel surveillance is excluded.
 
-**Flow and records:** Group original expense facts by permitted category/project/currency and chosen record/payment basis; prevent reimbursement from being counted twice.
+    **Accept:** A later estimate edit does not rewrite the original baseline variance.
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+    **Docs basis:** Documented parent requirement/contract: [INS-005 — Capacity and delivery insights](docs/specs/insights-and-knowledge.md#ins-005--capacity-and-delivery-insights).
 
-**Accept:** A reimbursable expense is not counted twice when invoiced.
+  - [ ] <a id="f25-10"></a>**F25.10 — Delivery throughput report** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F13.03](#f13-03)
 
-#### F25.12 — Tax component summary
+    **Deliver:** Report cycle completion, blocked aging and milestone variance with documented semantics.
 
-- [ ] **S · Deliver:** Summarize saved components by approved reporting basis.
+    **Flow and records:** Measure cycle completion, blocked aging, milestone variance and accepted delivery using explicit denominators rather than interchangeable task/time counts.
 
-**Flow and records:** Aggregate saved tax components using the declared operational basis; jurisdiction-specific return preparation/filing remains outside the feature.
+    **Documented constraints:** Task throughput, accepted delivery, capacity and effort are different measures; missing estimates remain visible and personnel surveillance is excluded.
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+    **Accept:** Task completion and client acceptance remain different measurements.
 
-**Accept:** The summary is labeled operational and makes no automatic filing claim.
+    **Docs basis:** Documented parent requirement/contract: [INS-005 — Capacity and delivery insights](docs/specs/insights-and-knowledge.md#ins-005--capacity-and-delivery-insights).
 
-**Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+  - [ ] <a id="f25-11"></a>**F25.11 — Expense report** · `S`
 
-#### F25.13 — Currency consolidation
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F23.01](#f23-01)
 
-- [ ] **S · Deliver:** Use explicit reporting currency, frozen rate/date/source and missing-rate policy.
+    **Deliver:** Group original expense values by category, project and payment basis.
 
-**Flow and records:** Retain originals and use a selected frozen reporting currency/rate/date/source only for explicit consolidation, marking missing or stale conversion evidence.
+    **Flow and records:** Group original expense facts by permitted category/project/currency and chosen record/payment basis; prevent reimbursement from being counted twice.
 
-**Documented constraints:** Keep originals and default currency groups; consolidation needs frozen source/date/rate policy and missing-rate handling, not implied FX accounting.
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
 
-**Accept:** Unavailable FX shows stale/incomplete values and never rewrites originals.
+    **Accept:** A reimbursable expense is not counted twice when invoiced.
 
-**Docs basis:** Documented parent requirement/contract: [INS-006 — Multi-currency reporting](docs/specs/insights-and-knowledge.md#ins-006--multi-currency-reporting).
+    **Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
 
-#### F25.14 — Saved report views
+  - [ ] <a id="f25-12"></a>**F25.12 — Tax component summary** · `S`
 
-- [ ] **S · Deliver:** Store personal/shared filters with current field permissions.
+    **Requires:** [F03.06](#f03-06), [F25.02](#f25-02), [F19.06](#f19-06)
 
-**Flow and records:** Save report filters/basis/presentation for personal or shared use and re-evaluate current field/resource access every time the definition runs.
+    **Deliver:** Summarize saved components by approved reporting basis.
 
-**Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
+    **Flow and records:** Aggregate saved tax components using the declared operational basis; jurisdiction-specific return preparation/filing remains outside the feature.
 
-**Accept:** A removed viewer cannot retrieve an old shared cost report.
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
 
-**Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
+    **Accept:** The summary is labeled operational and makes no automatic filing claim.
 
-#### F25.15 — Report CSV export
+    **Docs basis:** Documented parent requirement/contract: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
 
-- [ ] **S · Deliver:** Export a consistent authorized snapshot with exact values and inert cells.
+  - [ ] <a id="f25-13"></a>**F25.13 — Currency consolidation** · `S`
 
-**Flow and records:** Export one consistent scoped snapshot with exact numeric strings, source refs/date basis and formula-safe text rather than live-changing paginated totals.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F19.02](#f19-02)
 
-**Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
+    **Deliver:** Use explicit reporting currency, frozen rate/date/source and missing-rate policy.
 
-**Accept:** Formula-like client names remain text and totals reconcile across pages.
+    **Flow and records:** Retain originals and use a selected frozen reporting currency/rate/date/source only for explicit consolidation, marking missing or stale conversion evidence.
 
-**Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
+    **Documented constraints:** Keep originals and default currency groups; consolidation needs frozen source/date/rate policy and missing-rate handling, not implied FX accounting.
 
-#### F25.16 — Report PDF export
+    **Accept:** Unavailable FX shows stale/incomplete values and never rewrites originals.
 
-- [ ] **S · Deliver:** Render localized as-of charts/tables from frozen snapshot data.
+    **Docs basis:** Documented parent requirement/contract: [INS-006 — Multi-currency reporting](docs/specs/insights-and-knowledge.md#ins-006--multi-currency-reporting).
 
-**Flow and records:** Render localized tables/charts from the frozen snapshot and tested fonts/assets; output failure leaves both report sources and snapshot identity unchanged.
+  - [ ] <a id="f25-14"></a>**F25.14 — Saved report views** · `S`
 
-**Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F04.07](#f04-07)
 
-**Accept:** Concurrent payment arrivals do not change pages within one export.
+    **Deliver:** Store personal/shared filters with current field permissions.
 
-**Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
+    **Flow and records:** Save report filters/basis/presentation for personal or shared use and re-evaluate current field/resource access every time the definition runs.
 
-#### F25.17 — Scheduled reports
+    **Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
 
-- [ ] **S · Deliver:** Deliver snapshots to approved recipients through bounded jobs.
+    **Accept:** A removed viewer cannot retrieve an old shared cost report.
 
-**Flow and records:** Schedule snapshot generation/delivery with stable occurrence identity and approved recipient channels; recheck scope immediately before delivery.
+    **Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
 
-**Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
+  - [ ] <a id="f25-15"></a>**F25.15 — Report CSV export** · `S`
 
-**Accept:** Revoked recipients are filtered immediately before delivery.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F34.04](#f34-04)
 
-**Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
+    **Deliver:** Export a consistent authorized snapshot with exact values and inert cells.
 
-#### F25.18 — Business goals
+    **Flow and records:** Export one consistent scoped snapshot with exact numeric strings, source refs/date basis and formula-safe text rather than live-changing paginated totals.
 
-- [ ] **S · Deliver:** Configure revenue/collection/utilization targets with explicit period and formula.
+    **Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
 
-**Flow and records:** Store optional target, period, basis and source-linked progress for the selected business goal; dismissal/snooze cannot change source facts.
+    **Accept:** Formula-like client names remain text and totals reconcile across pages.
 
-**Documented constraints:** Goals and thresholds expose formulas/source versions, dedupe crossings and never change charges, schedules or capacity automatically.
+    **Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
 
-**Accept:** A goal cannot change source facts or automatically charge clients.
+  - [ ] <a id="f25-16"></a>**F25.16 — Report PDF export** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [INS-010 — Goals, health and alerts](docs/specs/insights-and-knowledge.md#ins-010--goals-health-and-alerts).
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F20.04](#f20-04)
 
-#### F25.19 — Scenario forecasting
+    **Deliver:** Render localized as-of charts/tables from frozen snapshot data.
 
-- [ ] **E · Deliver:** Compare explicit optimistic/base/conservative inputs without altering committed plans.
+    **Flow and records:** Render localized tables/charts from the frozen snapshot and tested fonts/assets; output failure leaves both report sources and snapshot identity unchanged.
 
-**Proposed flow and records:** Scenario forecasting remains proposed; compare disclosed date/value/probability assumptions separately from authoritative debt, committed schedules or guaranteed cash.
+    **Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
 
-**Documented constraints:** Aging reconciles to current debt; forecast separates contractual due amounts, promises, draft projections and subjective weighted pipeline.
+    **Accept:** Concurrent payment arrivals do not change pages within one export.
 
-**Accept:** Each scenario exposes assumptions and preserves original operational facts.
+    **Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-004 — Receivables, aging and cash forecast](docs/specs/insights-and-knowledge.md#ins-004--receivables-aging-and-cash-forecast).
+  - [ ] <a id="f25-17"></a>**F25.17 — Scheduled reports** · `S`
 
-#### F25.20 — Dashboard sharing
+    **Requires:** [F03.06](#f03-06), [F25.14](#f25-14), [F30.05](#f30-05), [F27.03](#f27-03), [F06.07](#f06-07)
 
-- [ ] **E · Deliver:** Share scoped dashboard definitions with selected members.
+    **Deliver:** Deliver snapshots to approved recipients through bounded jobs.
 
-**Proposed flow and records:** Shared dashboard configuration is proposed presentation over permitted source widgets, with explicit audience and no hidden finance through labels/counts.
+    **Flow and records:** Schedule snapshot generation/delivery with stable occurrence identity and approved recipient channels; recheck scope immediately before delivery.
 
-**Documented constraints:** Widgets expose filters/as-of and source links; missing data is not zero and restricted finance never leaks through counts.
+    **Documented constraints:** Render one authorized frozen snapshot; retry the same snapshot, verify Arabic output and recheck recipient access before scheduled delivery.
 
-**Accept:** Chart labels, counts and drill-down obey current recipient permissions.
+    **Accept:** Revoked recipients are filtered immediately before delivery.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-001 — Actionable home and saved views](docs/specs/insights-and-knowledge.md#ins-001--actionable-home-and-saved-views).
+    **Docs basis:** Documented parent requirement/contract: [INS-009 — Reports, schedules and exports](docs/specs/insights-and-knowledge.md#ins-009--reports-schedules-and-exports).
 
-#### F25.21 — Custom report builder
+  - [ ] <a id="f25-18"></a>**F25.18 — Business goals** · `S`
 
-- [ ] **E · Deliver:** Offer bounded allowlisted dimensions/measures without arbitrary SQL.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01)
 
-**Proposed flow and records:** A custom builder remains proposed bounded configuration; approve allowlisted dimensions/formulas and workload budgets before allowing new report shapes.
+    **Deliver:** Configure revenue/collection/utilization targets with explicit period and formula.
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+    **Flow and records:** Store optional target, period, basis and source-linked progress for the selected business goal; dismissal/snooze cannot change source facts.
 
-**Accept:** An expensive or unauthorized grouping is rejected before query execution.
+    **Documented constraints:** Goals and thresholds expose formulas/source versions, dedupe crossings and never change charges, schedules or capacity automatically.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+    **Accept:** A goal cannot change source facts or automatically charge clients.
 
-#### F25.22 — Client concentration report
+    **Docs basis:** Documented parent requirement/contract: [INS-010 — Goals, health and alerts](docs/specs/insights-and-knowledge.md#ins-010--goals-health-and-alerts).
 
-- [ ] **E · Deliver:** Show dependency on major clients using a selected revenue/cash basis.
+  - [ ] <a id="f25-19"></a>**F25.19 — Scenario forecasting** · `E`
 
-**Proposed flow and records:** Client concentration is proposed derivation over an approved revenue/cash basis; define period/currency/zero-denominator treatment before making a percentage claim.
+    **Requires:** [F03.06](#f03-06), [F25.05](#f25-05)
 
-**Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+    **Deliver:** Compare explicit optimistic/base/conservative inputs without altering committed plans.
 
-**Accept:** Percentages use a known nonzero denominator and keep currencies explicit.
+    **Proposed flow and records:** Scenario forecasting remains proposed; compare disclosed date/value/probability assumptions separately from authoritative debt, committed schedules or guaranteed cash.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+    **Documented constraints:** Aging reconciles to current debt; forecast separates contractual due amounts, promises, draft projections and subjective weighted pipeline.
 
-#### F25.23 — Sales conversion report
+    **Accept:** Each scenario exposes assumptions and preserves original operational facts.
 
-- [ ] **E · Deliver:** Measure stage conversion, lead source and time-to-close from actual transitions.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-004 — Receivables, aging and cash forecast](docs/specs/insights-and-knowledge.md#ins-004--receivables-aging-and-cash-forecast).
 
-**Proposed flow and records:** Conversion reporting remains proposed analysis of actual semantic stage transitions and retained reopen cycles, not inferred acceptance or recognized revenue.
+  - [ ] <a id="f25-20"></a>**F25.20 — Dashboard sharing** · `E`
 
-**Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+    **Requires:** [F03.06](#f03-06), [F25.14](#f25-14)
 
-**Accept:** Reopened deals do not create duplicate wins.
+    **Deliver:** Share scoped dashboard definitions with selected members.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+    **Proposed flow and records:** Shared dashboard configuration is proposed presentation over permitted source widgets, with explicit audience and no hidden finance through labels/counts.
 
-#### F25.24 — Recurring revenue report
+    **Documented constraints:** Widgets expose filters/as-of and source links; missing data is not zero and restricted finance never leaks through counts.
 
-- [ ] **E · Deliver:** Show contracted recurring service values with explicit period/currency assumptions.
+    **Accept:** Chart labels, counts and drill-down obey current recipient permissions.
 
-**Proposed flow and records:** Recurring-revenue reporting remains proposed and must state contract/period/currency/active-term assumptions; generated drafts and unsigned forecasts are different facts.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-001 — Actionable home and saved views](docs/specs/insights-and-knowledge.md#ins-001--actionable-home-and-saved-views).
 
-**Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+  - [ ] <a id="f25-21"></a>**F25.21 — Custom report builder** · `E`
 
-**Accept:** Unsigned proposals and canceled terms are not counted as active recurring revenue.
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
+    **Deliver:** Offer bounded allowlisted dimensions/measures without arbitrary SQL.
+
+    **Proposed flow and records:** A custom builder remains proposed bounded configuration; approve allowlisted dimensions/formulas and workload budgets before allowing new report shapes.
+
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+
+    **Accept:** An expensive or unauthorized grouping is rejected before query execution.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+
+  - [ ] <a id="f25-22"></a>**F25.22 — Client concentration report** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F25.02](#f25-02)
+
+    **Deliver:** Show dependency on major clients using a selected revenue/cash basis.
+
+    **Proposed flow and records:** Client concentration is proposed derivation over an approved revenue/cash basis; define period/currency/zero-denominator treatment before making a percentage claim.
+
+    **Documented constraints:** Definitions freeze basis, timezone, filters, scope and currency policy; every total reconciles to authorized source IDs.
+
+    **Accept:** Percentages use a known nonzero denominator and keep currencies explicit.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-002 — Reporting definitions and drill-down](docs/specs/insights-and-knowledge.md#ins-002--reporting-definitions-and-drill-down).
+
+  - [ ] <a id="f25-23"></a>**F25.23 — Sales conversion report** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F08.06](#f08-06)
+
+    **Deliver:** Measure stage conversion, lead source and time-to-close from actual transitions.
+
+    **Proposed flow and records:** Conversion reporting remains proposed analysis of actual semantic stage transitions and retained reopen cycles, not inferred acceptance or recognized revenue.
+
+    **Documented constraints:** Probability is an explicit 0–100% assumption; missing values stay unestimated and unlike currencies never become one unlabeled total.
+
+    **Accept:** Reopened deals do not create duplicate wins.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-002 — Opportunities, pipeline, and weighted forecast](docs/specs/client-lifecycle.md#crm-002--opportunities-pipeline-and-weighted-forecast).
+
+  - [ ] <a id="f25-24"></a>**F25.24 — Recurring revenue report** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F25.01](#f25-01), [F22.08](#f22-08)
+
+    **Deliver:** Show contracted recurring service values with explicit period/currency assumptions.
+
+    **Proposed flow and records:** Recurring-revenue reporting remains proposed and must state contract/period/currency/active-term assumptions; generated drafts and unsigned forecasts are different facts.
+
+    **Documented constraints:** Server jobs dedupe each period; draft generation is default, auto-issue/send are separate, and money retainers differ from included service units.
+
+    **Accept:** Unsigned proposals and canceled terms are not counted as active recurring revenue.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Advanced agreements and recurring behavior](docs/specs/finance.md#advanced-agreements-and-recurring-behavior).
 
 <a id="category-26"></a>
 
 ### 9.26 Knowledge, search and reusable work
 
-**Owner/package:** P06. **Prerequisites for each phase:** F03.06/F15.02; source services; report/search projections check current grants. **Optional extension wave:** X1.
+**Owner/package:** P06. **Original branch context (specific Requires below governs feature order):** F03.06/F15.02; source services; report/search projections check current grants. **Optional extension wave:** X1.
 
 **Authority:** INS-007/008; WRK-011. No credential vault, semantic AI search or executable snippets.
 
-**Research context:** [Plutio directory](https://www.plutio.com/features/directory). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F26.01 — Knowledge notes
+- **F26 — Knowledge, search and reusable work**
 
-- [ ] **S · Deliver:** Create safe rich/Markdown notes with owner, scope, tags and revision history.
+  - [ ] <a id="f26-01"></a>**F26.01 — Knowledge notes** · `S`
 
-**Flow and records:** Maintain title/body revision, owner/access classification, tags, archive and linked attachments for personal/project/workspace knowledge without executable content.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Deliver:** Create safe rich/Markdown notes with owner, scope, tags and revision history.
 
-**Accept:** Script markup cannot execute in editor, preview or export.
+    **Flow and records:** Maintain title/body revision, owner/access classification, tags, archive and linked attachments for personal/project/workspace knowledge without executable content.
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-#### F26.02 — Code snippets
+    **Accept:** Script markup cannot execute in editor, preview or export.
 
-- [ ] **S · Deliver:** Store inert code examples with language labels and safe copy controls.
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-**Flow and records:** Store language-labeled snippets as safe text with permitted links/copy behavior; source code storage is not an execution environment or secret vault.
+  - [ ] <a id="f26-02"></a>**F26.02 — Code snippets** · `S`
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01)
 
-**Accept:** Snippet content cannot run on the server or browser.
+    **Deliver:** Store inert code examples with language labels and safe copy controls.
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Flow and records:** Store language-labeled snippets as safe text with permitted links/copy behavior; source code storage is not an execution environment or secret vault.
 
-#### F26.03 — Decision records
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-- [ ] **S · Deliver:** Link decisions, rationale and superseding versions to work.
+    **Accept:** Snippet content cannot run on the server or browser.
 
-**Flow and records:** Preserve rationale and superseding decision revisions linked to affected project/scope sources; later decisions do not erase the earlier evidence.
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+  - [ ] <a id="f26-03"></a>**F26.03 — Decision records** · `S`
 
-**Accept:** A changed decision preserves the earlier record and referenced revision.
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01)
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Deliver:** Link decisions, rationale and superseding versions to work.
 
-#### F26.04 — Runbook library
+    **Flow and records:** Preserve rationale and superseding decision revisions linked to affected project/scope sources; later decisions do not erase the earlier evidence.
 
-- [ ] **S · Deliver:** Publish scoped operational checklists with versioned content.
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-**Flow and records:** Use versioned scoped runbook content and explicit owner/access, with client publication requiring its own reviewed projection rather than search visibility.
+    **Accept:** A changed decision preserves the earlier record and referenced revision.
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-**Accept:** A client cannot discover an internal runbook via search counts or links.
+  - [ ] <a id="f26-04"></a>**F26.04 — Runbook library** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01)
 
-#### F26.05 — Reusable content templates
+    **Deliver:** Publish scoped operational checklists with versioned content.
 
-- [ ] **S · Deliver:** Insert approved content through a reviewed copy operation.
+    **Flow and records:** Use versioned scoped runbook content and explicit owner/access, with client publication requiring its own reviewed projection rather than search visibility.
 
-**Flow and records:** Copy approved reusable text into a new allowed record with reviewed context, keeping source provenance and excluding other-client protected details.
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Accept:** A client cannot discover an internal runbook via search counts or links.
 
-**Accept:** Copied templates cannot expose another client's hidden names or notes.
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+  - [ ] <a id="f26-05"></a>**F26.05 — Reusable content templates** · `S`
 
-#### F26.06 — Knowledge revision recovery
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01)
 
-- [ ] **S · Deliver:** Compare and restore old content through a new revision.
+    **Deliver:** Insert approved content through a reviewed copy operation.
 
-**Flow and records:** Compare old/base/local/current body revisions and restore through a new permitted revision rather than overwriting concurrent rich-text changes.
+    **Flow and records:** Copy approved reusable text into a new allowed record with reviewed context, keeping source provenance and excluding other-client protected details.
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-**Accept:** Two conflicting body edits preserve both candidates for review.
+    **Accept:** Copied templates cannot expose another client's hidden names or notes.
 
-**Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-#### F26.07 — Cross-domain search index
+  - [ ] <a id="f26-06"></a>**F26.06 — Knowledge revision recovery** · `S`
 
-- [ ] **S · Deliver:** Index allowed client/project/task/document/note fields and invalidate revoked content.
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01), [F05.06](#f05-06)
 
-**Flow and records:** Index permitted metadata/text and invalidate permission/deletion changes before serving snippets/counts; a fast index is never an alternative authorization source.
+    **Deliver:** Compare and restore old content through a new revision.
 
-**Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
+    **Flow and records:** Compare old/base/local/current body revisions and restore through a new permitted revision rather than overwriting concurrent rich-text changes.
 
-**Accept:** Restricted snippets and result counts never reveal a revoked record.
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
 
-**Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
+    **Accept:** Two conflicting body edits preserve both candidates for review.
 
-#### F26.08 — Arabic search normalization
+    **Docs basis:** Documented parent requirement/contract: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
 
-- [ ] **S · Deliver:** Support tested Arabic query normalization while preserving original display text.
+  - [ ] <a id="f26-07"></a>**F26.07 — Cross-domain search index** · `S`
 
-**Flow and records:** Use normalization only to aid Arabic queries/indexing, preserve originals for display and verify diacritics, mixed names and stable identifiers.
+    **Requires:** [F03.06](#f03-06), [F04.03](#f04-03)
 
-**Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
+    **Deliver:** Index allowed client/project/task/document/note fields and invalidate revoked content.
 
-**Accept:** Diacritics and mixed-language identifiers find intended records without mutating stored text.
+    **Flow and records:** Index permitted metadata/text and invalidate permission/deletion changes before serving snippets/counts; a fast index is never an alternative authorization source.
 
-**Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
+    **Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
 
-#### F26.09 — Scoped search filters
+    **Accept:** Restricted snippets and result counts never reveal a revoked record.
 
-- [ ] **S · Deliver:** Provide bounded facets, stable pagination and source-aware results.
+    **Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
 
-**Flow and records:** Apply bounded query/filter/tag/date combinations with stable authorized pagination and explicit online/approved-cache coverage.
+  - [ ] <a id="f26-08"></a>**F26.08 — Arabic search normalization** · `S`
 
-**Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
+    **Requires:** [F03.06](#f03-06), [F26.07](#f26-07)
 
-**Accept:** Changing permissions between pages removes inaccessible results and counts.
+    **Deliver:** Support tested Arabic query normalization while preserving original display text.
 
-**Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
+    **Flow and records:** Use normalization only to aid Arabic queries/indexing, preserve originals for display and verify diacritics, mixed names and stable identifiers.
 
-#### F26.10 — Search command actions
+    **Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
 
-- [ ] **S · Deliver:** Invoke normal authorized services from palette commands.
+    **Accept:** Diacritics and mixed-language identifiers find intended records without mutating stored text.
 
-**Flow and records:** Dispatch palette operations through ordinary services and current online requirements; discovering a command cannot grant its missing permission.
+    **Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
 
-**Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
+  - [ ] <a id="f26-09"></a>**F26.09 — Scoped search filters** · `S`
 
-**Accept:** A hidden finance command cannot bypass direct service permissions.
+    **Requires:** [F03.06](#f03-06), [F26.07](#f26-07)
 
-**Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
+    **Deliver:** Provide bounded facets, stable pagination and source-aware results.
 
-#### F26.11 — Searchable archive
+    **Flow and records:** Apply bounded query/filter/tag/date combinations with stable authorized pagination and explicit online/approved-cache coverage.
 
-- [ ] **E · Deliver:** Offer explicit include-archived filters while preserving retained evidence.
+    **Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
 
-**Proposed flow and records:** Searchable archive controls remain a proposed view over retained source records; include-archived never widens document or cost grants.
+    **Accept:** Changing permissions between pages removes inaccessible results and counts.
 
-**Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
+    **Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
 
-**Accept:** Archived invoices remain findable only to authorized finance users.
+  - [ ] <a id="f26-10"></a>**F26.10 — Search command actions** · `S`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
+    **Requires:** [F03.06](#f03-06), [F26.09](#f26-09), [F04.03](#f04-03)
 
-#### F26.12 — Client knowledge publications
+    **Deliver:** Invoke normal authorized services from palette commands.
 
-- [ ] **E · Deliver:** Publish selected safe notes through portal snapshots.
+    **Flow and records:** Dispatch palette operations through ordinary services and current online requirements; discovering a command cannot grant its missing permission.
 
-**Proposed flow and records:** Publishing knowledge to clients remains proposed exact-version portal content with explicit recipients; changing an internal draft cannot alter the published snapshot.
+    **Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Accept:** A hidden finance command cannot bypass direct service permissions.
 
-**Accept:** Editing an internal draft does not silently republish confidential text.
+    **Docs basis:** Documented parent requirement/contract: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal); [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+  - [ ] <a id="f26-11"></a>**F26.11 — Searchable archive** · `E`
 
-#### F26.13 — Knowledge review reminders
+    **Requires:** [F03.06](#f03-06), [F26.07](#f26-07)
 
-- [ ] **E · Deliver:** Assign owners and stale-content review dates.
+    **Deliver:** Offer explicit include-archived filters while preserving retained evidence.
 
-**Proposed flow and records:** Review reminders remain proposed owner/date workflow for existing knowledge; generation/delivery must follow current scope and deduplicated notice contracts.
+    **Proposed flow and records:** Searchable archive controls remain a proposed view over retained source records; include-archived never widens document or cost grants.
 
-**Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+    **Documented constraints:** Apply current grants before snippets/counts, preserve original Arabic text and invalidate deleted/revoked index entries; palette actions use ordinary services.
 
-**Accept:** A reminder points to current scoped content without exposing its body externally.
+    **Accept:** Archived invoices remain findable only to authorized finance users.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-008 — Global search and command palette](docs/specs/insights-and-knowledge.md#ins-008--global-search-and-command-palette).
 
-#### F26.14 — Template library curation
+  - [ ] <a id="f26-12"></a>**F26.12 — Client knowledge publications** · `E`
 
-- [ ] **E · Deliver:** Approve, version and retire reusable project/document/checklist templates.
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01), [F29.02](#f29-02)
 
-**Proposed flow and records:** Template curation remains proposed governance over versioned copies; retirement preserves prior instances and financial/source references rather than deleting their evidence.
+    **Deliver:** Publish selected safe notes through portal snapshots.
 
-**Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
+    **Proposed flow and records:** Publishing knowledge to clients remains proposed exact-version portal content with explicit recipients; changing an internal draft cannot alter the published snapshot.
 
-**Accept:** Retiring a template preserves all previous copies and references.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
+    **Accept:** Editing an internal draft does not silently republish confidential text.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal); [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+
+  - [ ] <a id="f26-13"></a>**F26.13 — Knowledge review reminders** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F26.01](#f26-01), [F06.06](#f06-06)
+
+    **Deliver:** Assign owners and stale-content review dates.
+
+    **Proposed flow and records:** Review reminders remain proposed owner/date workflow for existing knowledge; generation/delivery must follow current scope and deduplicated notice contracts.
+
+    **Documented constraints:** Notes/snippets/templates retain scoped revisions; conflicting bodies preserve versions and content cannot execute code or store credentials.
+
+    **Accept:** A reminder points to current scoped content without exposing its body externally.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INS-007 — Knowledge, notes and reusable material](docs/specs/insights-and-knowledge.md#ins-007--knowledge-notes-and-reusable-material).
+
+  - [ ] <a id="f26-14"></a>**F26.14 — Template library curation** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F26.05](#f26-05)
+
+    **Deliver:** Approve, version and retire reusable project/document/checklist templates.
+
+    **Proposed flow and records:** Template curation remains proposed governance over versioned copies; retirement preserves prior instances and financial/source references rather than deleting their evidence.
+
+    **Documented constraints:** Supported custom fields are bounded and classified; used fields archive/migrate and template copies remap dependencies without cross-tenant links.
+
+    **Accept:** Retiring a template preserves all previous copies and references.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-007 — Templates and custom fields](docs/specs/work-management.md#wrk-007--templates-and-custom-fields).
 
 <a id="category-27"></a>
 
 ### 9.27 Provider connections and communication
 
-**Owner/package:** P07. **Prerequisites for each phase:** F03.06/P01.3 outbox; Q-09 approved provider/scopes/regions. **Optional extension wave:** X3.
+**Owner/package:** P07. **Original branch context (specific Requires below governs feature order):** F03.06/P01.3 outbox; Q-09 approved provider/scopes/regions. **Optional extension wave:** X3.
 
 **Authority:** INT-001/002/005/006/007/012. A sign-in provider does not authorize a business connector.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F27.01 — Connection registry
+- **F27 — Provider connections and communication**
 
-- [ ] **S · Deliver:** Show connected account, scopes, owner, health, last success and pending effects.
+  - [ ] <a id="f27-01"></a>**F27.01 — Connection registry** · `S`
 
-**Flow and records:** Show provider/account/workspace, enabled scopes, owner, last success, health and pending jobs across documented connection/degraded/reauth/disconnected states.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Connections expose scopes/account/health and approved data sharing; read-only connections cannot write and disconnect cannot recall external copies.
+    **Deliver:** Show connected account, scopes, owner, health, last success and pending effects.
 
-**Accept:** Switching workspace cannot reuse another tenant's provider account.
+    **Flow and records:** Show provider/account/workspace, enabled scopes, owner, last success, health and pending jobs across documented connection/degraded/reauth/disconnected states.
 
-**Docs basis:** Documented parent requirement/contract: [INT-001 — Connector lifecycle](docs/specs/integrations-and-automation.md#int-001--connector-lifecycle).
+    **Documented constraints:** Connections expose scopes/account/health and approved data sharing; read-only connections cannot write and disconnect cannot recall external copies.
 
-#### F27.02 — Provider authorization
+    **Accept:** Switching workspace cannot reuse another tenant's provider account.
 
-- [ ] **S · Deliver:** Use reviewed OAuth/token exchange and server-only secret custody.
+    **Docs basis:** Documented parent requirement/contract: [INT-001 — Connector lifecycle](docs/specs/integrations-and-automation.md#int-001--connector-lifecycle).
 
-**Flow and records:** Preview fields leaving the workspace, validate state/redirect/account mapping and store provider credentials only on the trusted server boundary.
+  - [ ] <a id="f27-02"></a>**F27.02 — Provider authorization** · `S`
 
-**Documented constraints:** Validate provider identity/state/redirects and keep minimal-scope secrets server-only; refresh failure suspends jobs without deleting business records.
+    **Requires:** [F03.06](#f03-06), [F27.01](#f27-01), [F02.07](#f02-07), [F38.09](#f38-09)
 
-**Accept:** A wrong state/account callback cannot attach a connection.
+    **Deliver:** Use reviewed OAuth/token exchange and server-only secret custody.
 
-**Docs basis:** Documented parent requirement/contract: [INT-002 — Authorization and secret handling](docs/specs/integrations-and-automation.md#int-002--authorization-and-secret-handling).
+    **Flow and records:** Preview fields leaving the workspace, validate state/redirect/account mapping and store provider credentials only on the trusted server boundary.
 
-#### F27.03 — Verified email delivery
+    **Documented constraints:** Validate provider identity/state/redirects and keep minimal-scope secrets server-only; refresh failure suspends jobs without deleting business records.
 
-- [ ] **S · Deliver:** Send approved snapshot attachments through verified sender/reply-to settings.
+    **Accept:** A wrong state/account callback cannot attach a connection.
 
-**Flow and records:** Choose verified sender/reply-to and exact permitted recipient/artifact/template/locale; message identity tracks provider outcome separately from issue/payment.
+    **Docs basis:** Documented parent requirement/contract: [INT-002 — Authorization and secret handling](docs/specs/integrations-and-automation.md#int-002--authorization-and-secret-handling).
 
-**Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
+  - [ ] <a id="f27-03"></a>**F27.03 — Verified email delivery** · `S`
 
-**Accept:** A bounce or unknown provider outcome remains distinct from delivery success.
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F30.05](#f30-05), [F38.14](#f38-14)
 
-**Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
+    **Deliver:** Send approved snapshot attachments through verified sender/reply-to settings.
 
-#### F27.04 — Provider token refresh
+    **Inspected source status:** PARTIAL/GATED: transactional email templates/transport exist; approved business sender/provider delivery and live inbox evidence remain pending.
 
-- [ ] **S · Deliver:** Rotate/refresh server credentials and suspend failed connections.
+    **Flow and records:** Choose verified sender/reply-to and exact permitted recipient/artifact/template/locale; message identity tracks provider outcome separately from issue/payment.
 
-**Flow and records:** Use minimal approved scope, supported server refresh and audit rotation; an expired/failed token suspends dependent jobs until repaired.
+    **Documented constraints:** Verified sender/recipient/template snapshots have distinct queued/accepted/delivered/bounced/unknown states; reconcile uncertain delivery before any resend.
 
-**Documented constraints:** Validate provider identity/state/redirects and keep minimal-scope secrets server-only; refresh failure suspends jobs without deleting business records.
+    **Accept:** A bounce or unknown provider outcome remains distinct from delivery success.
 
-**Accept:** An expired token cannot trigger uncontrolled retries or delete source documents.
+    **Docs basis:** Documented parent requirement/contract: [INT-005 — Email and document delivery](docs/specs/integrations-and-automation.md#int-005--email-and-document-delivery).
 
-**Docs basis:** Documented parent requirement/contract: [INT-002 — Authorization and secret handling](docs/specs/integrations-and-automation.md#int-002--authorization-and-secret-handling).
+  - [ ] <a id="f27-04"></a>**F27.04 — Provider token refresh** · `S`
 
-#### F27.05 — Connection disconnect
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02)
 
-- [ ] **S · Deliver:** Revoke credentials, cancel unsent jobs and disclose already-shared external copies.
+    **Deliver:** Rotate/refresh server credentials and suspend failed connections.
 
-**Flow and records:** Revoke/remove credentials where supported, cancel unsent work and disclose retained external copies; disconnected login remains distinct from business connector access.
+    **Flow and records:** Use minimal approved scope, supported server refresh and audit rotation; an expired/failed token suspends dependent jobs until repaired.
 
-**Documented constraints:** Connections expose scopes/account/health and approved data sharing; read-only connections cannot write and disconnect cannot recall external copies.
+    **Documented constraints:** Validate provider identity/state/redirects and keep minimal-scope secrets server-only; refresh failure suspends jobs without deleting business records.
 
-**Accept:** A queued send after disconnect cannot execute with old authority.
+    **Accept:** An expired token cannot trigger uncontrolled retries or delete source documents.
 
-**Docs basis:** Documented parent requirement/contract: [INT-001 — Connector lifecycle](docs/specs/integrations-and-automation.md#int-001--connector-lifecycle).
+    **Docs basis:** Documented parent requirement/contract: [INT-002 — Authorization and secret handling](docs/specs/integrations-and-automation.md#int-002--authorization-and-secret-handling).
 
-#### F27.06 — Hosted payment checkout
+  - [ ] <a id="f27-05"></a>**F27.05 — Connection disconnect** · `S`
 
-- [ ] **S · Deliver:** Create an approved provider-hosted payment link for exact invoice context.
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02)
 
-**Flow and records:** Create approved hosted checkout/payment context for the exact authorized invoice/customer/amount/currency; browser return navigation is not settlement evidence.
+    **Deliver:** Revoke credentials, cancel unsent jobs and disclose already-shared external copies.
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+    **Flow and records:** Revoke/remove credentials where supported, cancel unsent work and disclose retained external copies; disconnected login remains distinct from business connector access.
 
-**Accept:** The client browser handles no raw card data; amount/currency mismatch cannot settle debt.
+    **Documented constraints:** Connections expose scopes/account/health and approved data sharing; read-only connections cannot write and disconnect cannot recall external copies.
 
-**Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+    **Accept:** A queued send after disconnect cannot execute with old authority.
 
-#### F27.07 — Payment webhooks
+    **Docs basis:** Documented parent requirement/contract: [INT-001 — Connector lifecycle](docs/specs/integrations-and-automation.md#int-001--connector-lifecycle).
 
-- [ ] **S · Deliver:** Verify signed callbacks, replay window, event identity and tenant mapping.
+  - [ ] <a id="f27-06"></a>**F27.06 — Hosted payment checkout** · `S`
 
-**Flow and records:** Verify signed/timestamped callbacks and unique provider event/account mapping before transactional business effects; out-of-order states cannot regress accepted facts.
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F20.01](#f20-01)
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+    **Deliver:** Create an approved provider-hosted payment link for exact invoice context.
 
-**Accept:** Duplicate and out-of-order events produce one valid state transition.
+    **Flow and records:** Create approved hosted checkout/payment context for the exact authorized invoice/customer/amount/currency; browser return navigation is not settlement evidence.
 
-**Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
 
-#### F27.08 — Provider refunds
+    **Accept:** The client browser handles no raw card data; amount/currency mismatch cannot settle debt.
 
-- [ ] **S · Deliver:** Initiate explicitly authorized refunds and reconcile uncertain outcomes.
+    **Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-**Flow and records:** Require current Finance action and explicit selected refund instruction; unknown provider results reconcile before another money-moving request.
+  - [ ] <a id="f27-07"></a>**F27.07 — Payment webhooks** · `S`
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+    **Requires:** [F03.06](#f03-06), [F27.06](#f27-06), [F30.03](#f30-03)
 
-**Accept:** A lost provider reply never causes a blind second refund.
+    **Deliver:** Verify signed callbacks, replay window, event identity and tenant mapping.
 
-**Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+    **Flow and records:** Verify signed/timestamped callbacks and unique provider event/account mapping before transactional business effects; out-of-order states cannot regress accepted facts.
 
-#### F27.09 — Chargeback records
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
 
-- [ ] **S · Deliver:** Track disputes, reversed cash and evidence deadlines separately from invoice lifecycle.
+    **Accept:** Duplicate and out-of-order events produce one valid state transition.
 
-**Flow and records:** Link dispute/chargeback evidence to original cash allocations, deadlines and adjustments; preserve original receipt/invoice and explain the effect on debt.
+    **Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+  - [ ] <a id="f27-08"></a>**F27.08 — Provider refunds** · `S`
 
-**Accept:** A chargeback never silently edits the original invoice.
+    **Requires:** [F03.06](#f03-06), [F27.07](#f27-07), [F21.07](#f21-07)
 
-**Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+    **Deliver:** Initiate explicitly authorized refunds and reconcile uncertain outcomes.
 
-#### F27.10 — Payout reconciliation
+    **Flow and records:** Require current Finance action and explicit selected refund instruction; unknown provider results reconcile before another money-moving request.
 
-- [ ] **S · Deliver:** Match provider gross receipts, fees, refunds and net payouts.
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
 
-**Flow and records:** Reconcile source gross receipts, fees, refunds/chargebacks and net payout with explicit links instead of treating net payout as the amount the client paid.
+    **Accept:** A lost provider reply never causes a blind second refund.
 
-**Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
+    **Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-**Accept:** Totals explain every difference between paid invoice and bank payout.
+  - [ ] <a id="f27-09"></a>**F27.09 — Chargeback records** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits); [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+    **Requires:** [F03.06](#f03-06), [F27.07](#f27-07), [F21.13](#f21-13)
 
-#### F27.11 — Accounting provider connector
+    **Deliver:** Track disputes, reversed cash and evidence deadlines separately from invoice lifecycle.
 
-- [ ] **S · Deliver:** Implement one selected provider after portable exports and approved mapping.
+    **Flow and records:** Link dispute/chargeback evidence to original cash allocations, deadlines and adjustments; preserve original receipt/invoice and explain the effect on debt.
 
-**Flow and records:** Implement a specifically selected accounting adapter over the existing portable export/versioned mapping and acknowledgement contracts.
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
 
-**Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
+    **Accept:** A chargeback never silently edits the original invoice.
 
-**Accept:** A partially accepted export resumes without external duplication.
+    **Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-**Docs basis:** Documented parent requirement/contract: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
+  - [ ] <a id="f27-10"></a>**F27.10 — Payout reconciliation** · `S`
 
-#### F27.12 — Read-only bank feed
+    **Requires:** [F03.06](#f03-06), [F27.07](#f27-07), [F24.04](#f24-04)
 
-- [ ] **E · Deliver:** Use a reviewed consent-based feed with expiry and reconnect states.
+    **Deliver:** Match provider gross receipts, fees, refunds and net payouts.
 
-**Proposed flow and records:** A live bank feed remains proposed read-only consent/expiry integration; imported evidence still needs explicit matching and cannot initiate transfers.
+    **Flow and records:** Reconcile source gross receipts, fees, refunds/chargebacks and net payout with explicit links instead of treating net payout as the amount the client paid.
 
-**Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
+    **Documented constraints:** Payments conserve allocated plus unapplied value; credit/refund effects differ, surplus is explicit and a deposit never reduces the same debt twice.
 
-**Accept:** Feed access cannot initiate transfers or silently match ambiguous cash.
+    **Accept:** Totals explain every difference between paid invoice and bank payout.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
+    **Docs basis:** Documented parent requirement/contract: [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits); [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-#### F27.13 — SMS delivery connector
+  - [ ] <a id="f27-11"></a>**F27.11 — Accounting provider connector** · `S`
 
-- [ ] **E · Deliver:** Offer explicitly opted-in transactional notices after provider/country review.
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F24.09](#f24-09)
 
-**Proposed flow and records:** SMS is proposed channel selection without an approved provider/region/consent contract; any notice must obey scoped content, suppression and channel preferences.
+    **Deliver:** Implement one selected provider after portable exports and approved mapping.
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Flow and records:** Implement a specifically selected accounting adapter over the existing portable export/versioned mapping and acknowledgement contracts.
 
-**Accept:** Suppressed contacts receive no queued text and sensitive details stay out of previews.
+    **Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Accept:** A partially accepted export resumes without external duplication.
 
-#### F27.14 — Team chat notices
+    **Docs basis:** Documented parent requirement/contract: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
 
-- [ ] **E · Deliver:** Send bounded Slack/Teams-style notices to approved destinations.
+  - [ ] <a id="f27-12"></a>**F27.12 — Read-only bank feed** · `E`
 
-**Proposed flow and records:** External team-chat notices remain proposed destinations; select data-sharing/recipient policy and keep restricted source content out of broadly visible channels.
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F24.01](#f24-01)
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Deliver:** Use a reviewed consent-based feed with expiry and reconnect states.
 
-**Accept:** Disconnect or recipient scope loss suppresses private content before dispatch.
+    **Proposed flow and records:** A live bank feed remains proposed read-only consent/expiry integration; imported evidence still needs explicit matching and cannot initiate transfers.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Documented constraints:** Portable exports precede named adapters; mappings/acknowledgements are versioned, matches need confirmation and feeds remain read-only.
 
-#### F27.15 — Communication thread import
+    **Accept:** Feed access cannot initiate transfers or silently match ambiguous cash.
 
-- [ ] **E · Deliver:** Import explicitly selected email threads with provenance and narrow scopes.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-007 — Accounting and bank context](docs/specs/integrations-and-automation.md#int-007--accounting-and-bank-context).
 
-**Proposed flow and records:** Thread import is proposed communication ingestion; preserve named-source/external-ID provenance and decide permitted message/attachment fields before connecting a mailbox.
+  - [ ] <a id="f27-13"></a>**F27.13 — SMS delivery connector** · `E`
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F06.07](#f06-07)
 
-**Accept:** A personal unrelated mailbox message cannot enter another client's timeline.
+    **Deliver:** Offer explicitly opted-in transactional notices after provider/country review.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Proposed flow and records:** SMS is proposed channel selection without an approved provider/region/consent contract; any notice must obey scoped content, suppression and channel preferences.
+
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+
+    **Accept:** Suppressed contacts receive no queued text and sensitive details stay out of previews.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+
+  - [ ] <a id="f27-14"></a>**F27.14 — Team chat notices** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F06.07](#f06-07)
+
+    **Deliver:** Send bounded Slack/Teams-style notices to approved destinations.
+
+    **Proposed flow and records:** External team-chat notices remain proposed destinations; select data-sharing/recipient policy and keep restricted source content out of broadly visible channels.
+
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+
+    **Accept:** Disconnect or recipient scope loss suppresses private content before dispatch.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+
+  - [ ] <a id="f27-15"></a>**F27.15 — Communication thread import** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F27.02](#f27-02), [F07.08](#f07-08)
+
+    **Deliver:** Import explicitly selected email threads with provenance and narrow scopes.
+
+    **Proposed flow and records:** Thread import is proposed communication ingestion; preserve named-source/external-ID provenance and decide permitted message/attachment fields before connecting a mailbox.
+
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+
+    **Accept:** A personal unrelated mailbox message cannot enter another client's timeline.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
 <a id="category-28"></a>
 
 ### 9.28 Engineering and calendar connectors
 
-**Owner/package:** P07. **Prerequisites for each phase:** F27.01/F27.02; F12.01/F13.01; Q-09; current repository/calendar mapping. **Optional extension wave:** X3.
+**Owner/package:** P07. **Original branch context (specific Requires below governs feature order):** F27.01/F27.02; F12.01/F13.01; Q-09; current repository/calendar mapping. **Optional extension wave:** X3.
 
 **Authority:** INT-003/004. Each named provider is a separate phase because capabilities and permissions differ.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F28.01 — GitHub connector
+- **F28 — Engineering and calendar connectors**
 
-- [ ] **S · Deliver:** Map approved repositories and import/link issues, PRs and releases with stable IDs.
+  - [ ] <a id="f28-01"></a>**F28.01 — GitHub connector** · `S`
 
-**Flow and records:** Select authorized GitHub repositories for read-only linked issues/PRs/releases, preserving external IDs and explicit workspace/project mapping without copying code by default.
+    **Requires:** [F27.02](#f27-02), [F12.01](#f12-01)
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+    **Deliver:** Map approved repositories and import/link issues, PRs and releases with stable IDs.
 
-**Accept:** Repeated imports deduplicate and never copy private source code by default.
+    **Flow and records:** Select authorized GitHub repositories for read-only linked issues/PRs/releases, preserving external IDs and explicit workspace/project mapping without copying code by default.
 
-**Docs basis:** Documented parent requirement/contract: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-#### F28.02 — GitLab connector
+    **Accept:** Repeated imports deduplicate and never copy private source code by default.
 
-- [ ] **S · Deliver:** Map selected projects and merge requests through an independently reviewed adapter.
+    **Docs basis:** Documented parent requirement/contract: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-**Flow and records:** Independently authorize selected GitLab project metadata and merge-request links; importing an inaccessible remote project cannot be enabled by editing its ID.
+  - [ ] <a id="f28-02"></a>**F28.02 — GitLab connector** · `S`
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+    **Requires:** [F27.02](#f27-02), [F12.01](#f12-01)
 
-**Accept:** An inaccessible remote project cannot be mapped by changing an external ID.
+    **Deliver:** Map selected projects and merge requests through an independently reviewed adapter.
 
-**Docs basis:** Documented parent requirement/contract: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Flow and records:** Independently authorize selected GitLab project metadata and merge-request links; importing an inaccessible remote project cannot be enabled by editing its ID.
 
-#### F28.03 — Google Calendar connector
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-- [ ] **S · Deliver:** Import selected busy intervals and optionally export approved events.
+    **Accept:** An inaccessible remote project cannot be mapped by changing an external ID.
 
-**Flow and records:** Choose selected Google calendars and read-only busy import or approved event export; retain timezone, external event identity/revision and privacy classification.
+    **Docs basis:** Documented parent requirement/contract: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+  - [ ] <a id="f28-03"></a>**F28.03 — Google Calendar connector** · `S`
 
-**Accept:** Private event titles stay hidden when only availability was authorized.
+    **Requires:** [F27.02](#f27-02), [F14.03](#f14-03)
 
-**Docs basis:** Documented parent requirement/contract: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Deliver:** Import selected busy intervals and optionally export approved events.
 
-#### F28.04 — Microsoft calendar connector
+    **Flow and records:** Choose selected Google calendars and read-only busy import or approved event export; retain timezone, external event identity/revision and privacy classification.
 
-- [ ] **E · Deliver:** Support selected Outlook calendars with explicit timezone and scope policy.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Proposed flow and records:** Microsoft calendar support remains proposed provider-specific work; the documented calendar contract supplies boundaries but not approved Outlook credentials or feature parity.
+    **Accept:** Private event titles stay hidden when only availability was authorized.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Docs basis:** Documented parent requirement/contract: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-**Accept:** Disconnect stops updates and reconnect cannot duplicate events.
+  - [ ] <a id="f28-04"></a>**F28.04 — Microsoft calendar connector** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Requires:** [F27.02](#f27-02), [F14.03](#f14-03)
 
-#### F28.05 — Calendar conflict reconciliation
+    **Deliver:** Support selected Outlook calendars with explicit timezone and scope policy.
 
-- [ ] **S · Deliver:** Handle remote edits, cancellations, recurring exceptions and local revisions.
+    **Proposed flow and records:** Microsoft calendar support remains proposed provider-specific work; the documented calendar contract supplies boundaries but not approved Outlook credentials or feature parity.
 
-**Flow and records:** Review remote decline/cancel/move and recurrence/DST exceptions against local mapping/revision; reconnect resumes the same source rather than creating duplicates.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Accept:** Disconnect stops updates and reconnect cannot duplicate events.
 
-**Accept:** DST or organizer edits produce reviewable changes without fabricating worked time.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-**Docs basis:** Documented parent requirement/contract: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+  - [ ] <a id="f28-05"></a>**F28.05 — Calendar conflict reconciliation** · `S`
 
-#### F28.06 — Approved event invitations
+    **Requires:** [F27.02](#f27-02), [F28.03](#f28-03)
 
-- [ ] **S · Deliver:** Send only reviewed event updates with explicit recipients.
+    **Deliver:** Handle remote edits, cancellations, recurring exceptions and local revisions.
 
-**Flow and records:** Preview intended recipients and explicitly enable invitation sending as a separate action from saving a local activity or importing availability.
+    **Flow and records:** Review remote decline/cancel/move and recurrence/DST exceptions against local mapping/revision; reconnect resumes the same source rather than creating duplicates.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Accept:** A replayed job does not resend a new independent invitation.
+    **Accept:** DST or organizer edits produce reviewable changes without fabricating worked time.
 
-**Docs basis:** Documented parent requirement/contract: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Docs basis:** Documented parent requirement/contract: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-#### F28.07 — Engineering status rules
+  - [ ] <a id="f28-06"></a>**F28.06 — Approved event invitations** · `S`
 
-- [ ] **S · Deliver:** Allow selected PR/issue events to suggest or apply configured task transitions.
+    **Requires:** [F27.02](#f27-02), [F28.03](#f28-03)
 
-**Flow and records:** Configure a permitted repository event to suggest/apply a reviewed task transition only; it cannot log time, approve scope or issue an invoice.
+    **Deliver:** Send only reviewed event updates with explicit recipients.
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+    **Flow and records:** Preview intended recipients and explicitly enable invitation sending as a separate action from saving a local activity or importing availability.
 
-**Accept:** A merged PR cannot approve deliverables, log time or issue invoices.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Docs basis:** Documented parent requirement/contract: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Accept:** A replayed job does not resend a new independent invitation.
 
-#### F28.08 — Bidirectional issue sync
+    **Docs basis:** Documented parent requirement/contract: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-- [ ] **E · Deliver:** Sync approved fields under versioned mapping and explicit conflict policy.
+  - [ ] <a id="f28-07"></a>**F28.07 — Engineering status rules** · `S`
 
-**Proposed flow and records:** Bidirectional sync remains proposed per-project mapping/conflict policy; read-only connection scope cannot authorize remote writes.
+    **Requires:** [F27.02](#f27-02), [F28.01](#f28-01), [F13.03](#f13-03)
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+    **Deliver:** Allow selected PR/issue events to suggest or apply configured task transitions.
 
-**Accept:** Concurrent local/remote status edits do not overwrite each other silently.
+    **Flow and records:** Configure a permitted repository event to suggest/apply a reviewed task transition only; it cannot log time, approve scope or issue an invoice.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-#### F28.09 — Jira connector
+    **Accept:** A merged PR cannot approve deliverables, log time or issue invoices.
 
-- [ ] **E · Deliver:** Import/link selected issues with scoped external-ID mapping.
+    **Docs basis:** Documented parent requirement/contract: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-**Proposed flow and records:** Jira is a proposed named adapter, not an approved connection; define supported issue fields, identity/grant checks and replay mapping before enabling it.
+  - [ ] <a id="f28-08"></a>**F28.08 — Bidirectional issue sync** · `E`
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+    **Requires:** [F27.02](#f27-02), [F28.01](#f28-01), [F05.06](#f05-06)
 
-**Accept:** Restricted issues do not appear through summaries or webhooks.
+    **Deliver:** Sync approved fields under versioned mapping and explicit conflict policy.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Proposed flow and records:** Bidirectional sync remains proposed per-project mapping/conflict policy; read-only connection scope cannot authorize remote writes.
 
-#### F28.10 — Linear connector
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-- [ ] **E · Deliver:** Map selected teams/issues/projects and retain source references.
+    **Accept:** Concurrent local/remote status edits do not overwrite each other silently.
 
-**Proposed flow and records:** Linear is a proposed named adapter; keep source team/issue/project mapping scoped and review deleted remote metadata without silently recreating it.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+  - [ ] <a id="f28-09"></a>**F28.09 — Jira connector** · `E`
 
-**Accept:** Remote deletion preserves local evidence without repeated recreation.
+    **Requires:** [F27.02](#f27-02), [F13.01](#f13-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Deliver:** Import/link selected issues with scoped external-ID mapping.
 
-#### F28.11 — External task import adapters
+    **Proposed flow and records:** Jira is a proposed named adapter, not an approved connection; define supported issue fields, identity/grant checks and replay mapping before enabling it.
 
-- [ ] **E · Deliver:** Add a separately scoped Trello/Asana/ClickUp adapter only when migration demand selects it.
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-**Proposed flow and records:** Other task adapters remain candidates; pick one concrete source and mapping/exclusion contract instead of implementing a generic unrestricted task-sync engine.
+    **Accept:** Restricted issues do not appear through summaries or webhooks.
 
-**Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-**Accept:** Each chosen adapter gets its own approval and idempotent import fixtures before coding.
+  - [ ] <a id="f28-10"></a>**F28.10 — Linear connector** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
+    **Requires:** [F27.02](#f27-02), [F13.01](#f13-01)
 
-#### F28.12 — Design artifact links
+    **Deliver:** Map selected teams/issues/projects and retain source references.
 
-- [ ] **E · Deliver:** Attach reviewed Figma/design links with safe previews and access disclosure.
+    **Proposed flow and records:** Linear is a proposed named adapter; keep source team/issue/project mapping scoped and review deleted remote metadata without silently recreating it.
 
-**Proposed flow and records:** Design artifact previews remain proposed safe external references; source URL and client publication need explicit reviewed exposure and no arbitrary fetch authority.
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Accept:** Remote deletion preserves local evidence without repeated recreation.
 
-**Accept:** A preview cannot expose a private artifact to a portal guest.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links); [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+  - [ ] <a id="f28-11"></a>**F28.11 — External task import adapters** · `E`
 
-#### F28.13 — Meeting provider links
+    **Requires:** [F27.02](#f27-02), [F34.01](#f34-01), [F13.01](#f13-01)
 
-- [ ] **E · Deliver:** Generate approved conferencing links through a selected adapter.
+    **Deliver:** Add a separately scoped Trello/Asana/ClickUp adapter only when migration demand selects it.
 
-**Proposed flow and records:** Meeting-provider links remain proposed event integration; select provider/scopes and reconcile cancellation/reschedule before claiming a valid live meeting.
+    **Proposed flow and records:** Other task adapters remain candidates; pick one concrete source and mapping/exclusion contract instead of implementing a generic unrestricted task-sync engine.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Documented constraints:** Initial engineering mode is links/read-only metadata with external-ID dedupe; repository changes cannot generate time, accept scope or bill.
 
-**Accept:** Canceled or rebooked sessions do not leave duplicate live bookings.
+    **Accept:** Each chosen adapter gets its own approval and idempotent import fixtures before coding.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-003 — GitHub/GitLab engineering context](docs/specs/integrations-and-automation.md#int-003--githubgitlab-engineering-context).
 
-#### F28.14 — External storage references
+  - [ ] <a id="f28-12"></a>**F28.12 — Design artifact links** · `E`
 
-- [ ] **E · Deliver:** Reference selected Drive/Dropbox-style files under scoped access and retention rules.
+    **Requires:** [F27.02](#f27-02), [F15.02](#f15-02)
 
-**Proposed flow and records:** External storage references remain proposed adapters; determine external access/retention and local-copy policy rather than promising indefinite cached availability.
+    **Deliver:** Attach reviewed Figma/design links with safe previews and access disclosure.
 
-**Documented constraints:** Commit attachment references only after verified bytes/hash; browser drafts are not backups and stale restored operations never replay blindly.
+    **Proposed flow and records:** Design artifact previews remain proposed safe external references; source URL and client publication need explicit reviewed exposure and no arbitrary fetch authority.
 
-**Accept:** Revoking the external share does not leave a falsely accessible cached copy.
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Files, deletion and recovery](docs/architecture/sync-and-collaboration.md#files-deletion-and-recovery).
+    **Accept:** A preview cannot expose a private artifact to a portal guest.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links); [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+
+  - [ ] <a id="f28-13"></a>**F28.13 — Meeting provider links** · `E`
+
+    **Requires:** [F27.02](#f27-02), [F32.03](#f32-03)
+
+    **Deliver:** Generate approved conferencing links through a selected adapter.
+
+    **Proposed flow and records:** Meeting-provider links remain proposed event integration; select provider/scopes and reconcile cancellation/reschedule before claiming a valid live meeting.
+
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+
+    **Accept:** Canceled or rebooked sessions do not leave duplicate live bookings.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+
+  - [ ] <a id="f28-14"></a>**F28.14 — External storage references** · `E`
+
+    **Requires:** [F27.02](#f27-02), [F15.02](#f15-02)
+
+    **Deliver:** Reference selected Drive/Dropbox-style files under scoped access and retention rules.
+
+    **Proposed flow and records:** External storage references remain proposed adapters; determine external access/retention and local-copy policy rather than promising indefinite cached availability.
+
+    **Documented constraints:** Commit attachment references only after verified bytes/hash; browser drafts are not backups and stale restored operations never replay blindly.
+
+    **Accept:** Revoking the external share does not leave a falsely accessible cached copy.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Files, deletion and recovery](docs/architecture/sync-and-collaboration.md#files-deletion-and-recovery).
 
 <a id="category-29"></a>
 
 ### 9.29 Client portal and external collaboration
 
-**Owner/package:** P08. **Prerequisites for each phase:** F03.06/F15.02/F20.03; Q-10 approved identity/publication policy. **Optional extension wave:** X3.
+**Owner/package:** P08. **Original branch context (specific Requires below governs feature order):** F03.06/F15.02/F20.03; Q-10 approved identity/publication policy. **Optional extension wave:** X3.
 
 **Authority:** CRM-011; WRK-009; P08 and selected SEC-002–016/025–029/035/040/048/057/059.
 
-**Research context:** [HoneyBook portal access](https://help.honeybook.com/en/articles/6428603-what-clients-can-see-and-do-in-the-client-portal). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F29.01 — Portal identity and access
+- **F29 — Client portal and external collaboration**
 
-- [ ] **S · Deliver:** Authenticate the intended client recipient or use reviewed purpose-bound expiring links.
+  - [ ] <a id="f29-01"></a>**F29.01 — Portal identity and access** · `S`
 
-**Flow and records:** Use selected Better Auth login or Q-10 recipient-verified expiring link policy; bind identity and permitted actions to specific client/workspace resources.
+    **Requires:** [F03.06](#f03-06), [F02.02](#f02-02)
 
-**Documented constraints:** Every read/download/action rechecks recipient/resource/version scope; revocation blocks future access but cannot recall prior downloads.
+    **Deliver:** Authenticate the intended client recipient or use reviewed purpose-bound expiring links.
 
-**Accept:** A forwarded/revoked link cannot grant sibling-project or workspace access.
+    **Flow and records:** Use selected Better Auth login or Q-10 recipient-verified expiring link policy; bind identity and permitted actions to specific client/workspace resources.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review).
+    **Documented constraints:** Every read/download/action rechecks recipient/resource/version scope; revocation blocks future access but cannot recall prior downloads.
 
-#### F29.02 — Portal publication registry
+    **Accept:** A forwarded/revoked link cannot grant sibling-project or workspace access.
 
-- [ ] **S · Deliver:** Publish exact selected document/deliverable versions with audience and actions.
+    **Docs basis:** Documented parent requirement/contract: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review).
 
-**Flow and records:** Record exact publication version, audience, allowed actions and withdrawal state; unpublished authoring remains internal until a new reviewed publication.
+  - [ ] <a id="f29-02"></a>**F29.02 — Portal publication registry** · `S`
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Requires:** [F03.06](#f03-06), [F29.01](#f29-01), [F38.05](#f38-05)
 
-**Accept:** Internal edits remain private until a separately authorized publication.
+    **Deliver:** Publish exact selected document/deliverable versions with audience and actions.
 
-**Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Flow and records:** Record exact publication version, audience, allowed actions and withdrawal state; unpublished authoring remains internal until a new reviewed publication.
 
-#### F29.03 — Client portal home
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-- [ ] **S · Deliver:** Show only shared projects, requests, documents and next actions.
+    **Accept:** Internal edits remain private until a separately authorized publication.
 
-**Flow and records:** Aggregate only the client's explicitly shared projects/documents/review requests and next actions; exclude member lists, private cost and draft invoices.
+    **Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+  - [ ] <a id="f29-03"></a>**F29.03 — Client portal home** · `S`
 
-**Accept:** Internal finance costs, hidden tasks and counts cannot leak.
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02)
 
-**Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Deliver:** Show only shared projects, requests, documents and next actions.
 
-#### F29.04 — Portal project progress
+    **Flow and records:** Aggregate only the client's explicitly shared projects/documents/review requests and next actions; exclude member lists, private cost and draft invoices.
 
-- [ ] **S · Deliver:** Display deliberately published milestones and status snapshots.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Flow and records:** Display selected published milestone/status facts rather than internal health/notes or unrestricted project objects.
+    **Accept:** Internal finance costs, hidden tasks and counts cannot leak.
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-**Accept:** Internal project-health notes do not appear through an API response.
+  - [ ] <a id="f29-04"></a>**F29.04 — Portal project progress** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F12.01](#f12-01)
 
-#### F29.05 — Portal invoice access
+    **Deliver:** Display deliberately published milestones and status snapshots.
 
-- [ ] **S · Deliver:** Present exact issued invoices, credits and permitted payment context.
+    **Flow and records:** Display selected published milestone/status facts rather than internal health/notes or unrestricted project objects.
 
-**Flow and records:** Serve issued snapshot invoices and linked permitted corrections/payment context with current recipient/file grants rather than mutable billing drafts.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Accept:** Internal project-health notes do not appear through an API response.
 
-**Accept:** A client cannot enumerate another client's invoice IDs.
+    **Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-**Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+  - [ ] <a id="f29-05"></a>**F29.05 — Portal invoice access** · `S`
 
-#### F29.06 — Portal payment action
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F20.03](#f20-03)
 
-- [ ] **S · Deliver:** Launch configured hosted checkout with current payable balance.
+    **Deliver:** Present exact issued invoices, credits and permitted payment context.
 
-**Flow and records:** Launch approved hosted payment context from current invoice facts and treat verified provider capture/reconciliation as the source of settlement.
+    **Flow and records:** Serve issued snapshot invoices and linked permitted corrections/payment context with current recipient/file grants rather than mutable billing drafts.
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Accept:** Paying in another tab prevents a stale link from creating unauthorized duplicate collection.
+    **Accept:** A client cannot enumerate another client's invoice IDs.
 
-**Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+    **Docs basis:** Documented parent requirement/contract: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-#### F29.07 — Portal proposal decisions
+  - [ ] <a id="f29-06"></a>**F29.06 — Portal payment action** · `S`
 
-- [ ] **S · Deliver:** Record accept/reject/request-change against a current published version.
+    **Requires:** [F03.06](#f03-06), [F29.05](#f29-05), [F27.06](#f27-06)
 
-**Flow and records:** Record accepted/rejected/change-request result for the currently eligible published proposal version and selected options with capturing/verified identity provenance.
+    **Deliver:** Launch configured hosted checkout with current payable balance.
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Flow and records:** Launch approved hosted payment context from current invoice facts and treat verified provider capture/reconciliation as the source of settlement.
 
-**Accept:** Withdrawing a version invalidates an outstanding acceptance action.
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+    **Accept:** Paying in another tab prevents a stale link from creating unauthorized duplicate collection.
 
-#### F29.08 — Portal agreement signature
+    **Docs basis:** Documented parent requirement/contract: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
-- [ ] **S · Deliver:** Use approved signature flow and evidence classification.
+  - [ ] <a id="f29-07"></a>**F29.07 — Portal proposal decisions** · `S`
 
-**Flow and records:** Present only the selected agreement/provider evidence policy and preserve verification level; uploaded/typed signatures are not universal legal proof.
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F10.07](#f10-07)
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+    **Deliver:** Record accept/reject/request-change against a current published version.
 
-**Accept:** A typed name is never mislabeled as certified legal identity evidence.
+    **Flow and records:** Record accepted/rejected/change-request result for the currently eligible published proposal version and selected options with capturing/verified identity provenance.
 
-**Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
 
-#### F29.09 — Portal deliverable acceptance
+    **Accept:** Withdrawing a version invalidates an outstanding acceptance action.
 
-- [ ] **S · Deliver:** Bind review comments and decision to the exact delivered artifact.
+    **Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
 
-**Flow and records:** Allow comments/acceptance/change requests only on the published deliverable version and retain earlier evidence after replacement or supersession.
+  - [ ] <a id="f29-08"></a>**F29.08 — Portal agreement signature** · `S`
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F10.12](#f10-12)
 
-**Accept:** Uploading a replacement never inherits approval of its predecessor.
+    **Deliver:** Use approved signature flow and evidence classification.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+    **Flow and records:** Present only the selected agreement/provider evidence policy and preserve verification level; uploaded/typed signatures are not universal legal proof.
 
-#### F29.10 — Client file requests
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
 
-- [ ] **S · Deliver:** Collect requested files with bounded private upload and received/blocked states.
+    **Accept:** A typed name is never mislabeled as certified legal identity evidence.
 
-**Flow and records:** Receive requested files through staged verified private uploads and owner readiness review; a filename alone cannot satisfy a blocking onboarding request.
+    **Docs basis:** Documented parent requirement/contract: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement).
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+  - [ ] <a id="f29-09"></a>**F29.09 — Portal deliverable acceptance** · `S`
 
-**Accept:** Unsafe files stay quarantined and cannot become a successful handover.
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F15.06](#f15-06)
 
-**Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness); [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Deliver:** Bind review comments and decision to the exact delivered artifact.
 
-#### F29.11 — Portal messaging
+    **Flow and records:** Allow comments/acceptance/change requests only on the published deliverable version and retain earlier evidence after replacement or supersession.
 
-- [ ] **E · Deliver:** Support explicit project conversations with internal/external visibility boundaries.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Proposed flow and records:** Client messaging remains proposed separately classified project threads; any internal-to-external disclosure needs explicit current publication authority.
+    **Accept:** Uploading a replacement never inherits approval of its predecessor.
 
-**Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
+    **Docs basis:** Documented parent requirement/contract: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-**Accept:** A private internal reply cannot be sent by switching a client-supplied flag.
+  - [ ] <a id="f29-10"></a>**F29.10 — Client file requests** · `S`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F15.03](#f15-03)
 
-#### F29.12 — Portal profile preferences
+    **Deliver:** Collect requested files with bounded private upload and received/blocked states.
 
-- [ ] **E · Deliver:** Allow reviewed client contact/language settings without workspace membership.
+    **Flow and records:** Receive requested files through staged verified private uploads and owner readiness review; a filename alone cannot satisfy a blocking onboarding request.
 
-**Proposed flow and records:** Client-editable contact/preferences remain proposed; select which fields are writable without turning a business contact edit into account ownership or workspace membership.
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-**Documented constraints:** Every read/download/action rechecks recipient/resource/version scope; revocation blocks future access but cannot recall prior downloads.
+    **Accept:** Unsafe files stay quarantined and cannot become a successful handover.
 
-**Accept:** Changing contact email cannot take over another recipient's portal identity.
+    **Docs basis:** Documented parent requirement/contract: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness); [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review).
+  - [ ] <a id="f29-11"></a>**F29.11 — Portal messaging** · `E`
 
-#### F29.13 — Portal multi-project switching
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F15.01](#f15-01)
 
-- [ ] **E · Deliver:** List only engagements explicitly shared with that client identity.
+    **Deliver:** Support explicit project conversations with internal/external visibility boundaries.
 
-**Proposed flow and records:** Multi-project navigation remains proposed recipient projection over individually shared resources; common client identity cannot reveal unshared engagements.
+    **Proposed flow and records:** Client messaging remains proposed separately classified project threads; any internal-to-external disclosure needs explicit current publication authority.
 
-**Documented constraints:** Every read/download/action rechecks recipient/resource/version scope; revocation blocks future access but cannot recall prior downloads.
+    **Documented constraints:** Internal/client-visible threads have separate classification; mentions require read access, presence is advisory/opt-out and surveillance is excluded.
 
-**Accept:** Membership in one engagement never reveals unshared projects.
+    **Accept:** A private internal reply cannot be sent by switching a client-supplied flag.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-010 — Collaboration and activity](docs/specs/work-management.md#wrk-010--collaboration-and-activity).
 
-#### F29.14 — Client feedback surveys
+  - [ ] <a id="f29-12"></a>**F29.12 — Portal profile preferences** · `E`
 
-- [ ] **E · Deliver:** Collect optional milestone/closure feedback with visible purpose and retention.
+    **Requires:** [F03.06](#f03-06), [F29.01](#f29-01)
 
-**Proposed flow and records:** Feedback surveys remain proposed scoped content with reviewed purpose/retention; submitting a response cannot accept legal terms or alter settlement.
+    **Deliver:** Allow reviewed client contact/language settings without workspace membership.
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Proposed flow and records:** Client-editable contact/preferences remain proposed; select which fields are writable without turning a business contact edit into account ownership or workspace membership.
 
-**Accept:** Submitting feedback cannot approve an invoice or expand client access.
+    **Documented constraints:** Every read/download/action rechecks recipient/resource/version scope; revocation blocks future access but cannot recall prior downloads.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Accept:** Changing contact email cannot take over another recipient's portal identity.
 
-#### F29.15 — Client-view preview
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review).
 
-- [ ] **E · Deliver:** Provide a read-only publication preview using the actual recipient projection.
+  - [ ] <a id="f29-13"></a>**F29.13 — Portal multi-project switching** · `E`
 
-**Proposed flow and records:** Read-only client preview remains proposed reuse of the actual publication projection, without impersonation, sending, signatures or payments.
+    **Requires:** [F03.06](#f03-06), [F29.03](#f29-03), [F29.04](#f29-04)
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Deliver:** List only engagements explicitly shared with that client identity.
 
-**Accept:** Preview actions cannot send, sign, pay or impersonate the client.
+    **Proposed flow and records:** Multi-project navigation remains proposed recipient projection over individually shared resources; common client identity cannot reveal unshared engagements.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Documented constraints:** Every read/download/action rechecks recipient/resource/version scope; revocation blocks future access but cannot recall prior downloads.
 
-#### F29.16 — Branded portal presentation
+    **Accept:** Membership in one engagement never reveals unshared projects.
 
-- [ ] **E · Deliver:** Apply approved business logo/text within accessible shared tokens.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-011 — Client portal (P08) and controlled external review](docs/specs/client-lifecycle.md#crm-011--client-portal-p08-and-controlled-external-review).
 
-**Proposed flow and records:** Portal branding remains proposed constrained use of current design-system tokens and allowed identity fields; mandatory seller/security disclosures remain intact.
+  - [ ] <a id="f29-14"></a>**F29.14 — Client feedback surveys** · `E`
 
-**Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F31.01](#f31-01)
 
-**Accept:** Branding cannot inject CSS/scripts or hide mandatory identity/disclosure fields.
+    **Deliver:** Collect optional milestone/closure feedback with visible purpose and retention.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Components](DESIGN.md#components).
+    **Proposed flow and records:** Feedback surveys remain proposed scoped content with reviewed purpose/retention; submitting a response cannot accept legal terms or alter settlement.
 
-#### F29.17 — Portal custom domain
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-- [ ] **E · Deliver:** Verify domain ownership and review cookies, TLS and tenant routing.
+    **Accept:** Submitting feedback cannot approve an invoice or expand client access.
 
-**Proposed flow and records:** Custom domains have no approved routing/cookie/TLS contract in current docs; Q-10/Q-11 and an explicit architecture/security decision gate further detail.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+  - [ ] <a id="f29-15"></a>**F29.15 — Client-view preview** · `E`
 
-**Accept:** An unverified host cannot serve another tenant's portal or auth cookies.
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open); [Client portal](docs/architecture/sync-and-collaboration.md#client-portal); [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Deliver:** Provide a read-only publication preview using the actual recipient projection.
 
-#### F29.18 — Client request queue
+    **Proposed flow and records:** Read-only client preview remains proposed reuse of the actual publication projection, without impersonation, sending, signatures or payments.
 
-- [ ] **E · Deliver:** Let clients submit support/change requests with attachment and status limits.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Proposed flow and records:** Client request submission remains proposed reviewed input; convert a request through task/scope-change services rather than automatically accepting new commercial obligations.
+    **Accept:** Preview actions cannot send, sign, pay or impersonate the client.
 
-**Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-**Accept:** A request never changes contracted scope or creates billable time automatically.
+  - [ ] <a id="f29-16"></a>**F29.16 — Branded portal presentation** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
+    **Requires:** [F03.06](#f03-06), [F29.03](#f29-03), [F03.13](#f03-13)
+
+    **Deliver:** Apply approved business logo/text within accessible shared tokens.
+
+    **Proposed flow and records:** Portal branding remains proposed constrained use of current design-system tokens and allowed identity fields; mandatory seller/security disclosures remain intact.
+
+    **Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
+
+    **Accept:** Branding cannot inject CSS/scripts or hide mandatory identity/disclosure fields.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Components](DESIGN.md#components).
+
+  - [ ] <a id="f29-17"></a>**F29.17 — Portal custom domain** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F29.16](#f29-16), [F40.01](#f40-01)
+
+    **Deliver:** Verify domain ownership and review cookies, TLS and tenant routing.
+
+    **Proposed flow and records:** Custom domains have no approved routing/cookie/TLS contract in current docs; Q-10/Q-11 and an explicit architecture/security decision gate further detail.
+
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+
+    **Accept:** An unverified host cannot serve another tenant's portal or auth cookies.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open); [Client portal](docs/architecture/sync-and-collaboration.md#client-portal); [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+
+  - [ ] <a id="f29-18"></a>**F29.18 — Client request queue** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F29.02](#f29-02), [F31.09](#f31-09)
+
+    **Deliver:** Let clients submit support/change requests with attachment and status limits.
+
+    **Proposed flow and records:** Client request submission remains proposed reviewed input; convert a request through task/scope-change services rather than automatically accepting new commercial obligations.
+
+    **Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+
+    **Accept:** A request never changes contracted scope or creates billable time automatically.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
 
 <a id="category-30"></a>
 
 ### 9.30 Developer API, jobs and deterministic automation
 
-**Owner/package:** P07. **Prerequisites for each phase:** F03.06/F05.05; P01.3 durable outbox; relevant source services. **Optional extension wave:** X3.
+**Owner/package:** P07. **Original branch context (specific Requires below governs feature order):** F03.06/F05.05; P01.3 durable outbox; relevant source services. **Optional extension wave:** X3.
 
 **Authority:** INT-008–012. Typed allowlists only; no user JavaScript/SQL and no AI agents.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F30.01 — Scoped API tokens
+- **F30 — Developer API, jobs and deterministic automation**
 
-- [ ] **S · Deliver:** Issue expiring revocable credentials whose grants cannot exceed their issuer.
+  - [ ] <a id="f30-01"></a>**F30.01 — Scoped API tokens** · `S`
 
-**Flow and records:** Scope API credentials to revocable capabilities/resources and per-tenant limits; issuing a token cannot exceed or permanently preserve the actor's authority.
+    **Requires:** [F03.06](#f03-06), [F02.07](#f02-07)
 
-**Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+    **Deliver:** Issue expiring revocable credentials whose grants cannot exceed their issuer.
 
-**Accept:** Removing the issuing member immediately blocks protected token actions.
+    **Flow and records:** Scope API credentials to revocable capabilities/resources and per-tenant limits; issuing a token cannot exceed or permanently preserve the actor's authority.
 
-**Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+    **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
 
-#### F30.02 — Versioned API contracts
+    **Accept:** Removing the issuing member immediately blocks protected token actions.
 
-- [ ] **S · Deliver:** Publish bounded schemas, cursor pagination, errors and compatibility policy.
+    **Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
 
-**Flow and records:** Declare supported version/envelope, bounded payloads/cursors, errors and idempotent commands; exact endpoint schemas are approved phase-level implementation work.
+  - [ ] <a id="f30-02"></a>**F30.02 — Versioned API contracts** · `S`
 
-**Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+    **Requires:** [F03.06](#f03-06), [F30.01](#f30-01), [F05.05](#f05-05)
 
-**Accept:** Unsupported fields/versions fail explicitly without silent data mutation.
+    **Deliver:** Publish bounded schemas, cursor pagination, errors and compatibility policy.
 
-**Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+    **Flow and records:** Declare supported version/envelope, bounded payloads/cursors, errors and idempotent commands; exact endpoint schemas are approved phase-level implementation work.
 
-#### F30.03 — Incoming webhook handlers
+    **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
 
-- [ ] **S · Deliver:** Validate provider signature, size, timestamp and event identity.
+    **Accept:** Unsupported fields/versions fail explicitly without silent data mutation.
 
-**Flow and records:** Bound and verify incoming provider events before dispatch; untrusted callback workspace/role/SQL/template fields never grant trusted authority.
+    **Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
 
-**Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+  - [ ] <a id="f30-03"></a>**F30.03 — Incoming webhook handlers** · `S`
 
-**Accept:** Forged, replayed or wrong-tenant events cannot invoke domain effects.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04), [F38.06](#f38-06)
 
-**Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+    **Deliver:** Validate provider signature, size, timestamp and event identity.
 
-#### F30.04 — Outgoing webhooks
+    **Inspected source status:** PARTIAL/GATED: auth email webhook code exists; generalized scoped business-provider inboxes remain pending.
 
-- [ ] **S · Deliver:** Send signed event IDs to reviewed HTTPS destinations with replay-safe retry.
+    **Flow and records:** Bound and verify incoming provider events before dispatch; untrusted callback workspace/role/SQL/template fields never grant trusted authority.
 
-**Flow and records:** Sign outgoing payload/event identity and use reviewed HTTPS destinations with retry/rotation; prevent private-network access through redirects or DNS targeting.
+    **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
 
-**Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+    **Accept:** Forged, replayed or wrong-tenant events cannot invoke domain effects.
 
-**Accept:** Redirects to private/metadata addresses are rejected before network access.
+    **Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
 
-**Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+  - [ ] <a id="f30-04"></a>**F30.04 — Outgoing webhooks** · `S`
 
-#### F30.05 — Durable job engine
+    **Requires:** [F03.06](#f03-06), [F30.05](#f30-05), [F30.03](#f30-03)
 
-- [ ] **S · Deliver:** Lease bounded work with checkpoints, retry state and dead letters.
+    **Deliver:** Send signed event IDs to reviewed HTTPS destinations with replay-safe retry.
 
-**Flow and records:** Persist occurrence, attempt, lease/checkpoint and result state; at-least-once worker invocation yields idempotent effects rather than exactly-once transport claims.
+    **Flow and records:** Sign outgoing payload/event identity and use reviewed HTTPS destinations with retry/rotation; prevent private-network access through redirects or DNS targeting.
 
-**Documented constraints:** Durable leased jobs have bounded retries/checkpoints and idempotent effects; cancellation/current grants are rechecked before external side effects.
+    **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
 
-**Accept:** Two workers or a lease expiry cannot duplicate an invoice/payment effect.
+    **Accept:** Redirects to private/metadata addresses are rejected before network access.
 
-**Docs basis:** Documented parent requirement/contract: [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
+    **Docs basis:** Documented parent requirement/contract: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
 
-#### F30.06 — Typed rule builder
+  - [ ] <a id="f30-05"></a>**F30.05 — Durable job engine** · `S`
 
-- [ ] **S · Deliver:** Configure owner, trigger, allowlisted conditions/actions, scope and limits.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04)
 
-**Flow and records:** Author typed trigger/conditions/actions, owner/scope, recipients, timezone, quiet hours/cooldown and run limits using allowlisted operators only.
+    **Deliver:** Lease bounded work with checkpoints, retry state and dead letters.
 
-**Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
+    **Flow and records:** Persist occurrence, attempt, lease/checkpoint and result state; at-least-once worker invocation yields idempotent effects rather than exactly-once transport claims.
 
-**Accept:** An arbitrary script or unauthorized field is rejected by direct service input.
+    **Documented constraints:** Durable leased jobs have bounded retries/checkpoints and idempotent effects; cancellation/current grants are rechecked before external side effects.
 
-**Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
+    **Accept:** Two workers or a lease expiry cannot duplicate an invoice/payment effect.
 
-#### F30.07 — Event-triggered rules
+    **Docs basis:** Documented parent requirement/contract: [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
 
-- [ ] **S · Deliver:** React to accepted domain events with stable event/occurrence identity.
+  - [ ] <a id="f30-06"></a>**F30.06 — Typed rule builder** · `S`
 
-**Flow and records:** Consume accepted domain events under stable identity; generated tasks/drafts use ordinary validated services with current grants and source revisions.
+    **Requires:** [F03.06](#f03-06), [F30.05](#f30-05)
 
-**Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
+    **Deliver:** Configure owner, trigger, allowlisted conditions/actions, scope and limits.
 
-**Accept:** A duplicated event does not recreate its draft or task.
+    **Flow and records:** Author typed trigger/conditions/actions, owner/scope, recipients, timezone, quiet hours/cooldown and run limits using allowlisted operators only.
 
-**Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
+    **Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
 
-#### F30.08 — Scheduled rules
+    **Accept:** An arbitrary script or unauthorized field is rejected by direct service input.
 
-- [ ] **S · Deliver:** Execute timezone-aware schedules with explicit missed-run policy.
+    **Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
 
-**Flow and records:** Compute explicit scheduled occurrence IDs with timezone/month-end and missed-run policy; the server, not an open browser, runs enabled schedules.
+  - [ ] <a id="f30-07"></a>**F30.07 — Event-triggered rules** · `S`
 
-**Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
+    **Requires:** [F03.06](#f03-06), [F30.06](#f30-06)
 
-**Accept:** Month-end/DST catch-up produces only supported occurrence IDs.
+    **Deliver:** React to accepted domain events with stable event/occurrence identity.
 
-**Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
+    **Flow and records:** Consume accepted domain events under stable identity; generated tasks/drafts use ordinary validated services with current grants and source revisions.
 
-#### F30.09 — Threshold rules
+    **Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
 
-- [ ] **S · Deliver:** Notify once per configured crossing with visible source/policy.
+    **Accept:** A duplicated event does not recreate its draft or task.
 
-**Flow and records:** Use named threshold source/version and once-per-crossing/cooldown rules with incomplete-data handling; rule effects remain separately permitted.
+    **Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
 
-**Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
+  - [ ] <a id="f30-08"></a>**F30.08 — Scheduled rules** · `S`
 
-**Accept:** A value hovering at the threshold cannot create an unbounded notification storm.
+    **Requires:** [F03.06](#f03-06), [F30.06](#f30-06)
 
-**Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
+    **Deliver:** Execute timezone-aware schedules with explicit missed-run policy.
 
-#### F30.10 — Rule dry-run
+    **Flow and records:** Compute explicit scheduled occurrence IDs with timezone/month-end and missed-run policy; the server, not an open browser, runs enabled schedules.
 
-- [ ] **S · Deliver:** Preview matched authorized records and proposed effects without external actions.
+    **Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
 
-**Flow and records:** Preview matched allowed records and consequences without mutation or external effect; dry-run cannot send, issue or reserve source ownership.
+    **Accept:** Month-end/DST catch-up produces only supported occurrence IDs.
 
-**Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
+    **Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
 
-**Accept:** Dry-run cannot issue, send or write a posting.
+  - [ ] <a id="f30-09"></a>**F30.09 — Threshold rules** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
+    **Requires:** [F03.06](#f03-06), [F30.06](#f30-06)
 
-#### F30.11 — Protected send and issue rules
+    **Deliver:** Notify once per configured crossing with visible source/policy.
 
-- [ ] **S · Deliver:** Require separate enabled policy and current authority for consequential actions.
+    **Flow and records:** Use named threshold source/version and once-per-crossing/cooldown rules with incomplete-data handling; rule effects remain separately permitted.
 
-**Flow and records:** Enable send/issue separately from draft creation and recheck consent, current owner grants, recipients/balance and document state immediately before execution.
+    **Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
 
-**Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
+    **Accept:** A value hovering at the threshold cannot create an unbounded notification storm.
 
-**Accept:** Owner removal or balance changes block execution immediately before effects.
+    **Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
 
-**Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
+  - [ ] <a id="f30-10"></a>**F30.10 — Rule dry-run** · `S`
 
-#### F30.12 — Rule loop protection
+    **Requires:** [F03.06](#f03-06), [F30.06](#f30-06)
 
-- [ ] **S · Deliver:** Bound cascades, recursion, run counts and per-tenant cost.
+    **Deliver:** Preview matched authorized records and proposed effects without external actions.
 
-**Flow and records:** Bound trigger cascades, depth, runtime and run counts; suspend loops with auditable repair rather than retrying an unlimited chain.
+    **Flow and records:** Preview matched allowed records and consequences without mutation or external effect; dry-run cannot send, issue or reserve source ownership.
 
-**Documented constraints:** Durable leased jobs have bounded retries/checkpoints and idempotent effects; cancellation/current grants are rechecked before external side effects.
+    **Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
 
-**Accept:** A self-triggering update suspends safely with a repairable record.
+    **Accept:** Dry-run cannot issue, send or write a posting.
 
-**Docs basis:** Documented parent requirement/contract: [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
+    **Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
 
-#### F30.13 — Job operations dashboard
+  - [ ] <a id="f30-11"></a>**F30.11 — Protected send and issue rules** · `S`
 
-- [ ] **S · Deliver:** Show attempts, redacted failures, retry timing, dead letters and scoped repair.
+    **Requires:** [F03.06](#f03-06), [F30.10](#f30-10), [F20.01](#f20-01), [F27.03](#f27-03)
 
-**Flow and records:** Expose scoped queue/running/retry/review/cancel/dead-letter outcomes, last success and redacted diagnostics with safe repair actions.
+    **Deliver:** Require separate enabled policy and current authority for consequential actions.
 
-**Documented constraints:** Expose health, quotas, backlog and redacted outcomes; bounded backoff honors provider limits and cost caps pause nonessential work without dropping money facts.
+    **Flow and records:** Enable send/issue separately from draft creation and recheck consent, current owner grants, recipients/balance and document state immediately before execution.
 
-**Accept:** Repairing a failed job cannot reexecute a known completed financial effect.
+    **Documented constraints:** Rules use typed allowlisted fields/operators/actions, explicit owner/scope and preview; sends/issue need separate permission and authority rechecks.
 
-**Docs basis:** Documented parent requirement/contract: [INT-012 — Reconciliation, audit and cost controls](docs/specs/integrations-and-automation.md#int-012--reconciliation-audit-and-cost-controls).
+    **Accept:** Owner removal or balance changes block execution immediately before effects.
 
-#### F30.14 — Emergency automation stop
+    **Docs basis:** Documented parent requirement/contract: [INT-009 — Rule builder](docs/specs/integrations-and-automation.md#int-009--rule-builder).
 
-- [ ] **S · Deliver:** Pause future tenant/provider effects with an audited stop switch.
+  - [ ] <a id="f30-12"></a>**F30.12 — Rule loop protection** · `S`
 
-**Flow and records:** Stop future effects under an audited control while checking cancellation at the side-effect boundary; no promise to recall already-sent money/email.
+    **Requires:** [F03.06](#f03-06), [F30.06](#f30-06)
 
-**Documented constraints:** Durable leased jobs have bounded retries/checkpoints and idempotent effects; cancellation/current grants are rechecked before external side effects.
+    **Deliver:** Bound cascades, recursion, run counts and per-tenant cost.
 
-**Accept:** Already-sent messages remain honestly irreversible while unsent work stops.
+    **Flow and records:** Bound trigger cascades, depth, runtime and run counts; suspend loops with auditable repair rather than retrying an unlimited chain.
 
-**Docs basis:** Documented parent requirement/contract: [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
+    **Documented constraints:** Durable leased jobs have bounded retries/checkpoints and idempotent effects; cancellation/current grants are rechecked before external side effects.
 
-#### F30.15 — Webhook delivery console
+    **Accept:** A self-triggering update suspends safely with a repairable record.
 
-- [ ] **E · Deliver:** Inspect redacted delivery attempts and replay selected events under current grants.
+    **Docs basis:** Documented parent requirement/contract: [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
 
-**Proposed flow and records:** Delivery inspection/replay is proposed API tooling; retain original event identity, redact payloads and revalidate scope before any replay.
+  - [ ] <a id="f30-13"></a>**F30.13 — Job operations dashboard** · `S`
 
-**Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+    **Requires:** [F03.06](#f03-06), [F30.05](#f30-05)
 
-**Accept:** Replaying one event preserves its identity and cannot leak another tenant's payload.
+    **Deliver:** Show attempts, redacted failures, retry timing, dead letters and scoped repair.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+    **Flow and records:** Expose scoped queue/running/retry/review/cancel/dead-letter outcomes, last success and redacted diagnostics with safe repair actions.
 
-#### F30.16 — No-code integration adapter
+    **Documented constraints:** Expose health, quotas, backlog and redacted outcomes; bounded backoff honors provider limits and cost caps pause nonessential work without dropping money facts.
 
-- [ ] **E · Deliver:** Expose reviewed Zapier/Make-style triggers/actions using the same API grants.
+    **Accept:** Repairing a failed job cannot reexecute a known completed financial effect.
 
-**Proposed flow and records:** No-code platforms are proposed consumers of the same scoped API; select concrete platform/data-sharing contract without creating a bypass for paid or privileged actions.
+    **Docs basis:** Documented parent requirement/contract: [INT-012 — Reconciliation, audit and cost controls](docs/specs/integrations-and-automation.md#int-012--reconciliation-audit-and-cost-controls).
 
-**Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+  - [ ] <a id="f30-14"></a>**F30.14 — Emergency automation stop** · `S`
 
-**Accept:** Third-party flows cannot bypass quotas, validation or invoice authority.
+    **Requires:** [F03.06](#f03-06), [F30.05](#f30-05)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+    **Deliver:** Pause future tenant/provider effects with an audited stop switch.
 
-#### F30.17 — Developer sandbox
+    **Flow and records:** Stop future effects under an audited control while checking cancellation at the side-effect boundary; no promise to recall already-sent money/email.
 
-- [ ] **E · Deliver:** Provide synthetic fixtures and isolated credentials for integration trials.
+    **Documented constraints:** Durable leased jobs have bounded retries/checkpoints and idempotent effects; cancellation/current grants are rechecked before external side effects.
 
-**Proposed flow and records:** A developer sandbox remains proposed isolated synthetic environment/credentials with distinct callbacks and grants; it cannot reuse production tenant authority.
+    **Accept:** Already-sent messages remain honestly irreversible while unsent work stops.
 
-**Documented constraints:** Separate environments/credentials and synthetic preview data; deploy reviewed server-capable builds with compatible migrations and current ingress/auth/cache verification.
+    **Docs basis:** Documented parent requirement/contract: [INT-010 — Safe job execution](docs/specs/integrations-and-automation.md#int-010--safe-job-execution).
 
-**Accept:** Sandbox callbacks cannot post into production tenant data.
+  - [ ] <a id="f30-15"></a>**F30.15 — Webhook delivery console** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Environments and delivery](docs/operations/release-and-support.md#environments-and-delivery); [INT-002 — Authorization and secret handling](docs/specs/integrations-and-automation.md#int-002--authorization-and-secret-handling).
+    **Requires:** [F03.06](#f03-06), [F30.04](#f30-04), [F30.13](#f30-13)
+
+    **Deliver:** Inspect redacted delivery attempts and replay selected events under current grants.
+
+    **Proposed flow and records:** Delivery inspection/replay is proposed API tooling; retain original event identity, redact payloads and revalidate scope before any replay.
+
+    **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+
+    **Accept:** Replaying one event preserves its identity and cannot leak another tenant's payload.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+
+  - [ ] <a id="f30-16"></a>**F30.16 — No-code integration adapter** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F30.02](#f30-02), [F30.04](#f30-04)
+
+    **Deliver:** Expose reviewed Zapier/Make-style triggers/actions using the same API grants.
+
+    **Proposed flow and records:** No-code platforms are proposed consumers of the same scoped API; select concrete platform/data-sharing contract without creating a bypass for paid or privileged actions.
+
+    **Documented constraints:** Tokens are scoped/revocable and bounded; webhooks use signatures/event IDs and reject private-network/redirect SSRF or privilege-bearing payloads.
+
+    **Accept:** Third-party flows cannot bypass quotas, validation or invoice authority.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-008 — External API/webhooks](docs/specs/integrations-and-automation.md#int-008--external-apiwebhooks).
+
+  - [ ] <a id="f30-17"></a>**F30.17 — Developer sandbox** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F30.02](#f30-02), [F38.01](#f38-01)
+
+    **Deliver:** Provide synthetic fixtures and isolated credentials for integration trials.
+
+    **Proposed flow and records:** A developer sandbox remains proposed isolated synthetic environment/credentials with distinct callbacks and grants; it cannot reuse production tenant authority.
+
+    **Documented constraints:** Separate environments/credentials and synthetic preview data; deploy reviewed server-capable builds with compatible migrations and current ingress/auth/cache verification.
+
+    **Accept:** Sandbox callbacks cannot post into production tenant data.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Environments and delivery](docs/operations/release-and-support.md#environments-and-delivery); [INT-002 — Authorization and secret handling](docs/specs/integrations-and-automation.md#int-002--authorization-and-secret-handling).
 
 <a id="category-31"></a>
 
 ### 9.31 Forms, intake and service requests
 
-**Owner/package:** P02/P03/P08. **Prerequisites for each phase:** F08.09/F11.01 base forms; F03.06; portal publication F29.02. **Optional extension wave:** X1.
+**Owner/package:** P02/P03/P08. **Original branch context (specific Requires below governs feature order):** F08.09/F11.01 base forms; F03.06; portal publication F29.02. **Optional extension wave:** X1.
 
 **Authority:** Research extension family from Dubsado/HoneyBook/Plutio; schema validation and abuse limits remain mandatory.
 
-**Research context:** [Dubsado feature overview](https://www.dubsado.com/feature-overview). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F31.01 — Reusable form schemas
+- **F31 — Forms, intake and service requests**
 
-- [ ] **E · Deliver:** Define bounded text/choice/date/file fields with typed validation.
+  - [ ] <a id="f31-01"></a>**F31.01 — Reusable form schemas** · `E`
 
-**Proposed flow and records:** Reusable form schemas remain an extension over questionnaires/custom fields; select supported field types and validation without trusting submissions to set roles or price authority.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+    **Deliver:** Define bounded text/choice/date/file fields with typed validation.
 
-**Accept:** An unknown field cannot set role, price or trusted system metadata.
+    **Proposed flow and records:** Reusable form schemas remain an extension over questionnaires/custom fields; select supported field types and validation without trusting submissions to set roles or price authority.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-#### F31.02 — Conditional form fields
+    **Accept:** An unknown field cannot set role, price or trusted system metadata.
 
-- [ ] **E · Deliver:** Show reviewed field branches using allowlisted conditions.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-**Proposed flow and records:** Conditional branching has no approved rule language in current docs; define bounded predicates, required-field semantics and cycle rejection before implementation.
+  - [ ] <a id="f31-02"></a>**F31.02 — Conditional form fields** · `E`
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+    **Requires:** [F03.06](#f03-06), [F31.01](#f31-01)
 
-**Accept:** Hidden required fields and cycles cannot trap a user or bypass validation.
+    **Deliver:** Show reviewed field branches using allowlisted conditions.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+    **Proposed flow and records:** Conditional branching has no approved rule language in current docs; define bounded predicates, required-field semantics and cycle rejection before implementation.
 
-#### F31.03 — Form versioning
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-- [ ] **E · Deliver:** Freeze the schema shown to a respondent and preserve submitted answers.
+    **Accept:** Hidden required fields and cycles cannot trap a user or bypass validation.
 
-**Proposed flow and records:** Form versioning is proposed specialization of versioned questionnaires/templates; preserve which schema and prompt text a response actually answered.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+  - [ ] <a id="f31-03"></a>**F31.03 — Form versioning** · `E`
 
-**Accept:** Changing a questionnaire leaves previous responses interpretable.
+    **Requires:** [F03.06](#f03-06), [F31.01](#f31-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+    **Deliver:** Freeze the schema shown to a respondent and preserve submitted answers.
 
-#### F31.04 — Form draft completion
+    **Proposed flow and records:** Form versioning is proposed specialization of versioned questionnaires/templates; preserve which schema and prompt text a response actually answered.
 
-- [ ] **E · Deliver:** Allow approved save/resume with purpose-bound identity and expiry.
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-**Proposed flow and records:** Resume behavior remains proposed recipient/expiry/draft policy; protected browser answers cannot persist until the existing offline key/recovery gate passes.
+    **Accept:** Changing a questionnaire leaves previous responses interpretable.
 
-**Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-**Accept:** An expired or forwarded resume link cannot expose protected answers.
+  - [ ] <a id="f31-04"></a>**F31.04 — Form draft completion** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
+    **Requires:** [F03.06](#f03-06), [F31.03](#f31-03), [F05.02](#f05-02)
 
-#### F31.05 — Form submission routing
+    **Deliver:** Allow approved save/resume with purpose-bound identity and expiry.
 
-- [ ] **E · Deliver:** Assign reviewed responses to the correct workspace/client/project queue.
+    **Proposed flow and records:** Resume behavior remains proposed recipient/expiry/draft policy; protected browser answers cannot persist until the existing offline key/recovery gate passes.
 
-**Proposed flow and records:** Submission routing remains proposed mapping into permitted client/project/onboarding records; choose routing policy and never accept payload tenant IDs as authority.
+    **Documented constraints:** Protected persistence stays disabled until Q-06/Q-07 proof; atomic IndexedDB save handles denial/eviction/key loss without a fake durable acknowledgement.
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+    **Accept:** An expired or forwarded resume link cannot expose protected answers.
 
-**Accept:** User-supplied routing IDs cannot redirect submissions across tenants.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Offline-draft security and persistence gate](docs/architecture/sync-and-collaboration.md#offline-draft-security-and-persistence-gate).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+  - [ ] <a id="f31-05"></a>**F31.05 — Form submission routing** · `E`
 
-#### F31.06 — Form attachment intake
+    **Requires:** [F03.06](#f03-06), [F31.03](#f31-03), [F38.06](#f38-06)
 
-- [ ] **E · Deliver:** Stage bounded uploads under the shared quarantine/access policy.
+    **Deliver:** Assign reviewed responses to the correct workspace/client/project queue.
 
-**Proposed flow and records:** Attachment intake remains proposed reuse of staged private-file verification; keep unverified bytes separate from committed answers/readiness evidence.
+    **Proposed flow and records:** Submission routing remains proposed mapping into permitted client/project/onboarding records; choose routing policy and never accept payload tenant IDs as authority.
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-**Accept:** Submission success cannot publish an unverified attachment.
+    **Accept:** User-supplied routing IDs cannot redirect submissions across tenants.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-#### F31.07 — Form response review
+  - [ ] <a id="f31-06"></a>**F31.06 — Form attachment intake** · `E`
 
-- [ ] **E · Deliver:** Review incomplete/duplicate submissions before converting them into business records.
+    **Requires:** [F03.06](#f03-06), [F31.03](#f31-03), [F15.03](#f15-03)
 
-**Proposed flow and records:** Review/conversion remains proposed staged-import behavior: preview mapping, source identity, duplicates and unresolved errors before creating accepted business records.
+    **Deliver:** Stage bounded uploads under the shared quarantine/access policy.
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Proposed flow and records:** Attachment intake remains proposed reuse of staged private-file verification; keep unverified bytes separate from committed answers/readiness evidence.
 
-**Accept:** Replaying a submission cannot create a duplicate lead or task.
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Accept:** Submission success cannot publish an unverified attachment.
 
-#### F31.08 — Embeddable intake form
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-- [ ] **E · Deliver:** Offer a reviewed embed with explicit frame, origin and abuse policy.
+  - [ ] <a id="f31-07"></a>**F31.07 — Form response review** · `E`
 
-**Proposed flow and records:** Embedded forms have no approved frame/origin/security contract; distinguish public intake from authenticated portal/workspace pages and review any new exposure boundary.
+    **Requires:** [F03.06](#f03-06), [F31.05](#f31-05)
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Deliver:** Review incomplete/duplicate submissions before converting them into business records.
 
-**Accept:** Embedding a public form cannot embed the authenticated workspace.
+    **Proposed flow and records:** Review/conversion remains proposed staged-import behavior: preview mapping, source identity, duplicates and unresolved errors before creating accepted business records.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal); [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure).
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-#### F31.09 — Service request classification
+    **Accept:** Replaying a submission cannot create a duplicate lead or task.
 
-- [ ] **E · Deliver:** Categorize bugs, support work and scope changes with explicit commercial review.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Proposed flow and records:** Request classification remains proposed commercial triage; bugs/support/scope requests still require an explicit accepted baseline change before new obligations apply.
+  - [ ] <a id="f31-08"></a>**F31.08 — Embeddable intake form** · `E`
 
-**Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+    **Requires:** [F03.06](#f03-06), [F31.05](#f31-05), [F38.07](#f38-07)
 
-**Accept:** A bug report never automatically becomes accepted out-of-scope billing.
+    **Deliver:** Offer a reviewed embed with explicit frame, origin and abuse policy.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
+    **Proposed flow and records:** Embedded forms have no approved frame/origin/security contract; distinguish public intake from authenticated portal/workspace pages and review any new exposure boundary.
 
-#### F31.10 — Request status communication
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-- [ ] **E · Deliver:** Publish selected queue status and responses to the intended requester.
+    **Accept:** Embedding a public form cannot embed the authenticated workspace.
 
-**Proposed flow and records:** Requester-visible status remains proposed publication of selected responses; internal notes, triage costs and other clients' requests stay excluded.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal); [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure).
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+  - [ ] <a id="f31-09"></a>**F31.09 — Service request classification** · `E`
 
-**Accept:** Internal triage notes and other clients' requests remain private.
+    **Requires:** [F03.06](#f03-06), [F31.05](#f31-05), [F13.01](#f13-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+    **Deliver:** Categorize bugs, support work and scope changes with explicit commercial review.
+
+    **Proposed flow and records:** Request classification remains proposed commercial triage; bugs/support/scope requests still require an explicit accepted baseline change before new obligations apply.
+
+    **Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+
+    **Accept:** A bug report never automatically becomes accepted out-of-scope billing.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
+
+  - [ ] <a id="f31-10"></a>**F31.10 — Request status communication** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F31.09](#f31-09), [F29.02](#f29-02)
+
+    **Deliver:** Publish selected queue status and responses to the intended requester.
+
+    **Proposed flow and records:** Requester-visible status remains proposed publication of selected responses; internal notes, triage costs and other clients' requests stay excluded.
+
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+
+    **Accept:** Internal triage notes and other clients' requests remain private.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
 <a id="category-32"></a>
 
 ### 9.32 Meeting booking and availability
 
-**Owner/package:** P02/P07/P08. **Prerequisites for each phase:** F08.11/F14.10; F28.03 or F28.04 for connected calendars; Q-09. **Optional extension wave:** X3.
+**Owner/package:** P02/P07/P08. **Original branch context (specific Requires below governs feature order):** F08.11/F14.10; F28.03 or F28.04 for connected calendars; Q-09. **Optional extension wave:** X3.
 
 **Authority:** Research extension family from HoneyBook, Dubsado and Cal.com; booking does not prove time worked.
 
-**Research context:** [HoneyBook booking prerequisites](https://help.honeybook.com/en/articles/6854513-add-scheduling-to-honeybook-smart-files), [Dubsado scheduling](https://help.dubsado.com/en/articles/15546565-intro-to-scheduling-in-dubsado), [Cal.com scheduling options](https://cal.com/pricing). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F32.01 — Booking service types
+- **F32 — Meeting booking and availability**
 
-- [ ] **E · Deliver:** Define meeting duration, host, location, notice and calendar timezone.
+  - [ ] <a id="f32-01"></a>**F32.01 — Booking service types** · `E`
 
-**Proposed flow and records:** Booking service types remain proposed activity templates; approve host, duration, location and date/time policy before treating a request as confirmed availability.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Deliver:** Define meeting duration, host, location, notice and calendar timezone.
 
-**Accept:** An unavailable or disabled service cannot receive a confirmed booking.
+    **Proposed flow and records:** Booking service types remain proposed activity templates; approve host, duration, location and date/time policy before treating a request as confirmed availability.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
 
-#### F32.02 — Booking availability windows
+    **Accept:** An unavailable or disabled service cannot receive a confirmed booking.
 
-- [ ] **E · Deliver:** Apply working hours, buffers, holidays, minimum notice and booking horizon.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
-**Proposed flow and records:** Availability windows remain proposed use of working calendars and selected busy intervals; notice/buffer/horizon values are not supplied by current docs.
+  - [ ] <a id="f32-02"></a>**F32.02 — Booking availability windows** · `E`
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Requires:** [F03.06](#f03-06), [F32.01](#f32-01), [F14.03](#f14-03)
 
-**Accept:** A DST transition never creates an impossible local slot.
+    **Deliver:** Apply working hours, buffers, holidays, minimum notice and booking horizon.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Proposed flow and records:** Availability windows remain proposed use of working calendars and selected busy intervals; notice/buffer/horizon values are not supplied by current docs.
 
-#### F32.03 — Booking reservation
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
 
-- [ ] **E · Deliver:** Hold and confirm one slot with concurrency-safe expiry.
+    **Accept:** A DST transition never creates an impossible local slot.
 
-**Proposed flow and records:** Concurrent slot holding is not a documented baseline state machine; approve hold identity, expiry and confirmation rules before implementing reservation authority.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+  - [ ] <a id="f32-03"></a>**F32.03 — Booking reservation** · `E`
 
-**Accept:** Two simultaneous customers cannot confirm a single-host slot twice.
+    **Requires:** [F03.06](#f03-06), [F32.02](#f32-02), [F38.04](#f38-04)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Deliver:** Hold and confirm one slot with concurrency-safe expiry.
 
-#### F32.04 — Booking reschedule and cancel
+    **Proposed flow and records:** Concurrent slot holding is not a documented baseline state machine; approve hold identity, expiry and confirmation rules before implementing reservation authority.
 
-- [ ] **E · Deliver:** Use scoped expiring actions and retain prior timing history.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Proposed flow and records:** Reschedule/cancel actions remain proposed event-version changes; define recipient verification and retain source mapping/history so stale actions cannot affect replacement events.
+    **Accept:** Two simultaneous customers cannot confirm a single-host slot twice.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-**Accept:** A stale cancellation token cannot cancel a replacement booking.
+  - [ ] <a id="f32-04"></a>**F32.04 — Booking reschedule and cancel** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Requires:** [F03.06](#f03-06), [F32.03](#f32-03)
 
-#### F32.05 — Booking intake questions
+    **Deliver:** Use scoped expiring actions and retain prior timing history.
 
-- [ ] **E · Deliver:** Collect approved session questions linked to the booking version.
+    **Proposed flow and records:** Reschedule/cancel actions remain proposed event-version changes; define recipient verification and retain source mapping/history so stale actions cannot affect replacement events.
 
-**Proposed flow and records:** Booking questions remain proposed questionnaire instances tied to the intended client/engagement rather than an unrestricted personal-data form.
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-**Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
+    **Accept:** A stale cancellation token cannot cancel a replacement booking.
 
-**Accept:** Answers cannot expose another attendee's personal data.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
+  - [ ] <a id="f32-05"></a>**F32.05 — Booking intake questions** · `E`
 
-#### F32.06 — Booking reminders
+    **Requires:** [F03.06](#f03-06), [F32.03](#f32-03), [F31.01](#f31-01)
 
-- [ ] **E · Deliver:** Deliver opted-in reminders from current booking facts.
+    **Deliver:** Collect approved session questions linked to the booking version.
 
-**Proposed flow and records:** Booking reminders remain proposed source-event notices; recheck the latest session time/cancellation and approved channel before delivery.
+    **Proposed flow and records:** Booking questions remain proposed questionnaire instances tied to the intended client/engagement rather than an unrestricted personal-data form.
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Documented constraints:** Readiness uses explicit blocking items, owner verification and documented waivers; templates cannot erase answers or store access credentials.
 
-**Accept:** Canceled or moved sessions suppress stale queued reminders.
+    **Accept:** Answers cannot expose another attendee's personal data.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-008 — Onboarding, questionnaires, and access readiness](docs/specs/client-lifecycle.md#crm-008--onboarding-questionnaires-and-access-readiness).
 
-#### F32.07 — Group booking capacity
+  - [ ] <a id="f32-06"></a>**F32.06 — Booking reminders** · `E`
 
-- [ ] **E · Deliver:** Enforce explicit seat capacity and participant privacy.
+    **Requires:** [F03.06](#f03-06), [F32.03](#f32-03), [F06.06](#f06-06)
 
-**Proposed flow and records:** Group booking is not currently specified; select capacity, concurrency and participant-privacy rules without exposing calendar titles or other attendee identities.
+    **Deliver:** Deliver opted-in reminders from current booking facts.
 
-**Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
+    **Proposed flow and records:** Booking reminders remain proposed source-event notices; recheck the latest session time/cancellation and approved channel before delivery.
 
-**Accept:** Concurrent reservations cannot exceed remaining seats.
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Accept:** Canceled or moved sessions suppress stale queued reminders.
 
-#### F32.08 — Team round-robin booking
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-- [ ] **E · Deliver:** Choose eligible hosts by reviewed availability/routing rules.
+  - [ ] <a id="f32-07"></a>**F32.07 — Group booking capacity** · `E`
 
-**Proposed flow and records:** Round-robin host routing is an extension beyond documented capacity suggestions; choose assignment/fairness policy and current host eligibility before confirmation.
+    **Requires:** [F03.06](#f03-06), [F32.03](#f32-03)
 
-**Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
+    **Deliver:** Enforce explicit seat capacity and participant privacy.
 
-**Accept:** A removed or unavailable member cannot receive a new confirmed session.
+    **Proposed flow and records:** Group booking is not currently specified; select capacity, concurrency and participant-privacy rules without exposing calendar titles or other attendee identities.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
+    **Documented constraints:** Map selected events by external ID/revision, preserve private fields and timezone exceptions; invitations need separate consent and events are not work evidence.
 
-#### F32.09 — Paid booking prerequisite
+    **Accept:** Concurrent reservations cannot exceed remaining seats.
 
-- [ ] **E · Deliver:** Confirm only after verified payment under explicit cancellation/refund terms.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
-**Proposed flow and records:** Payment-conditioned booking lacks an approved commercial state contract; verified hosted-provider capture is necessary but refund/hold/cancel terms still need decisions.
+  - [ ] <a id="f32-08"></a>**F32.08 — Team round-robin booking** · `E`
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+    **Requires:** [F03.06](#f03-06), [F32.02](#f32-02)
 
-**Accept:** A checkout return URL alone cannot confirm payment or reserve forever.
+    **Deliver:** Choose eligible hosts by reviewed availability/routing rules.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers); [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar); [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+    **Proposed flow and records:** Round-robin host routing is an extension beyond documented capacity suggestions; choose assignment/fairness policy and current host eligibility before confirmation.
 
-#### F32.10 — Booking signature prerequisite
+    **Documented constraints:** Capacity includes working calendar and leave; schedules remain suggestions until accepted, with missing estimates shown separately.
 
-- [ ] **E · Deliver:** Require an approved agreement version where policy demands it.
+    **Accept:** A removed or unavailable member cannot receive a new confirmed session.
 
-**Proposed flow and records:** Signature-conditioned booking lacks an approved reservation policy; choose exact agreement/evidence and eligibility rules without treating a stale signature as new consent.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-005 — Scheduling, capacity and workload](docs/specs/work-management.md#wrk-005--scheduling-capacity-and-workload).
 
-**Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+  - [ ] <a id="f32-09"></a>**F32.09 — Paid booking prerequisite** · `E`
 
-**Accept:** A stale or withdrawn signature version cannot satisfy the reservation gate.
+    **Requires:** [F03.06](#f03-06), [F32.03](#f32-03), [F27.06](#f27-06)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement); [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
+    **Deliver:** Confirm only after verified payment under explicit cancellation/refund terms.
+
+    **Proposed flow and records:** Payment-conditioned booking lacks an approved commercial state contract; verified hosted-provider capture is necessary but refund/hold/cancel terms still need decisions.
+
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+
+    **Accept:** A checkout return URL alone cannot confirm payment or reserve forever.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers); [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar); [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work).
+
+  - [ ] <a id="f32-10"></a>**F32.10 — Booking signature prerequisite** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F32.03](#f32-03), [F10.12](#f10-12)
+
+    **Deliver:** Require an approved agreement version where policy demands it.
+
+    **Proposed flow and records:** Signature-conditioned booking lacks an approved reservation policy; choose exact agreement/evidence and eligibility rules without treating a stale signature as new consent.
+
+    **Documented constraints:** Capture operator and purported client actor separately; stale responses require review and manual evidence cannot display as verified signature.
+
+    **Accept:** A stale or withdrawn signature version cannot satisfy the reservation gate.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-006 — Decisions, acceptance evidence, and disagreement](docs/specs/client-lifecycle.md#crm-006--decisions-acceptance-evidence-and-disagreement); [INT-004 — Calendar](docs/specs/integrations-and-automation.md#int-004--calendar).
 
 <a id="category-33"></a>
 
 ### 9.33 Software delivery and ongoing maintenance
 
-**Owner/package:** P03/P06/P08. **Prerequisites for each phase:** F12.01/F13.01/F15.06; engineering links F28; client changes via F12.04. **Optional extension wave:** X1.
+**Owner/package:** P03/P06/P08. **Original branch context (specific Requires below governs feature order):** F12.01/F13.01/F15.06; engineering links F28; client changes via F12.04. **Optional extension wave:** X1.
 
 **Authority:** Research extensions from Linear/Jira and the confirmed software-services audience.
 
-**Research context:** [Linear customer requests](https://linear.app/docs/customer-requests), [Linear concepts](https://linear.app/docs/conceptual-model), [Jira features](https://www.atlassian.com/software/jira/features?tab=kanban). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F33.01 — Client feedback links
+- **F33 — Software delivery and ongoing maintenance**
 
-- [ ] **E · Deliver:** Associate a customer request with tasks/projects and original feedback evidence.
+  - [ ] <a id="f33-01"></a>**F33.01 — Client feedback links** · `E`
 
-**Proposed flow and records:** Feedback-to-work links remain proposed source evidence for later task/scope review; no request can silently rewrite the accepted commercial baseline.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F31.09](#f31-09)
 
-**Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
+    **Deliver:** Associate a customer request with tasks/projects and original feedback evidence.
 
-**Accept:** Closing a task does not falsify the original requester conversation.
+    **Proposed flow and records:** Feedback-to-work links remain proposed source evidence for later task/scope review; no request can silently rewrite the accepted commercial baseline.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
+    **Documented constraints:** An approved change applies only to its reviewed baseline revision; approval, invoice issuance and payment remain separate authorities.
 
-#### F33.02 — Bug triage
+    **Accept:** Closing a task does not falsify the original requester conversation.
 
-- [ ] **E · Deliver:** Track severity, reproduction, affected version and duplicate links.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-008 — Scope baseline and change requests](docs/specs/work-management.md#wrk-008--scope-baseline-and-change-requests).
 
-**Proposed flow and records:** Bug severity/reproduction/version metadata remains proposed; any duplicate relationships must be defined independently from initial finish-to-start scheduling semantics.
+  - [ ] <a id="f33-02"></a>**F33.02 — Bug triage** · `E`
 
-**Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Accept:** A duplicate link preserves both reporters and cannot form a cycle.
+    **Deliver:** Track severity, reproduction, affected version and duplicate links.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
+    **Proposed flow and records:** Bug severity/reproduction/version metadata remains proposed; any duplicate relationships must be defined independently from initial finish-to-start scheduling semantics.
 
-#### F33.03 — Release records
+    **Documented constraints:** Initial dependency semantics are finish-to-start; cycles are rejected and task completion does not imply external milestone acceptance.
 
-- [ ] **E · Deliver:** Group approved deliverables into a release with exact references and notes.
+    **Accept:** A duplicate link preserves both reporters and cannot form a cycle.
 
-**Proposed flow and records:** Release records remain proposed grouping of immutable reviewed deliverable versions; releasing cannot transfer acceptance to newly replaced bytes.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-003 — Dependencies and milestones](docs/specs/work-management.md#wrk-003--dependencies-and-milestones).
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+  - [ ] <a id="f33-03"></a>**F33.03 — Release records** · `E`
 
-**Accept:** A release cannot inherit acceptance for an unreviewed replacement artifact.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+    **Deliver:** Group approved deliverables into a release with exact references and notes.
 
-#### F33.04 — Release readiness checklist
+    **Proposed flow and records:** Release records remain proposed grouping of immutable reviewed deliverable versions; releasing cannot transfer acceptance to newly replaced bytes.
 
-- [ ] **E · Deliver:** Review agreed testing, deployment and handover evidence per engagement.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Proposed flow and records:** Release checklists remain proposed explicit criteria over the existing deliverable review lifecycle, not automatic approval from task completion alone.
+    **Accept:** A release cannot inherit acceptance for an unreviewed replacement artifact.
 
-**Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-**Accept:** Unchecked critical requirements block a ready status rather than auto-accepting delivery.
+  - [ ] <a id="f33-04"></a>**F33.04 — Release readiness checklist** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F33.03](#f33-03)
 
-#### F33.05 — Client release notes
+    **Deliver:** Review agreed testing, deployment and handover evidence per engagement.
 
-- [ ] **E · Deliver:** Publish selected change notes through controlled portal publications.
+    **Proposed flow and records:** Release checklists remain proposed explicit criteria over the existing deliverable review lifecycle, not automatic approval from task completion alone.
 
-**Proposed flow and records:** Client release notes remain proposed selected portal publications with exact audience/version; draft internal incident or cost notes are not default external content.
+    **Documented constraints:** Publication selects exact content and reviewers online; new versions preserve prior evidence and require the applicable new approval.
 
-**Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
+    **Accept:** Unchecked critical requirements block a ready status rather than auto-accepting delivery.
 
-**Accept:** Private incident or cost notes cannot enter client release notes by default.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-009 — Deliverables and acceptance](docs/specs/work-management.md#wrk-009--deliverables-and-acceptance).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
+  - [ ] <a id="f33-05"></a>**F33.05 — Client release notes** · `E`
 
-#### F33.06 — Support agreement coverage
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F33.03](#f33-03), [F29.02](#f29-02)
 
-- [ ] **E · Deliver:** Track covered services, periods and exclusions from the accepted agreement.
+    **Deliver:** Publish selected change notes through controlled portal publications.
 
-**Proposed flow and records:** Support coverage is a proposed view of the executed agreement's period, obligations and exclusions; plan selection alone cannot extend accepted terms.
+    **Proposed flow and records:** Client release notes remain proposed selected portal publications with exact audience/version; draft internal incident or cost notes are not default external content.
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+    **Documented constraints:** Portal routes use the same authorized services and shared design system; publish exact recipients/versions while internal drafts, costs and sibling files remain excluded.
 
-**Accept:** Expired coverage cannot be silently renewed or billed.
+    **Accept:** Private incident or cost notes cannot enter client release notes by default.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Client portal](docs/architecture/sync-and-collaboration.md#client-portal).
 
-#### F33.07 — Response commitment tracking
+  - [ ] <a id="f33-06"></a>**F33.06 — Support agreement coverage** · `E`
 
-- [ ] **E · Deliver:** Measure explicitly agreed support response windows and paused intervals.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F10.09](#f10-09)
 
-**Proposed flow and records:** Response-commitment timers are not specified beyond contractual obligations/dates; select calendar, pause, acknowledgement and resolution semantics before promising an SLA.
+    **Deliver:** Track covered services, periods and exclusions from the accepted agreement.
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+    **Proposed flow and records:** Support coverage is a proposed view of the executed agreement's period, obligations and exclusions; plan selection alone cannot extend accepted terms.
 
-**Accept:** The calculation uses the stated timezone/business calendar and distinguishes acknowledgement from resolution.
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Accept:** Expired coverage cannot be silently renewed or billed.
 
-#### F33.08 — Warranty period tracking
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
 
-- [ ] **E · Deliver:** Link agreed warranty windows and covered issue handling to delivered versions.
+  - [ ] <a id="f33-07"></a>**F33.07 — Response commitment tracking** · `E`
 
-**Proposed flow and records:** Warranty tracking remains proposed agreement/version metadata; current docs supply no default warranty duration, coverage or free-work policy.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F33.06](#f33-06), [F06.06](#f06-06)
 
-**Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
+    **Deliver:** Measure explicitly agreed support response windows and paused intervals.
 
-**Accept:** A warranty ticket never changes issued billing or legal terms automatically.
+    **Proposed flow and records:** Response-commitment timers are not specified beyond contractual obligations/dates; select calendar, pause, acknowledgement and resolution semantics before promising an SLA.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
 
-#### F33.09 — Maintenance renewal checklist
+    **Accept:** The calculation uses the stated timezone/business calendar and distinguishes acknowledgement from resolution.
 
-- [ ] **E · Deliver:** Track required renewal review and service handover before expiry.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
 
-**Proposed flow and records:** Maintenance renewal remains proposed review of documented notice/renewal dates and linked follow-up; reminders do not execute renewal or create debt.
+  - [ ] <a id="f33-08"></a>**F33.08 — Warranty period tracking** · `E`
 
-**Documented constraints:** Health links to dated source evidence; missing history means unknown, and renewal opportunities never renew contracts or charge clients.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F15.06](#f15-06)
 
-**Accept:** A reminder does not extend a contract or charge a customer.
+    **Deliver:** Link agreed warranty windows and covered issue handling to delivered versions.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-010 — Renewals, account reviews, and explainable health](docs/specs/client-lifecycle.md#crm-010--renewals-account-reviews-and-explainable-health).
+    **Proposed flow and records:** Warranty tracking remains proposed agreement/version metadata; current docs supply no default warranty duration, coverage or free-work policy.
 
-#### F33.10 — Technical asset references
+    **Documented constraints:** Executed copies remain fixed; amendments are linked documents, incomplete terms stay visible and legal/signature sufficiency remains a decision.
 
-- [ ] **E · Deliver:** Link domain, repository and environment ownership metadata without storing secrets.
+    **Accept:** A warranty ticket never changes issued billing or legal terms automatically.
 
-**Proposed flow and records:** Technical asset inventory remains proposed safe links/ownership references; snippets, repository URLs and readiness checks cannot store live passwords or private keys.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-007 — Contracts, statements of work, and obligation tracking](docs/specs/client-lifecycle.md#crm-007--contracts-statements-of-work-and-obligation-tracking).
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+  - [ ] <a id="f33-09"></a>**F33.09 — Maintenance renewal checklist** · `E`
 
-**Accept:** Access tokens and private keys are rejected from structured credential fields.
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F33.06](#f33-06), [F11.08](#f11-08)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Deliver:** Track required renewal review and service handover before expiry.
 
-#### F33.11 — Project handover inventory
+    **Proposed flow and records:** Maintenance renewal remains proposed review of documented notice/renewal dates and linked follow-up; reminders do not execute renewal or create debt.
 
-- [ ] **E · Deliver:** List agreed code/docs/environments and client receipt evidence.
+    **Documented constraints:** Health links to dated source evidence; missing history means unknown, and renewal opportunities never renew contracts or charge clients.
 
-**Proposed flow and records:** Handover inventory remains proposed evidence over permitted files, membership/task ownership and verified readiness; avoid claiming external control moved from a checklist alone.
+    **Accept:** A reminder does not extend a contract or charge a customer.
 
-**Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-010 — Renewals, account reviews, and explainable health](docs/specs/client-lifecycle.md#crm-010--renewals-account-reviews-and-explainable-health).
 
-**Accept:** A transfer checklist cannot claim external ownership changed without recorded evidence.
+  - [ ] <a id="f33-10"></a>**F33.10 — Technical asset references** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F26.01](#f26-01)
 
-#### F33.12 — Incident work records
+    **Deliver:** Link domain, repository and environment ownership metadata without storing secrets.
 
-- [ ] **E · Deliver:** Link incident timeline, decisions and actual recovery work to a support engagement.
+    **Proposed flow and records:** Technical asset inventory remains proposed safe links/ownership references; snippets, repository URLs and readiness checks cannot store live passwords or private keys.
 
-**Proposed flow and records:** Incident work links remain proposed dated activity/source evidence; incident duration, task events or repository events cannot substitute for reviewed time capture.
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-**Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+    **Accept:** Access tokens and private keys are rejected from structured credential fields.
 
-**Accept:** Incident elapsed time alone never becomes billable time.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
+  - [ ] <a id="f33-11"></a>**F33.11 — Project handover inventory** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F33.10](#f33-10), [F12.09](#f12-09)
+
+    **Deliver:** List agreed code/docs/environments and client receipt evidence.
+
+    **Proposed flow and records:** Handover inventory remains proposed evidence over permitted files, membership/task ownership and verified readiness; avoid claiming external control moved from a checklist alone.
+
+    **Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+
+    **Accept:** A transfer checklist cannot claim external ownership changed without recorded evidence.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+
+  - [ ] <a id="f33-12"></a>**F33.12 — Incident work records** · `E`
+
+    **Requires:** [F12.01](#f12-01), [F03.06](#f03-06), [F13.01](#f13-01), [F16.10](#f16-10)
+
+    **Deliver:** Link incident timeline, decisions and actual recovery work to a support engagement.
+
+    **Proposed flow and records:** Incident work links remain proposed dated activity/source evidence; incident duration, task events or repository events cannot substitute for reviewed time capture.
+
+    **Documented constraints:** Follow-up completion/snooze preserves history; recording communication never implies sending, and overdue catch-up is deduplicated.
+
+    **Accept:** Incident elapsed time alone never becomes billable time.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [CRM-003 — Activity timeline, follow-ups, and communication records](docs/specs/client-lifecycle.md#crm-003--activity-timeline-follow-ups-and-communication-records).
 
 <a id="category-34"></a>
 
 ### 9.34 Migration, portability and recovery tools
 
-**Owner/package:** P01/P05/P09. **Prerequisites for each phase:** F03.06; shared import jobs/files P01.6; Q-13/Q-15. **Optional extension wave:** X4.
+**Owner/package:** P01/P05/P09. **Original branch context (specific Requires below governs feature order):** F03.06; shared import jobs/files P01.6; Q-13/Q-15. **Optional extension wave:** X4.
 
 **Authority:** PLT-016; NFR-003/010/013; FIN-030. Retain provenance and permission scope.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F34.01 — Import batch workspace
+- **F34 — Migration, portability and recovery tools**
 
-- [ ] **S · Deliver:** Stage uploads, field mapping, previews, row errors and confirmation per supported domain.
+  - [ ] <a id="f34-01"></a>**F34.01 — Import batch workspace** · `S`
 
-**Flow and records:** Stage supported inert uploads and preview encoding, units, dates, currency, field mapping and row errors before any authoritative domain mutation.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04)
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Deliver:** Stage uploads, field mapping, previews, row errors and confirmation per supported domain.
 
-**Accept:** Parsing failure leaves authoritative business tables unchanged.
+    **Flow and records:** Stage supported inert uploads and preview encoding, units, dates, currency, field mapping and row errors before any authoritative domain mutation.
 
-**Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-#### F34.02 — Import duplicate registry
+    **Accept:** Parsing failure leaves authoritative business tables unchanged.
 
-- [ ] **S · Deliver:** Track provider/source IDs and batch provenance across retries.
+    **Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Flow and records:** Keep batch/row/provider/account source identity and content hash; exact repeats skip safely while changed matches require update/skip/new review.
+  - [ ] <a id="f34-02"></a>**F34.02 — Import duplicate registry** · `S`
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Requires:** [F03.06](#f03-06), [F34.01](#f34-01)
 
-**Accept:** A repeated import cannot recreate clients, time or financial postings.
+    **Deliver:** Track provider/source IDs and batch provenance across retries.
 
-**Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Flow and records:** Keep batch/row/provider/account source identity and content hash; exact repeats skip safely while changed matches require update/skip/new review.
 
-#### F34.03 — Import rollback boundary
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-- [ ] **S · Deliver:** Undo only eligible unreferenced staged/imported work with an impact preview.
+    **Accept:** A repeated import cannot recreate clients, time or financial postings.
 
-**Flow and records:** Rollback remains limited to unreferenced eligible imported work; referenced finance and accepted downstream effects require explicit compensating/correction review.
+    **Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+  - [ ] <a id="f34-03"></a>**F34.03 — Import rollback boundary** · `S`
 
-**Accept:** Already-issued financial evidence cannot disappear through batch rollback.
+    **Requires:** [F03.06](#f03-06), [F34.02](#f34-02)
 
-**Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Deliver:** Undo only eligible unreferenced staged/imported work with an impact preview.
 
-#### F34.04 — CSV formula protection
+    **Flow and records:** Rollback remains limited to unreferenced eligible imported work; referenced finance and accepted downstream effects require explicit compensating/correction review.
 
-- [ ] **S · Deliver:** Escape dangerous spreadsheet cells in every export and preview.
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-**Flow and records:** Neutralize spreadsheet-formula text across all CSV exports/previews and retain exact numeric strings with documented encoding/delimiter.
+    **Accept:** Already-issued financial evidence cannot disappear through batch rollback.
 
-**Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
+    **Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Accept:** Names beginning with formula operators remain inert in declared spreadsheet consumers.
+  - [ ] <a id="f34-04"></a>**F34.04 — CSV formula protection** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
+    **Requires:** [F03.06](#f03-06)
 
-#### F34.05 — Portable workspace export
+    **Deliver:** Escape dangerous spreadsheet cells in every export and preview.
 
-- [ ] **S · Deliver:** Generate permission-scoped data/files manifest with schema and missing-object list.
+    **Flow and records:** Neutralize spreadsheet-formula text across all CSV exports/previews and retain exact numeric strings with documented encoding/delimiter.
 
-**Flow and records:** Export one consistent permitted record/file snapshot with IDs, policy/schema versions, as-of, counts, checksums and exclusions; never include auth secrets.
+    **Documented constraints:** Matching suggestions require confirmation; imports dedupe, exports neutralize formulas and unknown delivery reconciles before resend without changing issued records.
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Accept:** Names beginning with formula operators remain inert in declared spreadsheet consumers.
 
-**Accept:** A project-only export includes no cost data or unrelated client files.
+    **Docs basis:** Documented parent requirement/contract: [Reconciliation, exports, delivery, and privacy](docs/specs/finance.md#reconciliation-exports-delivery-and-privacy).
 
-**Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+  - [ ] <a id="f34-05"></a>**F34.05 — Portable workspace export** · `S`
 
-#### F34.06 — Export job lifecycle
+    **Requires:** [F03.06](#f03-06), [F34.04](#f34-04)
 
-- [ ] **S · Deliver:** Expose bounded progress, expiry, cancellation boundary and verified download.
+    **Deliver:** Generate permission-scoped data/files manifest with schema and missing-object list.
 
-**Flow and records:** Run bounded scoped export/render work with cancel/retry/expiry and verified access at download; browser cancellation leaves authoritative source records intact.
+    **Flow and records:** Export one consistent permitted record/file snapshot with IDs, policy/schema versions, as-of, counts, checksums and exclusions; never include auth secrets.
 
-**Documented constraints:** Use allowlisted filters and stable bounded cursors; scope counts/files/exports and expose revision/as-of rather than mixing pending and committed totals.
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-**Accept:** Revoked access blocks delivery of a previously queued private export.
+    **Accept:** A project-only export includes no cost data or unrelated client files.
 
-**Docs basis:** Documented parent requirement/contract: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
+    **Docs basis:** Documented parent requirement/contract: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-#### F34.07 — Historical document import
+  - [ ] <a id="f34-06"></a>**F34.06 — Export job lifecycle** · `S`
 
-- [ ] **E · Deliver:** Preserve original issue identity, numbers and source evidence in a reviewed migration mode.
+    **Requires:** [F03.06](#f03-06), [F34.05](#f34-05), [F30.05](#f30-05)
 
-**Proposed flow and records:** Historical document import remains an extension gated by approved number ranges, opening balances, market profiles and original evidence, without sending or reissuing history.
+    **Deliver:** Expose bounded progress, expiry, cancellation boundary and verified download.
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Flow and records:** Run bounded scoped export/render work with cancel/retry/expiry and verified access at download; browser cancellation leaves authoritative source records intact.
 
-**Accept:** Imported historical work cannot become fresh billable allocations.
+    **Documented constraints:** Use allowlisted filters and stable bounded cursors; scope counts/files/exports and expose revision/as-of rather than mixing pending and committed totals.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering); [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Accept:** Revoked access blocks delivery of a previously queued private export.
 
-#### F34.08 — Harvest migration
+    **Docs basis:** Documented parent requirement/contract: [Queries, search and files](docs/architecture/api-contracts.md#queries-search-and-files).
 
-- [ ] **E · Deliver:** Map supported clients/projects/time/expenses with explicit exclusions and reconciliation.
+  - [ ] <a id="f34-07"></a>**F34.07 — Historical document import** · `E`
 
-**Proposed flow and records:** Harvest migration is a proposed named source; inspect actual samples and approve supported entities/mappings/exclusions before claiming lossless transfer.
+    **Requires:** [F03.06](#f03-06), [F34.01](#f34-01), [F20.02](#f20-02)
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Deliver:** Preserve original issue identity, numbers and source evidence in a reviewed migration mode.
 
-**Accept:** An isolated fixture round-trip preserves exact source seconds and money.
+    **Proposed flow and records:** Historical document import remains an extension gated by approved number ranges, opening balances, market profiles and original evidence, without sending or reissuing history.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
 
-#### F34.09 — Toggl migration
+    **Accept:** Imported historical work cannot become fresh billable allocations.
 
-- [ ] **E · Deliver:** Map supported time/projects/rate history with timezone and provenance review.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering); [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
 
-**Proposed flow and records:** Toggl migration is a proposed named source; preserve original source seconds/timezone and identify missing historical rates rather than substituting current selling prices.
+  - [ ] <a id="f34-08"></a>**F34.08 — Harvest migration** · `E`
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Requires:** [F03.06](#f03-06), [F34.01](#f34-01), [F16.10](#f16-10)
 
-**Accept:** Missing historical rates are flagged instead of silently replaced by current rates.
+    **Deliver:** Map supported clients/projects/time/expenses with explicit exclusions and reconciliation.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Proposed flow and records:** Harvest migration is a proposed named source; inspect actual samples and approve supported entities/mappings/exclusions before claiming lossless transfer.
 
-#### F34.10 — Selected CRM migration
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-- [ ] **E · Deliver:** Implement one approved CRM source mapping after a sample-file review.
+    **Accept:** An isolated fixture round-trip preserves exact source seconds and money.
 
-**Proposed flow and records:** A selected CRM adapter remains proposed; inspect real fields/provenance and distinguish business contacts from verified users/invitations during conversion.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+  - [ ] <a id="f34-09"></a>**F34.09 — Toggl migration** · `E`
 
-**Accept:** Contact identity never becomes workspace membership through an import.
+    **Requires:** [F03.06](#f03-06), [F34.01](#f34-01), [F16.10](#f16-10)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
+    **Deliver:** Map supported time/projects/rate history with timezone and provenance review.
 
-#### F34.11 — Workspace split or transfer
+    **Proposed flow and records:** Toggl migration is a proposed named source; preserve original source seconds/timezone and identify missing historical rates rather than substituting current selling prices.
 
-- [ ] **E · Deliver:** Review legal/data ownership and remap permitted records through an explicit migration.
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-**Proposed flow and records:** Workspace split/transfer remains proposed reviewed export/import with new IDs and legal/source checks, never direct reassignment of tenant IDs or issued seller identity.
+    **Accept:** Missing historical rates are flagged instead of silently replaced by current rates.
 
-**Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Accept:** No direct ID rewrite can detach invoices from their legal seller history.
+  - [ ] <a id="f34-10"></a>**F34.10 — Selected CRM migration** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+    **Requires:** [F03.06](#f03-06), [F34.01](#f34-01), [F07.01](#f07-01)
 
-#### F34.12 — Draft salvage import
+    **Deliver:** Implement one approved CRM source mapping after a sample-file review.
 
-- [ ] **S · Deliver:** Review recovered browser drafts against current schema/grants without command replay.
+    **Proposed flow and records:** A selected CRM adapter remains proposed; inspect real fields/provenance and distinguish business contacts from verified users/invitations during conversion.
 
-**Flow and records:** Recovered browser input is staged reviewed draft material against current grants/schema/revisions; it cannot replay old commands, revive sessions or reset number authority.
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-**Documented constraints:** Validate manifests/relations/amounts/files in isolation, reconcile later external outcomes and invalidate restored sessions before reopening writes.
+    **Accept:** Contact identity never becomes workspace membership through an import.
 
-**Accept:** A restored draft cannot resurrect deleted records or issue stale money.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export).
 
-**Docs basis:** Documented parent requirement/contract: [Isolated restore and reconciliation](docs/architecture/data-lifecycle.md#isolated-restore-and-reconciliation).
+  - [ ] <a id="f34-11"></a>**F34.11 — Workspace split or transfer** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F34.01](#f34-01), [F34.05](#f34-05)
+
+    **Deliver:** Review legal/data ownership and remap permitted records through an explicit migration.
+
+    **Proposed flow and records:** Workspace split/transfer remains proposed reviewed export/import with new IDs and legal/source checks, never direct reassignment of tenant IDs or issued seller identity.
+
+    **Documented constraints:** Moves preview client/currency/billing effects; allocated contradictions block moves, cross-workspace changes use reviewed import and identity history survives.
+
+    **Accept:** No direct ID rewrite can detach invoices from their legal seller history.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [WRK-014 — Archive, transfer and recovery](docs/specs/work-management.md#wrk-014--archive-transfer-and-recovery).
+
+  - [ ] <a id="f34-12"></a>**F34.12 — Draft salvage import** · `S`
+
+    **Requires:** [F03.06](#f03-06), [F05.09](#f05-09), [F34.01](#f34-01)
+
+    **Deliver:** Review recovered browser drafts against current schema/grants without command replay.
+
+    **Flow and records:** Recovered browser input is staged reviewed draft material against current grants/schema/revisions; it cannot replay old commands, revive sessions or reset number authority.
+
+    **Documented constraints:** Validate manifests/relations/amounts/files in isolation, reconcile later external outcomes and invalidate restored sessions before reopening writes.
+
+    **Accept:** A restored draft cannot resurrect deleted records or issue stale money.
+
+    **Docs basis:** Documented parent requirement/contract: [Isolated restore and reconciliation](docs/architecture/data-lifecycle.md#isolated-restore-and-reconciliation).
 
 <a id="category-35"></a>
 
 ### 9.35 SoloDesk plans and subscription administration
 
-**Owner/package:** P09 commercial extension. **Prerequisites for each phase:** Q-12 approved product commercial model; F03.06; F27 provider foundations. **Optional extension wave:** X4.
+**Owner/package:** P09 commercial extension. **Original branch context (specific Requires below governs feature order):** Q-12 approved product commercial model; F03.06; F27 provider foundations. **Optional extension wave:** X4.
 
 **Authority:** Product subscriptions are separate from workspace invoices for client services. Prefer a proven hosted billing portal.
 
-**Research context:** [Stripe hosted customer portal](https://docs.stripe.com/customer-management). Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F35.01 — Product plan definitions
+- **F35 — SoloDesk plans and subscription administration**
 
-- [ ] **E · Deliver:** Define published plans, seats, quotas and included capabilities with effective versions.
+  - [ ] <a id="f35-01"></a>**F35.01 — Product plan definitions** · `E`
 
-**Proposed flow and records:** Product plans/limits need Q-12 selection and versioned published terms; do not infer numeric pricing or included capability counts from competitor research.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Deliver:** Define published plans, seats, quotas and included capabilities with effective versions.
 
-**Accept:** Changing a plan never hides historical financial exports needed by canceled users.
+    **Proposed flow and records:** Product plans/limits need Q-12 selection and versioned published terms; do not infer numeric pricing or included capability counts from competitor research.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
 
-#### F35.02 — Product subscription checkout
+    **Accept:** Changing a plan never hides historical financial exports needed by canceled users.
 
-- [ ] **E · Deliver:** Purchase a chosen SoloDesk plan through approved hosted billing.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
-**Proposed flow and records:** SoloDesk subscription checkout remains proposed hosted billing distinct from client invoices; confirm chosen provider/country and verified entitlement authority first.
+  - [ ] <a id="f35-02"></a>**F35.02 — Product subscription checkout** · `E`
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Requires:** [F03.06](#f03-06), [F35.01](#f35-01), [F27.02](#f27-02)
 
-**Accept:** Returning from checkout alone grants no unverified entitlement.
+    **Deliver:** Purchase a chosen SoloDesk plan through approved hosted billing.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Proposed flow and records:** SoloDesk subscription checkout remains proposed hosted billing distinct from client invoices; confirm chosen provider/country and verified entitlement authority first.
 
-#### F35.03 — Product entitlement projection
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-- [ ] **E · Deliver:** Derive server-enforced capabilities from verified subscription state.
+    **Accept:** Returning from checkout alone grants no unverified entitlement.
 
-**Proposed flow and records:** Entitlement projection is proposed application policy; distinguish feature availability from current resource permissions and retain accepted financial read/export obligations.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+  - [ ] <a id="f35-03"></a>**F35.03 — Product entitlement projection** · `E`
 
-**Accept:** Changing a client flag cannot enable a paid feature or bypass a quota.
+    **Requires:** [F03.06](#f03-06), [F35.02](#f35-02)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements); [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Deliver:** Derive server-enforced capabilities from verified subscription state.
 
-#### F35.04 — Seat billing
+    **Proposed flow and records:** Entitlement projection is proposed application policy; distinguish feature availability from current resource permissions and retain accepted financial read/export obligations.
 
-- [ ] **E · Deliver:** Apply approved active/pending/contractor seat rules and visible price preview.
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-**Proposed flow and records:** Seat counting has no approved active/pending/contractor definition or proration rule; Q-12 must choose these before invitation-based charges or caps apply.
+    **Accept:** Changing a client flag cannot enable a paid feature or bypass a quota.
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements); [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Accept:** Concurrent invites cannot exceed a hard cap or create unexplained charges.
+  - [ ] <a id="f35-04"></a>**F35.04 — Seat billing** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Requires:** [F03.06](#f03-06), [F35.03](#f35-03), [F03.03](#f03-03)
 
-#### F35.05 — Product free trial
+    **Deliver:** Apply approved active/pending/contractor seat rules and visible price preview.
 
-- [ ] **E · Deliver:** Track start/end, eligibility and explicit post-trial behavior.
+    **Proposed flow and records:** Seat counting has no approved active/pending/contractor definition or proration rule; Q-12 must choose these before invitation-based charges or caps apply.
 
-**Proposed flow and records:** Trials remain proposed commercial terms; choose eligibility, start/end, conversion and grace without adding a default duration or payment requirement.
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Accept:** Concurrent invites cannot exceed a hard cap or create unexplained charges.
 
-**Accept:** Repeated signup or retry cannot create conflicting entitlements.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+  - [ ] <a id="f35-05"></a>**F35.05 — Product free trial** · `E`
 
-#### F35.06 — Product plan changes
+    **Requires:** [F03.06](#f03-06), [F35.03](#f35-03)
 
-- [ ] **E · Deliver:** Preview effective date and approved proration before confirmation.
+    **Deliver:** Track start/end, eligibility and explicit post-trial behavior.
 
-**Proposed flow and records:** Plan change behavior remains proposed approved pricing/effective-date/grace policy; reduced availability must not delete history or break approved export access.
+    **Proposed flow and records:** Trials remain proposed commercial terms; choose eligibility, start/end, conversion and grace without adding a default duration or payment requirement.
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
 
-**Accept:** A downgrade preserves data/history while blocking only newly disallowed actions.
+    **Accept:** Repeated signup or retry cannot create conflicting entitlements.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
-#### F35.07 — Product payment method management
+  - [ ] <a id="f35-06"></a>**F35.06 — Product plan changes** · `E`
 
-- [ ] **E · Deliver:** Use the billing provider's authenticated hosted portal.
+    **Requires:** [F03.06](#f03-06), [F35.03](#f35-03)
 
-**Proposed flow and records:** Payment-method self-service remains proposed use of the selected provider; provider-hosted handling avoids raw-card custody but capability support still needs verification.
+    **Deliver:** Preview effective date and approved proration before confirmation.
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Proposed flow and records:** Plan change behavior remains proposed approved pricing/effective-date/grace policy; reduced availability must not delete history or break approved export access.
 
-**Accept:** SoloDesk receives no raw payment-card values.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Accept:** A downgrade preserves data/history while blocking only newly disallowed actions.
 
-#### F35.08 — Product billing invoices
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-- [ ] **E · Deliver:** Show provider-generated SoloDesk invoices/receipts under billing-owner scope.
+  - [ ] <a id="f35-07"></a>**F35.07 — Product payment method management** · `E`
 
-**Proposed flow and records:** SoloDesk billing documents remain separate from the workspace's invoices for clients and require the approved billing-owner visibility and provider record model.
+    **Requires:** [F03.06](#f03-06), [F35.02](#f35-02)
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Deliver:** Use the billing provider's authenticated hosted portal.
 
-**Accept:** A workspace contributor cannot retrieve the owner's billing account.
+    **Proposed flow and records:** Payment-method self-service remains proposed use of the selected provider; provider-hosted handling avoids raw-card custody but capability support still needs verification.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-#### F35.09 — Product failed-payment grace
+    **Accept:** SoloDesk receives no raw payment-card values.
 
-- [ ] **E · Deliver:** Define notices, grace period and safe restricted mode under approved terms.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Proposed flow and records:** Failed product payment needs Q-12 grace/restriction/notice terms; restriction must preserve accepted financial history and the chosen portability policy.
+  - [ ] <a id="f35-08"></a>**F35.08 — Product billing invoices** · `E`
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Requires:** [F03.06](#f03-06), [F35.02](#f35-02)
 
-**Accept:** A failed product renewal does not erase workspace data or client invoices.
+    **Deliver:** Show provider-generated SoloDesk invoices/receipts under billing-owner scope.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Proposed flow and records:** SoloDesk billing documents remain separate from the workspace's invoices for clients and require the approved billing-owner visibility and provider record model.
 
-#### F35.10 — Product cancellation
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-- [ ] **E · Deliver:** Support period-end/immediate cancellation per agreed policy with export guidance.
+    **Accept:** A workspace contributor cannot retrieve the owner's billing account.
 
-**Proposed flow and records:** Cancel the SoloDesk service under selected product terms without canceling client receivables, service subscriptions or retained evidence inside the workspace.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+  - [ ] <a id="f35-09"></a>**F35.09 — Product failed-payment grace** · `E`
 
-**Accept:** Canceling SoloDesk does not cancel the workspace's client receivables.
+    **Requires:** [F03.06](#f03-06), [F35.03](#f35-03)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Deliver:** Define notices, grace period and safe restricted mode under approved terms.
 
-#### F35.11 — Product coupon policies
+    **Proposed flow and records:** Failed product payment needs Q-12 grace/restriction/notice terms; restriction must preserve accepted financial history and the chosen portability policy.
 
-- [ ] **E · Deliver:** Apply approved eligibility, duration and price disclosures using provider facilities.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Proposed flow and records:** Coupons remain unapproved commercial policy; select plan eligibility, duration, interaction with trials and displayed terms before provider configuration.
+    **Accept:** A failed product renewal does not erase workspace data or client invoices.
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Accept:** An expired or wrong-plan coupon cannot alter checkout authority.
+  - [ ] <a id="f35-10"></a>**F35.10 — Product cancellation** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Requires:** [F03.06](#f03-06), [F35.03](#f35-03), [F34.05](#f34-05)
 
-#### F35.12 — Product billing reconciliation
+    **Deliver:** Support period-end/immediate cancellation per agreed policy with export guidance.
 
-- [ ] **E · Deliver:** Reconcile duplicate/out-of-order subscription webhooks and unknown changes.
+    **Proposed flow and records:** Cancel the SoloDesk service under selected product terms without canceling client receivables, service subscriptions or retained evidence inside the workspace.
 
-**Proposed flow and records:** Reconcile provider subscription/customer events under stable identity and approved local mapping; verified callbacks, not browser redirects, authorize status changes.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+    **Accept:** Canceling SoloDesk does not cancel the workspace's client receivables.
 
-**Accept:** One customer cannot gain two conflicting active subscriptions from a retry.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
+  - [ ] <a id="f35-11"></a>**F35.11 — Product coupon policies** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F35.01](#f35-01)
+
+    **Deliver:** Apply approved eligibility, duration and price disclosures using provider facilities.
+
+    **Proposed flow and records:** Coupons remain unapproved commercial policy; select plan eligibility, duration, interaction with trials and displayed terms before provider configuration.
+
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+
+    **Accept:** An expired or wrong-plan coupon cannot alter checkout authority.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+
+  - [ ] <a id="f35-12"></a>**F35.12 — Product billing reconciliation** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F35.02](#f35-02), [F38.14](#f38-14)
+
+    **Deliver:** Reconcile duplicate/out-of-order subscription webhooks and unknown changes.
+
+    **Proposed flow and records:** Reconcile provider subscription/customer events under stable identity and approved local mapping; verified callbacks, not browser redirects, authorize status changes.
+
+    **Documented constraints:** Verify callback identity and amount/currency/customer/invoice; separate capture, fee, payout, refund and chargeback, with no raw card custody.
+
+    **Accept:** One customer cannot gain two conflicting active subscriptions from a retry.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-006 — Payment providers](docs/specs/integrations-and-automation.md#int-006--payment-providers).
 
 <a id="category-36"></a>
 
 ### 9.36 Support, feedback and service administration
 
-**Owner/package:** P09. **Prerequisites for each phase:** F03.06; redacted audit P01.3; Q-16 support policy. **Optional extension wave:** X4.
+**Owner/package:** P09. **Original branch context (specific Requires below governs feature order):** F03.06; redacted audit P01.3; Q-16 support policy. **Optional extension wave:** X4.
 
 **Authority:** PLT-014/018; NFR-012/014. Platform support is never a default workspace Owner.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F36.01 — In-app help
+- **F36 — Support, feedback and service administration**
 
-- [ ] **E · Deliver:** Link contextual guidance and bilingual searchable documentation.
+  - [ ] <a id="f36-01"></a>**F36.01 — In-app help** · `E`
 
-**Proposed flow and records:** In-app help remains proposed contextual English/Arabic guidance over documented auth, draft, timer, financial correction and portability behavior.
+    **Requires:** [F03.06](#f03-06)
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Deliver:** Link contextual guidance and bilingual searchable documentation.
 
-**Accept:** Help remains accessible when a paid capability is disabled.
+    **Proposed flow and records:** In-app help remains proposed contextual English/Arabic guidance over documented auth, draft, timer, financial correction and portability behavior.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-#### F36.02 — Support request submission
+    **Accept:** Help remains accessible when a paid capability is disabled.
 
-- [ ] **E · Deliver:** Collect minimal problem context, consent and optional redacted diagnostic reference.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Proposed flow and records:** Support intake remains proposed minimal user-provided context with optional reviewed diagnostic export; opening a ticket cannot grant tenant access implicitly.
+  - [ ] <a id="f36-02"></a>**F36.02 — Support request submission** · `E`
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Requires:** [F03.06](#f03-06), [F36.01](#f36-01)
 
-**Accept:** Submitting a ticket never attaches private invoice/profile content implicitly.
+    **Deliver:** Collect minimal problem context, consent and optional redacted diagnostic reference.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Proposed flow and records:** Support intake remains proposed minimal user-provided context with optional reviewed diagnostic export; opening a ticket cannot grant tenant access implicitly.
 
-#### F36.03 — Support ticket status
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-- [ ] **E · Deliver:** Show requester-visible status and responses with scoped attachments.
+    **Accept:** Submitting a ticket never attaches private invoice/profile content implicitly.
 
-**Proposed flow and records:** Ticket tracking remains proposed requester-specific visibility and response/files model; agree retention and external delivery before implementing support conversation storage.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+  - [ ] <a id="f36-03"></a>**F36.03 — Support ticket status** · `E`
 
-**Accept:** A different user cannot enumerate ticket bodies or files.
+    **Requires:** [F03.06](#f03-06), [F36.02](#f36-02)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Deliver:** Show requester-visible status and responses with scoped attachments.
 
-#### F36.04 — Temporary support grants
+    **Proposed flow and records:** Ticket tracking remains proposed requester-specific visibility and response/files model; agree retention and external delivery before implementing support conversation storage.
 
-- [ ] **S · Deliver:** Require purpose, scope, expiry and audit for approved support access.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Flow and records:** Require explicit tenant-authorized purpose, scope, expiry and audit for staff assistance; no support role is automatically workspace Owner.
+    **Accept:** A different user cannot enumerate ticket bodies or files.
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Accept:** An expired grant cannot fetch tenant data or continue an old support session.
+  - [ ] <a id="f36-04"></a>**F36.04 — Temporary support grants** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+    **Requires:** [F03.06](#f03-06), [F02.07](#f02-07)
 
-#### F36.05 — Support diagnostic bundle
+    **Deliver:** Require purpose, scope, expiry and audit for approved support access.
 
-- [ ] **S · Deliver:** Export selected redacted build/request/sync metadata for review.
+    **Flow and records:** Require explicit tenant-authorized purpose, scope, expiry and audit for staff assistance; no support role is automatically workspace Owner.
 
-**Flow and records:** Preview selected version/error/health fields with safe correlation IDs; exclude databases, customer content, secrets and raw environment dumps by default.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
+    **Accept:** An expired grant cannot fetch tenant data or continue an old support session.
 
-**Accept:** Tokens, raw financial details and client messages are absent by default.
+    **Docs basis:** Documented parent requirement/contract: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-**Docs basis:** Documented parent requirement/contract: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
+  - [ ] <a id="f36-05"></a>**F36.05 — Support diagnostic bundle** · `S`
 
-#### F36.06 — Product feedback backlog
+    **Requires:** [F03.06](#f03-06), [F38.10](#f38-10)
 
-- [ ] **E · Deliver:** Collect categorized suggestions with source consent and deduplication.
+    **Deliver:** Export selected redacted build/request/sync metadata for review.
 
-**Proposed flow and records:** Feedback intake remains proposed privacy-scoped collection; product analytics consent does not imply permission to publish a tenant's business examples.
+    **Flow and records:** Preview selected version/error/health fields with safe correlation IDs; exclude databases, customer content, secrets and raw environment dumps by default.
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Documented constraints:** Support access needs tenant approval, purpose, expiry, least scope and audit; guidance/export/cancellation policies preserve accepted financial history.
 
-**Accept:** Private tenant details are not published as feature requests.
+    **Accept:** Tokens, raw financial details and client messages are absent by default.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Docs basis:** Documented parent requirement/contract: [User support, retention and portability](docs/operations/release-and-support.md#user-support-retention-and-portability).
 
-#### F36.07 — Public feature requests
+  - [ ] <a id="f36-06"></a>**F36.06 — Product feedback backlog** · `E`
 
-- [ ] **E · Deliver:** Publish moderated, consented requests and optional votes with abuse bounds.
+    **Requires:** [F03.06](#f03-06), [F36.02](#f36-02)
 
-**Proposed flow and records:** Public requests/voting remain proposed publication requiring reviewed moderation/consent/abuse policy; private reports stay private until explicitly selected.
+    **Deliver:** Collect categorized suggestions with source consent and deduplication.
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Proposed flow and records:** Feedback intake remains proposed privacy-scoped collection; product analytics consent does not imply permission to publish a tenant's business examples.
 
-**Accept:** Internal feedback is private until explicitly selected for publication.
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Accept:** Private tenant details are not published as feature requests.
 
-#### F36.08 — Release communication preferences
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-- [ ] **E · Deliver:** Let users choose optional product news while keeping necessary security notices defined.
+  - [ ] <a id="f36-07"></a>**F36.07 — Public feature requests** · `E`
 
-**Proposed flow and records:** Release-news preference remains proposed optional topic routing; necessary security notices require their separately documented exception policy.
+    **Requires:** [F03.06](#f03-06), [F36.06](#f36-06)
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+    **Deliver:** Publish moderated, consented requests and optional votes with abuse bounds.
 
-**Accept:** Marketing opt-out does not disable critical account-security notices.
+    **Proposed flow and records:** Public requests/voting remain proposed publication requiring reviewed moderation/consent/abuse policy; private reports stay private until explicitly selected.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
 
-#### F36.09 — Service status page
+    **Accept:** Internal feedback is private until explicitly selected for publication.
 
-- [ ] **S · Deliver:** Publish verified component incidents and updates with operational ownership.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-**Flow and records:** Service status is operationally owned; define affected components and verified incident evidence without disclosing customer-specific failure details.
+  - [ ] <a id="f36-08"></a>**F36.08 — Release communication preferences** · `E`
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Requires:** [F03.06](#f03-06), [F06.03](#f06-03)
 
-**Accept:** An outage is distinguishable from a customer-specific permission error.
+    **Deliver:** Let users choose optional product news while keeping necessary security notices defined.
 
-**Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+    **Proposed flow and records:** Release-news preference remains proposed optional topic routing; necessary security notices require their separately documented exception policy.
 
-#### F36.10 — Incident subscription
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-- [ ] **E · Deliver:** Offer opted-in status notifications through an approved channel.
+    **Accept:** Marketing opt-out does not disable critical account-security notices.
 
-**Proposed flow and records:** Incident subscriptions remain proposed explicit channel consent and minimal service-status content, not a public stream of tenant incident evidence.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-**Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
+  - [ ] <a id="f36-09"></a>**F36.09 — Service status page** · `S`
 
-**Accept:** Status emails contain no affected tenant identities or private incident evidence.
+    **Requires:** [F03.06](#f03-06), [F38.11](#f38-11)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
+    **Deliver:** Publish verified component incidents and updates with operational ownership.
 
-#### F36.11 — Abuse report intake
+    **Flow and records:** Service status is operationally owned; define affected components and verified incident evidence without disclosing customer-specific failure details.
 
-- [ ] **E · Deliver:** Provide a bounded reporting channel and restricted triage workflow.
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
 
-**Proposed flow and records:** Abuse reporting remains proposed restricted triage with safe evidence handling; a submitted report itself cannot authorize support access or suspend another tenant.
+    **Accept:** An outage is distinguishable from a customer-specific permission error.
 
-**Documented constraints:** Contain unsafe effects, preserve evidence and reconcile isolated DB-plus-files restore; support ownership and measured RPO/RTO remain Q-16.
+    **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
-**Accept:** A malicious report cannot grant support authority or expose the reported tenant.
+  - [ ] <a id="f36-10"></a>**F36.10 — Incident subscription** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Incidents and recovery](docs/operations/release-and-support.md#incidents-and-recovery).
+    **Requires:** [F03.06](#f03-06), [F36.09](#f36-09), [F37.02](#f37-02)
 
-#### F36.12 — Administrative remediation
+    **Deliver:** Offer opted-in status notifications through an approved channel.
 
-- [ ] **S · Deliver:** Use scoped audited repair actions with preview and current authorization.
+    **Proposed flow and records:** Incident subscriptions remain proposed explicit channel consent and minimal service-status content, not a public stream of tenant incident evidence.
 
-**Flow and records:** Maintenance/remediation actions use the same authorized application services, current revisions and audit; unknown/partial outcomes reconcile rather than bypass invariants.
+    **Documented constraints:** Topic/channel preferences, quiet hours and security exceptions are explicit; build content after scope check and dedupe source-event/recipient/channel.
 
-**Documented constraints:** Every direct entry point uses shared authorized services; sensitive commands require current online authority and queued jobs are not delivery evidence.
+    **Accept:** Status emails contain no affected tenant identities or private incident evidence.
 
-**Accept:** A repair cannot edit posted money or bypass the normal domain service.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [INT-011 — Notification delivery and preferences](docs/specs/integrations-and-automation.md#int-011--notification-delivery-and-preferences).
 
-**Docs basis:** Documented parent requirement/contract: [Command families](docs/architecture/api-contracts.md#command-families).
+  - [ ] <a id="f36-11"></a>**F36.11 — Abuse report intake** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F38.06](#f38-06)
+
+    **Deliver:** Provide a bounded reporting channel and restricted triage workflow.
+
+    **Proposed flow and records:** Abuse reporting remains proposed restricted triage with safe evidence handling; a submitted report itself cannot authorize support access or suspend another tenant.
+
+    **Documented constraints:** Contain unsafe effects, preserve evidence and reconcile isolated DB-plus-files restore; support ownership and measured RPO/RTO remain Q-16.
+
+    **Accept:** A malicious report cannot grant support authority or expose the reported tenant.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Incidents and recovery](docs/operations/release-and-support.md#incidents-and-recovery).
+
+  - [ ] <a id="f36-12"></a>**F36.12 — Administrative remediation** · `S`
+
+    **Requires:** [F03.06](#f03-06), [F36.04](#f36-04), [F37.08](#f37-08)
+
+    **Deliver:** Use scoped audited repair actions with preview and current authorization.
+
+    **Flow and records:** Maintenance/remediation actions use the same authorized application services, current revisions and audit; unknown/partial outcomes reconcile rather than bypass invariants.
+
+    **Documented constraints:** Every direct entry point uses shared authorized services; sensitive commands require current online authority and queued jobs are not delivery evidence.
+
+    **Accept:** A repair cannot edit posted money or bypass the normal domain service.
+
+    **Docs basis:** Documented parent requirement/contract: [Command families](docs/architecture/api-contracts.md#command-families).
 
 <a id="category-37"></a>
 
 ### 9.37 Privacy, retention and governance
 
-**Owner/package:** P01/P09. **Prerequisites for each phase:** F03.06/F03.11; Q-01/Q-02/Q-13; security/legal review. **Optional extension wave:** X4.
+**Owner/package:** P01/P09. **Original branch context (specific Requires below governs feature order):** F03.06/F03.11; Q-01/Q-02/Q-13; security/legal review. **Optional extension wave:** X4.
 
 **Authority:** NFR-004/005/012–014; data lifecycle and security controls. These phases do not claim certification.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F37.01 — Data inventory
+- **F37 — Privacy, retention and governance**
 
-- [ ] **S · Deliver:** Record collected classes, purpose, storage locations, subprocessors and owners.
+  - [ ] <a id="f37-01"></a>**F37.01 — Data inventory** · `S`
 
-**Flow and records:** Maintain reviewed purpose/data-class/provider/location/access/retention inventory as dependencies evolve; new external data sharing needs an updated boundary review.
+    **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Deliver:** Record collected classes, purpose, storage locations, subprocessors and owners.
 
-**Accept:** A new connector cannot release without its data-sharing inventory entry.
+    **Flow and records:** Maintain reviewed purpose/data-class/provider/location/access/retention inventory as dependencies evolve; new external data sharing needs an updated boundary review.
 
-**Docs basis:** Documented parent requirement/contract: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
 
-#### F37.02 — Consent records
+    **Accept:** A new connector cannot release without its data-sharing inventory entry.
 
-- [ ] **E · Deliver:** Track optional analytics/communication choices with timestamp and policy version.
+    **Docs basis:** Documented parent requirement/contract: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-**Proposed flow and records:** Consent records remain proposed evidence of optional analytics/communications choices with defined scope/version/withdrawal semantics, not inferred legal consent from contact provenance.
+  - [ ] <a id="f37-02"></a>**F37.02 — Consent records** · `E`
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Requires:** [F37.01](#f37-01)
 
-**Accept:** Withdrawal suppresses future optional collection without falsifying historical consent.
+    **Deliver:** Track optional analytics/communication choices with timestamp and policy version.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Proposed flow and records:** Consent records remain proposed evidence of optional analytics/communications choices with defined scope/version/withdrawal semantics, not inferred legal consent from contact provenance.
 
-#### F37.03 — Retention schedules
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
 
-- [ ] **S · Deliver:** Apply approved class-specific retention to live data, exports, backups and drafts.
+    **Accept:** Withdrawal suppresses future optional collection without falsifying historical consent.
 
-**Flow and records:** Select retention by record/draft/file/index/export/audit/backup class under Q-13 and applicable financial obligations; no universal purge duration is implied.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-**Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+  - [ ] <a id="f37-03"></a>**F37.03 — Retention schedules** · `S`
 
-**Accept:** Retention never silently deletes referenced financial evidence before its allowed date.
+    **Requires:** [F37.01](#f37-01)
 
-**Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+    **Deliver:** Apply approved class-specific retention to live data, exports, backups and drafts.
 
-#### F37.04 — Legal holds
+    **Flow and records:** Select retention by record/draft/file/index/export/audit/backup class under Q-13 and applicable financial obligations; no universal purge duration is implied.
 
-- [ ] **S · Deliver:** Restrict deletion for explicitly reviewed records with scope and release history.
+    **Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
 
-**Flow and records:** Record explicit hold scope and release authority before purge; held records and referenced file versions remain protected from ordinary cleanup/closure.
+    **Accept:** Retention never silently deletes referenced financial evidence before its allowed date.
 
-**Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+    **Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
 
-**Accept:** A generic account-close job cannot erase held evidence.
+  - [ ] <a id="f37-04"></a>**F37.04 — Legal holds** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+    **Requires:** [F37.03](#f37-03)
 
-#### F37.05 — Account deletion workflow
+    **Deliver:** Restrict deletion for explicitly reviewed records with scope and release history.
 
-- [ ] **S · Deliver:** Reauthenticate, preview ownership/obligations and execute reviewed deletion/anonymization rules.
+    **Flow and records:** Record explicit hold scope and release authority before purge; held records and referenced file versions remain protected from ordinary cleanup/closure.
 
-**Flow and records:** Reauthenticate and preview ownership, obligations, export and legal holds; delete/anonymize eligible data across projections/files and eventual backup expiry under approved policy.
+    **Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
 
-**Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+    **Accept:** A generic account-close job cannot erase held evidence.
 
-**Accept:** Deleting one user does not destroy retained workspace invoices or another owner's access.
+    **Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
 
-**Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+  - [ ] <a id="f37-05"></a>**F37.05 — Account deletion workflow** · `S`
 
-#### F37.06 — Privacy access export
+    **Requires:** [F03.11](#f03-11), [F37.03](#f37-03), [F37.04](#f37-04)
 
-- [ ] **E · Deliver:** Provide verified subject-access handling with reviewed third-party redaction.
+    **Deliver:** Reauthenticate, preview ownership/obligations and execute reviewed deletion/anonymization rules.
 
-**Proposed flow and records:** Privacy access handling remains proposed verified requester/redaction workflow; ordinary workspace exports are not automatically a complete statutory subject-access process.
+    **Flow and records:** Reauthenticate and preview ownership, obligations, export and legal holds; delete/anonymize eligible data across projections/files and eventual backup expiry under approved policy.
 
-**Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
+    **Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
 
-**Accept:** A subject request cannot reveal another client's private data.
+    **Accept:** Deleting one user does not destroy retained workspace invoices or another owner's access.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export); [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
 
-#### F37.07 — Private analytics controls
+  - [ ] <a id="f37-06"></a>**F37.06 — Privacy access export** · `E`
 
-- [ ] **S · Deliver:** Collect minimal opt-in product metrics with declared retention.
+    **Requires:** [F34.05](#f34-05), [F02.07](#f02-07)
 
-**Flow and records:** Use opt-in minimal product analytics/crash upload and reviewed operational logging retention, excluding raw private content and credential-bearing URLs.
+    **Deliver:** Provide verified subject-access handling with reviewed third-party redaction.
 
-**Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
+    **Proposed flow and records:** Privacy access handling remains proposed verified requester/redaction workflow; ordinary workspace exports are not automatically a complete statutory subject-access process.
 
-**Accept:** Declining analytics preserves the complete core workflow.
+    **Documented constraints:** Preview locale/unit/currency mappings, duplicates and row failures; stable batch/source IDs dedupe imports and consistent exports disclose omissions.
 
-**Docs basis:** Documented parent requirement/contract: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Accept:** A subject request cannot reveal another client's private data.
 
-#### F37.08 — Audit history viewer
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Import and export](docs/architecture/data-lifecycle.md#import-and-export); [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-- [ ] **S · Deliver:** Expose scoped actor, event, revision and reason without secrets.
+  - [ ] <a id="f37-07"></a>**F37.07 — Private analytics controls** · `S`
 
-**Flow and records:** Read central actor/workspace/operation/target/revision/time/reason/correlation events through separately scoped audit authority; ordinary members cannot alter them.
+    **Requires:** [F37.02](#f37-02)
 
-**Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
+    **Deliver:** Collect minimal opt-in product metrics with declared retention.
 
-**Accept:** Ordinary members cannot alter or delete audit events.
+    **Flow and records:** Use opt-in minimal product analytics/crash upload and reviewed operational logging retention, excluding raw private content and credential-bearing URLs.
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
+    **Documented constraints:** Minimize/redact diagnostics and keep analytics opt-in; support is temporary/scoped and retention/recovery follow reviewed lifecycle decisions.
 
-#### F37.09 — Audit export
+    **Accept:** Declining analytics preserves the complete core workflow.
 
-- [ ] **S · Deliver:** Generate a permitted audit export with checksums and visible coverage/retention limits; independent tamper-evidence requires F37.10 proof.
+    **Docs basis:** Documented parent requirement/contract: [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-**Flow and records:** Export only the approved permitted audit projection and disclose format/scope/as-of/checksums; independently tamper-evident claims require additional proof beyond an ordinary DB export.
+  - [ ] <a id="f37-08"></a>**F37.08 — Audit history viewer** · `S`
 
-**Documented constraints:** Ordinary members cannot alter audit history; reads/exports need current scope, and independent tamper-evidence requires separate proof.
+    **Requires:** [F03.06](#f03-06), [F38.04](#f38-04)
 
-**Accept:** The export excludes private fields outside the requesting grant.
+    **Deliver:** Expose scoped actor, event, revision and reason without secrets.
 
-**Docs basis:** Documented parent requirement/contract: [Capability requirements — PLT-014](docs/specs/platform-and-workspaces.md#capability-requirements); [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
+    **Flow and records:** Read central actor/workspace/operation/target/revision/time/reason/correlation events through separately scoped audit authority; ordinary members cannot alter them.
 
-#### F37.10 — Independent audit integrity
+    **Documented constraints:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
-- [ ] **E · Deliver:** Add reviewed append-only or independently verifiable evidence if a concrete need selects it.
+    **Accept:** Ordinary members cannot alter or delete audit events.
 
-**Proposed flow and records:** Independent append-only audit integrity remains proposed: the current audit contract alone does not prove resistance to a privileged database operator.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements](docs/specs/platform-and-workspaces.md#capability-requirements).
 
-**Documented constraints:** User exports exclude auth secrets; service backups include sensitive auth data and require encryption/isolation and restored credential invalidation.
+  - [ ] <a id="f37-09"></a>**F37.09 — Audit export** · `S`
 
-**Accept:** A database operator rewrite is detectable under the declared threat model.
+    **Requires:** [F37.08](#f37-08), [F34.04](#f34-04)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Backup classes](docs/architecture/data-lifecycle.md#backup-classes).
+    **Deliver:** Generate a permitted audit export with checksums and visible coverage/retention limits; independent tamper-evidence requires F37.10 proof.
 
-#### F37.11 — Data residency selection
+    **Flow and records:** Export only the approved permitted audit projection and disclose format/scope/as-of/checksums; independently tamper-evident claims require additional proof beyond an ordinary DB export.
 
-- [ ] **E · Deliver:** Offer only regions whose database/files/backups/providers have a verified coverage contract.
+    **Documented constraints:** Ordinary members cannot alter audit history; reads/exports need current scope, and independent tamper-evidence requires separate proof.
 
-**Proposed flow and records:** Residency selection remains Q-02 plus provider-by-provider mapping for database/files/auth/backups/egress; current docs define no selectable region catalogue or guarantee.
+    **Accept:** The export excludes private fields outside the requesting grant.
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Docs basis:** Documented parent requirement/contract: [Capability requirements — PLT-014](docs/specs/platform-and-workspaces.md#capability-requirements); [Privacy, recovery and operations](docs/architecture/security-and-privacy.md#privacy-recovery-and-operations).
 
-**Accept:** A regional label cannot conceal cross-region provider transfers.
+  - [ ] <a id="f37-10"></a>**F37.10 — Independent audit integrity** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Requires:** [F37.08](#f37-08)
 
-#### F37.12 — Enterprise retention overrides
+    **Deliver:** Add reviewed append-only or independently verifiable evidence if a concrete need selects it.
 
-- [ ] **E · Deliver:** Bound workspace-specific policies by mandatory retention/legal obligations.
+    **Proposed flow and records:** Independent append-only audit integrity remains proposed: the current audit contract alone does not prove resistance to a privileged database operator.
 
-**Proposed flow and records:** Enterprise overrides remain proposed policies constrained by legal holds/references and approved backup expiry; an owner setting cannot silently erase retained financial history.
+    **Documented constraints:** User exports exclude auth secrets; service backups include sensitive auth data and require encryption/isolation and restored credential invalidation.
 
-**Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+    **Accept:** A database operator rewrite is detectable under the declared threat model.
 
-**Accept:** An owner cannot shorten a required financial hold through settings.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Backup classes](docs/architecture/data-lifecycle.md#backup-classes).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+  - [ ] <a id="f37-11"></a>**F37.11 — Data residency selection** · `E`
+
+    **Requires:** [F37.01](#f37-01), [F38.01](#f38-01)
+
+    **Deliver:** Offer only regions whose database/files/backups/providers have a verified coverage contract.
+
+    **Proposed flow and records:** Residency selection remains Q-02 plus provider-by-provider mapping for database/files/auth/backups/egress; current docs define no selectable region catalogue or guarantee.
+
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+
+    **Accept:** A regional label cannot conceal cross-region provider transfers.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+
+  - [ ] <a id="f37-12"></a>**F37.12 — Enterprise retention overrides** · `E`
+
+    **Requires:** [F37.03](#f37-03), [F37.04](#f37-04)
+
+    **Deliver:** Bound workspace-specific policies by mandatory retention/legal obligations.
+
+    **Proposed flow and records:** Enterprise overrides remain proposed policies constrained by legal holds/references and approved backup expiry; an owner setting cannot silently erase retained financial history.
+
+    **Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+
+    **Accept:** An owner cannot shorten a required financial hold through settings.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
 
 <a id="category-38"></a>
 
 ### 9.38 Infrastructure, reliability and security delivery
 
-**Owner/package:** P01/P09. **Prerequisites for each phase:** P00 environment/budget/recovery decisions Q-02/Q-11/Q-16; applies before each release. **Optional extension wave:** X4.
+**Owner/package:** P01/P09. **Original branch context (specific Requires below governs feature order):** P00 environment/budget/recovery decisions Q-02/Q-11/Q-16; applies before each release. **Optional extension wave:** X4.
 
 **Authority:** All NFRs; selected SEC-001–064. These are operational capabilities with their own evidence.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F38.01 — Environment isolation
+- **F38 — Infrastructure, reliability and security delivery**
 
-- [ ] **S · Deliver:** Separate development, preview and production identities, databases, secrets and files.
+  - [ ] <a id="f38-01"></a>**F38.01 — Environment isolation** · `S`
 
-**Flow and records:** Separate local/preview/production data, auth origins, credentials, storage and provider sandboxes; use synthetic preview records and treat production-derived branches as sensitive.
+    **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
-**Documented constraints:** Separate environments/credentials and synthetic preview data; deploy reviewed server-capable builds with compatible migrations and current ingress/auth/cache verification.
+    **Deliver:** Separate development, preview and production identities, databases, secrets and files.
 
-**Accept:** Preview credentials cannot read production or run its callbacks.
+    **Flow and records:** Separate local/preview/production data, auth origins, credentials, storage and provider sandboxes; use synthetic preview records and treat production-derived branches as sensitive.
 
-**Docs basis:** Documented parent requirement/contract: [Environments and delivery](docs/operations/release-and-support.md#environments-and-delivery).
+    **Documented constraints:** Separate environments/credentials and synthetic preview data; deploy reviewed server-capable builds with compatible migrations and current ingress/auth/cache verification.
 
-#### F38.02 — Reviewed database migrations
+    **Accept:** Preview credentials cannot read production or run its callbacks.
 
-- [ ] **S · Deliver:** Use controlled expand/contract changes compatible with stale tabs and managed auth ownership.
+    **Docs basis:** Documented parent requirement/contract: [Environments and delivery](docs/operations/release-and-support.md#environments-and-delivery).
 
-**Flow and records:** Expand supported reads/schema before new writes, backfill in bounded batches and retire old formats only after compatibility/recovery proof and published window.
+  - [ ] <a id="f38-02"></a>**F38.02 — Reviewed database migrations** · `S`
 
-**Documented constraints:** Expand compatibility before writes and bounded backfill; remove old formats only after the published window, with explicit recovery for failed migration.
+    **Requires:** [F38.01](#f38-01)
 
-**Accept:** The prior supported build runs safely during rollout and rollback testing.
+    **Deliver:** Use controlled expand/contract changes compatible with stale tabs and managed auth ownership.
 
-**Docs basis:** Documented parent requirement/contract: [Persistence and migrations](docs/architecture/data-lifecycle.md#persistence-and-migrations).
+    **Inspected source status:** PARTIAL: one email-delivery migration exists; business migration/compatibility and isolated application proof remain pending.
 
-#### F38.03 — Runtime database least privilege
+    **Flow and records:** Expand supported reads/schema before new writes, backfill in bounded batches and retire old formats only after compatibility/recovery proof and published window.
 
-- [ ] **S · Deliver:** Use server-only pooled connections and restricted runtime roles.
+    **Documented constraints:** Expand compatibility before writes and bounded backfill; remove old formats only after the published window, with explicit recovery for failed migration.
 
-**Flow and records:** Use trusted server-only pooled Neon queries with constrained grants/projections; verify pooled tenant isolation and avoid session-level tenant assumptions under pooling.
+    **Accept:** The prior supported build runs safely during rollout and rollback testing.
 
-**Documented constraints:** State owner, bounds/index needs, transaction scope, external jobs and recovery; add only concrete patterns and test pooled tenant isolation/concurrency.
+    **Docs basis:** Documented parent requirement/contract: [Persistence and migrations](docs/architecture/data-lifecycle.md#persistence-and-migrations).
 
-**Accept:** Direct arbitrary table access or tenant reuse cannot bypass the policy boundary.
+  - [ ] <a id="f38-03"></a>**F38.03 — Runtime database least privilege** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Scalability review](docs/architecture/design-patterns.md#scalability-review); [Tenant and resource authorization](docs/architecture/security-and-privacy.md#tenant-and-resource-authorization).
+    **Requires:** [F38.02](#f38-02)
 
-#### F38.04 — Transactional command foundation
+    **Deliver:** Use server-only pooled connections and restricted runtime roles.
 
-- [ ] **S · Deliver:** Commit business changes, receipt, audit and outbox atomically.
+    **Flow and records:** Use trusted server-only pooled Neon queries with constrained grants/projections; verify pooled tenant isolation and avoid session-level tenant assumptions under pooling.
 
-**Flow and records:** Atomically commit domain effect, expected revision/result receipt, audit and outbox with current actor/scope and stable payload-checked operation identity.
+    **Documented constraints:** State owner, bounds/index needs, transaction scope, external jobs and recovery; add only concrete patterns and test pooled tenant isolation/concurrency.
 
-**Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
+    **Accept:** Direct arbitrary table access or tenant reuse cannot bypass the policy boundary.
 
-**Accept:** A fault between steps leaves neither a partial payment nor an orphan external effect.
+    **Docs basis:** Documented parent requirement/contract: [Scalability review](docs/architecture/design-patterns.md#scalability-review); [Tenant and resource authorization](docs/architecture/security-and-privacy.md#tenant-and-resource-authorization).
 
-**Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
+  - [ ] <a id="f38-04"></a>**F38.04 — Transactional command foundation** · `S`
 
-#### F38.05 — Private file service
+    **Requires:** [F38.02](#f38-02), [F38.03](#f38-03)
 
-- [ ] **S · Deliver:** Use scoped short-lived upload/download authority, quarantine and checked references.
+    **Deliver:** Commit business changes, receipt, audit and outbox atomically.
 
-**Flow and records:** Issue short-lived scoped file authority, bound supported bytes/type/size/quota and validate integrity before reference/publication; recheck download resource/version access.
+    **Flow and records:** Atomically commit domain effect, expected revision/result receipt, audit and outbox with current actor/scope and stable payload-checked operation identity.
 
-**Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
+    **Documented constraints:** Actor derives from verified session; expected revision and workspace/actor/type-scoped operation plus payload digest prevent stale or changed-payload replay.
 
-**Accept:** Unsigned downloads and cross-tenant object IDs fail before byte delivery.
+    **Accept:** A fault between steps leaves neither a partial payment nor an orphan external effect.
 
-**Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
+    **Docs basis:** Documented parent requirement/contract: [Common request/result envelope](docs/architecture/api-contracts.md#common-requestresult-envelope).
 
-#### F38.06 — Distributed rate limits
+  - [ ] <a id="f38-05"></a>**F38.05 — Private file service** · `S`
 
-- [ ] **S · Deliver:** Bound authentication, uploads, exports and jobs across instances.
+    **Requires:** [F03.06](#f03-06)
 
-**Flow and records:** Bound expensive auth/query/file/export/job work across instances and tenants; selected caps/degradation need measured workloads and accountable ownership.
+    **Deliver:** Use scoped short-lived upload/download authority, quarantine and checked references.
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Flow and records:** Issue short-lived scoped file authority, bound supported bytes/type/size/quota and validate integrity before reference/publication; recheck download resource/version access.
 
-**Accept:** Multiple application instances cannot multiply one tenant's allowed burst unboundedly.
+    **Documented constraints:** Attachments retain hash/type/size/version and upload state; incomplete uploads are not final files and conflicting note bodies preserve revisions.
 
-**Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+    **Accept:** Unsigned downloads and cross-tenant object IDs fail before byte delivery.
 
-#### F38.07 — Security headers and private caching
+    **Docs basis:** Documented parent requirement/contract: [WRK-011 — Files, notes and knowledge links](docs/specs/work-management.md#wrk-011--files-notes-and-knowledge-links).
 
-- [ ] **S · Deliver:** Verify actual HTTPS ingress, CSP, cookies, origins and private response cache policy.
+  - [ ] <a id="f38-06"></a>**F38.06 — Distributed rate limits** · `S`
 
-**Flow and records:** Verify deployed HTTPS, cookies/origins, CSP/embedding and private cache behavior at the real ingress, rather than assuming local config proves production protection.
+    **Requires:** [F38.01](#f38-01)
 
-**Documented constraints:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
+    **Deliver:** Bound authentication, uploads, exports and jobs across instances.
 
-**Accept:** A cached authenticated response cannot be served to another identity.
+    **Inspected source status:** PARTIAL: contact limiting is process-local; a shared cross-instance limiter remains pending.
 
-**Docs basis:** Documented parent requirement/contract: [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure).
+    **Flow and records:** Bound expensive auth/query/file/export/job work across instances and tenants; selected caps/degradation need measured workloads and accountable ownership.
 
-#### F38.08 — Dependency advisory review
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
 
-- [ ] **S · Deliver:** Match exact lockfile and deployed versions to fresh upstream advisories with findings ownership.
+    **Accept:** Multiple application instances cannot multiply one tenant's allowed burst unboundedly.
 
-**Flow and records:** Inventory exact source/lockfile/component/runtime versions against fresh advisories at relevant change/release time and keep unavailable checks as owned gaps.
+    **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
-**Documented constraints:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
+  - [ ] <a id="f38-07"></a>**F38.07 — Security headers and private caching** · `S`
 
-**Accept:** An unavailable scanner is recorded as a gap, never a clean result.
+    **Requires:** [F38.01](#f38-01)
 
-**Docs basis:** Documented parent requirement/contract: [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure); [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Deliver:** Verify actual HTTPS ingress, CSP, cookies, origins and private response cache policy.
 
-#### F38.09 — Secret lifecycle
+    **Flow and records:** Verify deployed HTTPS, cookies/origins, CSP/embedding and private cache behavior at the real ingress, rather than assuming local config proves production protection.
 
-- [ ] **S · Deliver:** Keep server-only secrets with environment separation, rotation and incident revocation.
+    **Documented constraints:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
 
-**Flow and records:** Keep auth/DB/provider secrets server-only with environment separation and reviewed rotation/revocation; restored auth-bearing secrets need special recovery handling.
+    **Accept:** A cached authenticated response cannot be served to another identity.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Docs basis:** Documented parent requirement/contract: [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure).
 
-**Accept:** Rotated credentials stop working without exposing values in logs or bundles.
+  - [ ] <a id="f38-08"></a>**F38.08 — Dependency advisory review** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
-#### F38.10 — Redacted observability
+    **Deliver:** Match exact lockfile and deployed versions to fresh upstream advisories with findings ownership.
 
-- [ ] **S · Deliver:** Record correlated errors, bounded latency/queue metrics and redacted audit events.
+    **Flow and records:** Inventory exact source/lockfile/component/runtime versions against fresh advisories at relevant change/release time and keep unavailable checks as owned gaps.
 
-**Flow and records:** Record redacted correlation/error/latency/query/queue metadata with defined access/retention and no customer document, token or raw environment dumps.
+    **Documented constraints:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Accept:** An unavailable scanner is recorded as a gap, never a clean result.
 
-**Accept:** An attacker-controlled name cannot inject log structure or expose tokens.
+    **Docs basis:** Documented parent requirement/contract: [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure); [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
-**Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+  - [ ] <a id="f38-09"></a>**F38.09 — Secret lifecycle** · `S`
 
-#### F38.11 — Actionable alerting
+    **Requires:** [F38.01](#f38-01)
 
-- [ ] **S · Deliver:** Route service failures, financial anomalies and backup failures to accountable operators.
+    **Deliver:** Keep server-only secrets with environment separation, rotation and incident revocation.
 
-**Flow and records:** Choose alert owner/channel/thresholds under approved service policy and test actual delivery of meaningful failure/backlog/backup/financial anomaly signals.
+    **Flow and records:** Keep auth/DB/provider secrets server-only with environment separation and reviewed rotation/revocation; restored auth-bearing secrets need special recovery handling.
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Accept:** A synthetic failure reaches the actual declared on-call path.
+    **Accept:** Rotated credentials stop working without exposing values in logs or bundles.
 
-**Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+    **Docs basis:** Documented parent requirement/contract: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-#### F38.12 — Database backup recovery
+  - [ ] <a id="f38-10"></a>**F38.10 — Redacted observability** · `S`
 
-- [ ] **S · Deliver:** Restore into isolation and verify integrity and auth invalidation before use.
+    **Requires:** [F38.01](#f38-01)
 
-**Flow and records:** Restore DB into isolation, validate relationships/money/number/receipt constraints and revoke/rotate restored session authority before reopening writes.
+    **Deliver:** Record correlated errors, bounded latency/queue metrics and redacted audit events.
 
-**Documented constraints:** Validate manifests/relations/amounts/files in isolation, reconcile later external outcomes and invalidate restored sessions before reopening writes.
+    **Flow and records:** Record redacted correlation/error/latency/query/queue metadata with defined access/retention and no customer document, token or raw environment dumps.
 
-**Accept:** Old restored sessions cannot regain access and numbering cannot reuse later issued values.
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
 
-**Docs basis:** Documented parent requirement/contract: [Isolated restore and reconciliation](docs/architecture/data-lifecycle.md#isolated-restore-and-reconciliation).
+    **Accept:** An attacker-controlled name cannot inject log structure or expose tokens.
 
-#### F38.13 — Independent file backup
+    **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
-- [ ] **S · Deliver:** Recover authorized blobs, checksums and metadata independently of live storage.
+  - [ ] <a id="f38-11"></a>**F38.11 — Actionable alerting** · `S`
 
-**Flow and records:** Back up private object bytes with metadata/manifests/checksums and recover required keys/config through restricted procedures; database restore alone cannot restore external files.
+    **Requires:** [F38.10](#f38-10)
 
-**Documented constraints:** User exports exclude auth secrets; service backups include sensitive auth data and require encryption/isolation and restored credential invalidation.
+    **Deliver:** Route service failures, financial anomalies and backup failures to accountable operators.
 
-**Accept:** A restored database can identify missing file versions and repair from tested backups.
+    **Flow and records:** Choose alert owner/channel/thresholds under approved service policy and test actual delivery of meaningful failure/backlog/backup/financial anomaly signals.
 
-**Docs basis:** Documented parent requirement/contract: [Backup classes](docs/architecture/data-lifecycle.md#backup-classes).
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
 
-#### F38.14 — External outcome reconciliation
+    **Accept:** A synthetic failure reaches the actual declared on-call path.
 
-- [ ] **S · Deliver:** Reconcile later payments, sends and jobs before restored writes reopen.
+    **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
-**Flow and records:** After the restore point, reconcile provider payments/callbacks/sends/jobs and number authority before accepting new money effects or dispatching work.
+  - [ ] <a id="f38-12"></a>**F38.12 — Database backup recovery** · `S`
 
-**Documented constraints:** Validate manifests/relations/amounts/files in isolation, reconcile later external outcomes and invalidate restored sessions before reopening writes.
+    **Requires:** [F38.02](#f38-02), [F38.09](#f38-09)
 
-**Accept:** A restore cannot replay a refund or resend an already accepted invoice blindly.
+    **Deliver:** Restore into isolation and verify integrity and auth invalidation before use.
 
-**Docs basis:** Documented parent requirement/contract: [Isolated restore and reconciliation](docs/architecture/data-lifecycle.md#isolated-restore-and-reconciliation).
+    **Flow and records:** Restore DB into isolation, validate relationships/money/number/receipt constraints and revoke/rotate restored session authority before reopening writes.
 
-#### F38.15 — Service performance budgets
+    **Documented constraints:** Validate manifests/relations/amounts/files in isolation, reconcile later external outcomes and invalidate restored sessions before reopening writes.
 
-- [ ] **S · Deliver:** Measure declared browser/network/dataset fixtures and query/job bounds.
+    **Accept:** Old restored sessions cannot regain access and numbering cannot reuse later issued values.
 
-**Flow and records:** Declare measured supported browser/network/data/query/job budgets and index needs; private cache shortcuts cannot substitute for bounded authorized workloads.
+    **Docs basis:** Documented parent requirement/contract: [Isolated restore and reconciliation](docs/architecture/data-lifecycle.md#isolated-restore-and-reconciliation).
 
-**Documented constraints:** State owner, bounds/index needs, transaction scope, external jobs and recovery; add only concrete patterns and test pooled tenant isolation/concurrency.
+  - [ ] <a id="f38-13"></a>**F38.13 — Independent file backup** · `S`
 
-**Accept:** Report pagination stays bounded and protected data never uses unsafe shared cache shortcuts.
+    **Requires:** [F38.05](#f38-05), [F38.12](#f38-12)
 
-**Docs basis:** Documented parent requirement/contract: [Scalability review](docs/architecture/design-patterns.md#scalability-review).
+    **Deliver:** Recover authorized blobs, checksums and metadata independently of live storage.
 
-#### F38.16 — Tenant resource fairness
+    **Flow and records:** Back up private object bytes with metadata/manifests/checksums and recover required keys/config through restricted procedures; database restore alone cannot restore external files.
 
-- [ ] **S · Deliver:** Bound pools, batch size, runtime, files and spend per tenant.
+    **Documented constraints:** User exports exclude auth secrets; service backups include sensitive auth data and require encryption/isolation and restored credential invalidation.
 
-**Flow and records:** Limit page/batch/upload/job/time/pool/egress use and degrade nonessential operations first so one tenant cannot exhaust shared interactive capacity.
+    **Accept:** A restored database can identify missing file versions and repair from tested backups.
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Docs basis:** Documented parent requirement/contract: [Backup classes](docs/architecture/data-lifecycle.md#backup-classes).
 
-**Accept:** One large export cannot starve interactive work across all other tenants.
+  - [ ] <a id="f38-14"></a>**F38.14 — External outcome reconciliation** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+    **Requires:** [F38.04](#f38-04)
 
-#### F38.17 — Controlled deployment
+    **Deliver:** Reconcile later payments, sends and jobs before restored writes reopen.
 
-- [ ] **S · Deliver:** Use reviewed builds, migration gates, feature controls and compatible rollback/forward repair.
+    **Flow and records:** After the restore point, reconcile provider payments/callbacks/sends/jobs and number authority before accepting new money effects or dispatching work.
 
-**Flow and records:** Record build/migration/auth-policy/features and compatibility window; stage rollout and use rollback only if data remains compatible, otherwise forward repair.
+    **Documented constraints:** Validate manifests/relations/amounts/files in isolation, reconcile later external outcomes and invalidate restored sessions before reopening writes.
 
-**Documented constraints:** Separate environments/credentials and synthetic preview data; deploy reviewed server-capable builds with compatible migrations and current ingress/auth/cache verification.
+    **Accept:** A restore cannot replay a refund or resend an already accepted invoice blindly.
 
-**Accept:** A failed rollout cannot leave old tabs writing an incompatible financial schema.
+    **Docs basis:** Documented parent requirement/contract: [Isolated restore and reconciliation](docs/architecture/data-lifecycle.md#isolated-restore-and-reconciliation).
 
-**Docs basis:** Documented parent requirement/contract: [Environments and delivery](docs/operations/release-and-support.md#environments-and-delivery).
+  - [ ] <a id="f38-15"></a>**F38.15 — Service performance budgets** · `S`
 
-#### F38.18 — Incident response workflow
+    **Requires:** [F38.10](#f38-10)
 
-- [ ] **S · Deliver:** Contain exposure, revoke credentials, preserve evidence and recover under a rehearsed runbook.
+    **Deliver:** Measure declared browser/network/dataset fixtures and query/job bounds.
 
-**Flow and records:** Rehearse detection, containment, credential/session revoke, evidence preservation, recovery/reconciliation and approved communications with Q-16 operational ownership.
+    **Flow and records:** Declare measured supported browser/network/data/query/job budgets and index needs; private cache shortcuts cannot substitute for bounded authorized workloads.
 
-**Documented constraints:** Contain unsafe effects, preserve evidence and reconcile isolated DB-plus-files restore; support ownership and measured RPO/RTO remain Q-16.
+    **Documented constraints:** State owner, bounds/index needs, transaction scope, external jobs and recovery; add only concrete patterns and test pooled tenant isolation/concurrency.
 
-**Accept:** A synthetic compromised credential can be disabled and verified without rewriting history.
+    **Accept:** Report pagination stays bounded and protected data never uses unsafe shared cache shortcuts.
 
-**Docs basis:** Documented parent requirement/contract: [Incidents and recovery](docs/operations/release-and-support.md#incidents-and-recovery).
+    **Docs basis:** Documented parent requirement/contract: [Scalability review](docs/architecture/design-patterns.md#scalability-review).
 
-#### F38.19 — Data lifecycle cleanup jobs
+  - [ ] <a id="f38-16"></a>**F38.16 — Tenant resource fairness** · `S`
 
-- [ ] **S · Deliver:** Remove expired temporary exports, abandoned uploads and eligible records within policy.
+    **Requires:** [F38.06](#f38-06), [F38.15](#f38-15)
 
-**Flow and records:** Purge only expired eligible exports/uploads/records after reference/hold/retention checks and preserve tombstones/current schema protections against stale resurrection.
+    **Deliver:** Bound pools, batch size, runtime, files and spend per tenant.
 
-**Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+    **Flow and records:** Limit page/batch/upload/job/time/pool/egress use and degrade nonessential operations first so one tenant cannot exhaust shared interactive capacity.
 
-**Accept:** Cleanup cannot delete a committed file or unresolved recoverable draft accidentally.
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
 
-**Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+    **Accept:** One large export cannot starve interactive work across all other tenants.
 
-#### F38.20 — Provider cost and quota guardrails
+    **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
-- [ ] **S · Deliver:** Show usage, budget thresholds and safe degraded behavior for selected paid/free services.
+  - [ ] <a id="f38-17"></a>**F38.17 — Controlled deployment** · `S`
 
-**Flow and records:** Measure actual provider capacity/cost/quotas and surface pending/degraded work truthfully; caps/default alerts require approval rather than free-tier durability promises.
+    **Requires:** [F38.01](#f38-01), [F38.02](#f38-02), [F38.07](#f38-07)
 
-**Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+    **Deliver:** Use reviewed builds, migration gates, feature controls and compatible rollback/forward repair.
 
-**Accept:** Provider quota exhaustion preserves accepted source records and exposes pending work honestly.
+    **Flow and records:** Record build/migration/auth-policy/features and compatibility window; stage rollout and use rollback only if data remains compatible, otherwise forward repair.
 
-**Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
+    **Documented constraints:** Separate environments/credentials and synthetic preview data; deploy reviewed server-capable builds with compatible migrations and current ingress/auth/cache verification.
+
+    **Accept:** A failed rollout cannot leave old tabs writing an incompatible financial schema.
+
+    **Docs basis:** Documented parent requirement/contract: [Environments and delivery](docs/operations/release-and-support.md#environments-and-delivery).
+
+  - [ ] <a id="f38-18"></a>**F38.18 — Incident response workflow** · `S`
+
+    **Requires:** [F38.10](#f38-10), [F38.11](#f38-11)
+
+    **Deliver:** Contain exposure, revoke credentials, preserve evidence and recover under a rehearsed runbook.
+
+    **Flow and records:** Rehearse detection, containment, credential/session revoke, evidence preservation, recovery/reconciliation and approved communications with Q-16 operational ownership.
+
+    **Documented constraints:** Contain unsafe effects, preserve evidence and reconcile isolated DB-plus-files restore; support ownership and measured RPO/RTO remain Q-16.
+
+    **Accept:** A synthetic compromised credential can be disabled and verified without rewriting history.
+
+    **Docs basis:** Documented parent requirement/contract: [Incidents and recovery](docs/operations/release-and-support.md#incidents-and-recovery).
+
+  - [ ] <a id="f38-19"></a>**F38.19 — Data lifecycle cleanup jobs** · `S`
+
+    **Requires:** [F37.03](#f37-03)
+
+    **Deliver:** Remove expired temporary exports, abandoned uploads and eligible records within policy.
+
+    **Flow and records:** Purge only expired eligible exports/uploads/records after reference/hold/retention checks and preserve tombstones/current schema protections against stale resurrection.
+
+    **Documented constraints:** Purge respects legal holds, references, auth dependencies and backup expiry; tombstones prevent resurrection and downloaded copies have no remote-wipe guarantee.
+
+    **Accept:** Cleanup cannot delete a committed file or unresolved recoverable draft accidentally.
+
+    **Docs basis:** Documented parent requirement/contract: [Retention and evidence](docs/architecture/data-lifecycle.md#retention-and-evidence).
+
+  - [ ] <a id="f38-20"></a>**F38.20 — Provider cost and quota guardrails** · `S`
+
+    **Requires:** [F38.10](#f38-10)
+
+    **Deliver:** Show usage, budget thresholds and safe degraded behavior for selected paid/free services.
+
+    **Flow and records:** Measure actual provider capacity/cost/quotas and surface pending/degraded work truthfully; caps/default alerts require approval rather than free-tier durability promises.
+
+    **Documented constraints:** Monitor bounded workloads and minimal redacted diagnostics; product analytics/crash uploads are opt-in and provider limits are verified rather than assumed.
+
+    **Accept:** Provider quota exhaustion preserves accepted source records and exposes pending work honestly.
+
+    **Docs basis:** Documented parent requirement/contract: [Quotas and observability](docs/operations/release-and-support.md#quotas-and-observability).
 
 <a id="category-39"></a>
 
 ### 9.39 Accessibility, localization and release evidence
 
-**Owner/package:** P01/P09 and every UI module. **Prerequisites for each phase:** DESIGN.md; supported browser/assistive matrix Q-11; current source build. **Optional extension wave:** X4.
+**Owner/package:** P01/P09 and every UI module. **Original branch context (specific Requires below governs feature order):** DESIGN.md; supported browser/assistive matrix Q-11; current source build. **Optional extension wave:** X4.
 
 **Authority:** NFR-001–019. These phases establish reusable verification; every feature also satisfies applicable checks.
 
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F39.01 — Design system contracts
+- **F39 — Accessibility, localization and release evidence**
 
-- [ ] **S · Deliver:** Maintain shadcn components, semantic tokens and documented states in the existing showcase.
+  - [ ] <a id="f39-01"></a>**F39.01 — Design system contracts** · `S`
 
-**Flow and records:** Maintain shared component/token/variant contracts and current showcase states using DESIGN.md authority; earlier visual recipe colors cannot override the monochrome system.
+    **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
-**Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
+    **Deliver:** Maintain shadcn components, semantic tokens and documented states in the existing showcase.
 
-**Accept:** Shared components work in both themes without bypassing semantics or contrast decisions.
+    **Inspected source status:** PARTIAL: tokens, shared primitives and showcase exist; business composite contracts and current behavior evidence remain pending.
 
-**Docs basis:** Documented parent requirement/contract: [Components](DESIGN.md#components).
+    **Flow and records:** Maintain shared component/token/variant contracts and current showcase states using DESIGN.md authority; earlier visual recipe colors cannot override the monochrome system.
 
-#### F39.02 — English and Arabic message parity
+    **Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
 
-- [ ] **S · Deliver:** Localize content, validation, dates, numbers and server errors from stable keys.
+    **Accept:** Shared components work in both themes without bypassing semantics or contrast decisions.
 
-**Flow and records:** Translate all shipped UI/server validation/notice/error/onboarding/email/PDF content with stable parameterized keys and unchanged enum/ID/money semantics.
+    **Docs basis:** Documented parent requirement/contract: [Components](DESIGN.md#components).
 
-**Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
+  - [ ] <a id="f39-02"></a>**F39.02 — English and Arabic message parity** · `S`
 
-**Accept:** Missing keys and mixed-direction IDs are caught on representative complete journeys.
+    **Requires:** [F39.01](#f39-01)
 
-**Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+    **Deliver:** Localize content, validation, dates, numbers and server errors from stable keys.
 
-#### F39.03 — RTL layout verification
+    **Inspected source status:** PARTIAL: two message catalogs and a parity script exist; all future screens/artifacts still need coverage.
 
-- [ ] **S · Deliver:** Use logical geometry and reviewed Arabic typography for application and artifacts.
+    **Flow and records:** Translate all shipped UI/server validation/notice/error/onboarding/email/PDF content with stable parameterized keys and unchanged enum/ID/money semantics.
 
-**Flow and records:** Verify root/logical direction, Arabic shaping and mixed-direction names/URLs/IDs in screens and artifacts, using fluent review rather than machine-only signoff.
+    **Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
 
-**Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
+    **Accept:** Missing keys and mixed-direction IDs are caught on representative complete journeys.
 
-**Accept:** Long Arabic strings remain usable at narrow width and zoom.
+    **Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
 
-**Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
+  - [ ] <a id="f39-03"></a>**F39.03 — RTL layout verification** · `S`
 
-#### F39.04 — Keyboard and focus verification
+    **Requires:** [F39.02](#f39-02)
 
-- [ ] **S · Deliver:** Verify complete forms, tables, menus, dialogs and non-drag actions.
+    **Deliver:** Use logical geometry and reviewed Arabic typography for application and artifacts.
 
-**Flow and records:** Exercise all navigation/forms/dialogs/tables and drag alternatives with visible unobscured focus and predictable focus restoration on success/error.
+    **Flow and records:** Verify root/logical direction, Arabic shaping and mixed-direction names/URLs/IDs in screens and artifacts, using fluent review rather than machine-only signoff.
 
-**Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
+    **Documented constraints:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
 
-**Accept:** A keyboard user completes the client-to-payment flow without a focus trap.
+    **Accept:** Long Arabic strings remain usable at narrow width and zoom.
 
-**Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
+    **Docs basis:** Documented parent requirement/contract: [Locale and direction contract](docs/product/ux-and-localization.md#locale-and-direction-contract).
 
-#### F39.05 — Assistive technology verification
+  - [ ] <a id="f39-04"></a>**F39.04 — Keyboard and focus verification** · `S`
 
-- [ ] **S · Deliver:** Test supported screen readers, labels, status announcements and errors.
+    **Requires:** [F39.01](#f39-01)
 
-**Flow and records:** Test supported screen-reader names/roles/reading order, validation summaries and bounded status announcements; exact browser/assistive matrix is Q-11.
+    **Deliver:** Verify complete forms, tables, menus, dialogs and non-drag actions.
 
-**Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
+    **Flow and records:** Exercise all navigation/forms/dialogs/tables and drag alternatives with visible unobscured focus and predictable focus restoration on success/error.
 
-**Accept:** Async save and validation states are announced without repeated noise.
+    **Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
 
-**Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
+    **Accept:** A keyboard user completes the client-to-payment flow without a focus trap.
 
-#### F39.06 — Contrast and reduced-motion verification
+    **Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
 
-- [ ] **S · Deliver:** Verify actual component states, zoom and motion preferences against the design contract.
+  - [ ] <a id="f39-05"></a>**F39.05 — Assistive technology verification** · `S`
 
-**Flow and records:** Check actual normal/focus/disabled/error/interactive contrast, reflow/zoom/high-contrast/motion states and retain known palette or human-review gaps as open evidence.
+    **Requires:** [F39.04](#f39-04)
 
-**Documented constraints:** Known contrast and fluent-Arabic/human verification gaps remain explicit; token validation or screenshots do not establish full accessibility or release acceptance.
+    **Deliver:** Test supported screen readers, labels, status announcements and errors.
 
-**Accept:** A supplied token with failed contrast remains a tracked gap until its usage is resolved.
+    **Flow and records:** Test supported screen-reader names/roles/reading order, validation summaries and bounded status announcements; exact browser/assistive matrix is Q-11.
 
-**Docs basis:** Documented parent requirement/contract: [Validation and known gaps](DESIGN.md#validation-and-known-gaps).
+    **Documented constraints:** Target WCAG 2.2 AA with keyboard/focus/reader/contrast/reflow/motion checks; automated results alone do not establish conformance.
 
-#### F39.07 — Financial invariant tests
+    **Accept:** Async save and validation states are announced without repeated noise.
 
-- [ ] **S · Deliver:** Use approved exact fixtures plus concurrent posting and source-conservation checks.
+    **Docs basis:** Documented parent requirement/contract: [Accessibility acceptance](docs/product/ux-and-localization.md#accessibility-acceptance).
 
-**Flow and records:** Use independently approved exact fixtures and real concurrency/rollback to conserve money/source seconds across discounts/taxes/allocations/credits/reversals and policy versions.
+  - [ ] <a id="f39-06"></a>**F39.06 — Contrast and reduced-motion verification** · `S`
 
-**Documented constraints:** Approved fixtures cover fractional quantities, rounding ties, 0/2/3-decimal currencies and partial-credit remainders; existing snapshots keep old policies.
+    **Requires:** [F39.01](#f39-01)
 
-**Accept:** Taxes, discounts, reversals and allocations conserve every relevant minor unit/second.
+    **Deliver:** Verify actual component states, zoom and motion preferences against the design contract.
 
-**Docs basis:** Documented parent requirement/contract: [Arithmetic fixtures](docs/specs/finance.md#arithmetic-fixtures); [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy); [Failure and acceptance matrix](docs/specs/finance.md#failure-and-acceptance-matrix).
+    **Flow and records:** Check actual normal/focus/disabled/error/interactive contrast, reflow/zoom/high-contrast/motion states and retain known palette or human-review gaps as open evidence.
 
-#### F39.08 — Tenant denial tests
+    **Documented constraints:** Known contrast and fluent-Arabic/human verification gaps remain explicit; token validation or screenshots do not establish full accessibility or release acceptance.
 
-- [ ] **S · Deliver:** Use at least two workspaces, all selected roles and direct service calls.
+    **Accept:** A supplied token with failed contrast remains a tracked gap until its usage is resolved.
 
-**Flow and records:** Exercise two tenants, selected roles, direct invocation and revoked grants across rows/fields/counts/search/files/exports/notices/jobs rather than UI visibility alone.
+    **Docs basis:** Documented parent requirement/contract: [Validation and known gaps](DESIGN.md#validation-and-known-gaps).
 
-**Documented constraints:** Deny by default and recheck membership, resource and action at all reads, counts, exports, files, jobs and side effects.
+  - [ ] <a id="f39-07"></a>**F39.07 — Financial invariant tests** · `S`
 
-**Accept:** Reads, counts, exports, jobs and files reject revoked or wrong-resource authority.
+    **Requires:** [F19.03](#f19-03)
 
-**Docs basis:** Documented parent requirement/contract: [Tenant and resource authorization](docs/architecture/security-and-privacy.md#tenant-and-resource-authorization).
+    **Deliver:** Use approved exact fixtures plus concurrent posting and source-conservation checks.
 
-#### F39.09 — Recovery and fault tests
+    **Flow and records:** Use independently approved exact fixtures and real concurrency/rollback to conserve money/source seconds across discounts/taxes/allocations/credits/reversals and policy versions.
 
-- [ ] **S · Deliver:** Inject lost responses, DB/storage/provider outages and stale browser revisions.
+    **Documented constraints:** Approved fixtures cover fractional quantities, rounding ties, 0/2/3-decimal currencies and partial-credit remainders; existing snapshots keep old policies.
 
-**Flow and records:** Inject lost replies and DB/auth/blob/provider failures with named fixtures; compare observed source/receipt states rather than inferring recovery from a passing build.
+    **Accept:** Taxes, discounts, reversals and allocations conserve every relevant minor unit/second.
 
-**Documented constraints:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
+    **Docs basis:** Documented parent requirement/contract: [Arithmetic fixtures](docs/specs/finance.md#arithmetic-fixtures); [Time arithmetic and allocation policy](docs/specs/time-and-productivity.md#time-arithmetic-and-allocation-policy); [Failure and acceptance matrix](docs/specs/finance.md#failure-and-acceptance-matrix).
 
-**Accept:** Failures preserve accepted data and never invent success or duplicate money.
+  - [ ] <a id="f39-08"></a>**F39.08 — Tenant denial tests** · `S`
 
-**Docs basis:** Documented parent requirement/contract: [End-to-end release proof](docs/quality/acceptance.md#end-to-end-release-proof).
+    **Requires:** [F03.06](#f03-06)
 
-#### F39.10 — Browser lifecycle tests
+    **Deliver:** Use at least two workspaces, all selected roles and direct service calls.
 
-- [ ] **S · Deliver:** Exercise reload, navigation, sleep, multiple tabs and supported mobile layouts.
+    **Flow and records:** Exercise two tenants, selected roles, direct invocation and revoked grants across rows/fields/counts/search/files/exports/notices/jobs rather than UI visibility alone.
 
-**Flow and records:** Test supported reload/sleep/navigation/multi-tab/storage-denial behavior; distinguish memory input, eligible local persistence and server-accepted authoritative state.
+    **Documented constraints:** Deny by default and recheck membership, resource and action at all reads, counts, exports, files, jobs and side effects.
 
-**Documented constraints:** Refresh identity, grants, revisions and receipts after tab return; suspended/closed pages cannot provide durable jobs or financial authority.
+    **Accept:** Reads, counts, exports, jobs and files reject revoked or wrong-resource authority.
 
-**Accept:** Timer/draft states stay honest under suspension and storage denial.
+    **Docs basis:** Documented parent requirement/contract: [Tenant and resource authorization](docs/architecture/security-and-privacy.md#tenant-and-resource-authorization).
 
-**Docs basis:** Documented parent requirement/contract: [Online authority and browser limits](docs/architecture/sync-and-collaboration.md#online-authority-and-browser-limits).
+  - [ ] <a id="f39-09"></a>**F39.09 — Recovery and fault tests** · `S`
 
-#### F39.11 — Release evidence ledger
+    **Requires:** [F38.04](#f38-04)
 
-- [ ] **S · Deliver:** Record build, environment, included phases, exact checks, findings and owners.
+    **Deliver:** Inject lost responses, DB/storage/provider outages and stale browser revisions.
 
-**Flow and records:** Record source/build/schema/policy/browser/device/locale, fixture/steps, expected/observed, redacted artifacts, defects and reviewer/date for every claimed accepted phase.
+    **Flow and records:** Inject lost replies and DB/auth/blob/provider failures with named fixtures; compare observed source/receipt states rather than inferring recovery from a passing build.
 
-**Documented constraints:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
+    **Documented constraints:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
 
-**Accept:** Unchecked or disabled capabilities cannot be reported as implemented or released.
+    **Accept:** Failures preserve accepted data and never invent success or duplicate money.
 
-**Docs basis:** Documented parent requirement/contract: [End-to-end release proof](docs/quality/acceptance.md#end-to-end-release-proof).
+    **Docs basis:** Documented parent requirement/contract: [End-to-end release proof](docs/quality/acceptance.md#end-to-end-release-proof).
 
-#### F39.12 — Compatibility tests
+  - [ ] <a id="f39-10"></a>**F39.10 — Browser lifecycle tests** · `S`
 
-- [ ] **S · Deliver:** Verify declared schema/API windows for stale tabs and queued jobs.
+    **Requires:** [F05.05](#f05-05)
 
-**Flow and records:** Test old supported tab/contracts and durable jobs through staged migrations, unknown protocol versions and forward/rollback boundaries without deleting pending data.
+    **Deliver:** Exercise reload, navigation, sleep, multiple tabs and supported mobile layouts.
 
-**Documented constraints:** Expand compatibility before writes and bounded backfill; remove old formats only after the published window, with explicit recovery for failed migration.
+    **Flow and records:** Test supported reload/sleep/navigation/multi-tab/storage-denial behavior; distinguish memory input, eligible local persistence and server-accepted authoritative state.
 
-**Accept:** Old contracts fail safely or remain compatible instead of corrupting new records.
+    **Documented constraints:** Refresh identity, grants, revisions and receipts after tab return; suspended/closed pages cannot provide durable jobs or financial authority.
 
-**Docs basis:** Documented parent requirement/contract: [Persistence and migrations](docs/architecture/data-lifecycle.md#persistence-and-migrations).
+    **Accept:** Timer/draft states stay honest under suspension and storage denial.
 
-#### F39.13 — Usability validation
+    **Docs basis:** Documented parent requirement/contract: [Online authority and browser limits](docs/architecture/sync-and-collaboration.md#online-authority-and-browser-limits).
 
-- [ ] **E · Deliver:** Observe representative freelancers and small teams on critical bilingual journeys.
+  - [ ] <a id="f39-11"></a>**F39.11 — Release evidence ledger** · `S`
 
-**Proposed flow and records:** User research remains proposed observed task evidence from representative bilingual workflows, with consent/privacy and actual findings instead of invented interview results.
+    **Requires:** Existing repository and the common planning/release gates; no feature prerequisite.
 
-**Documented constraints:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
+    **Deliver:** Record build, environment, included phases, exact checks, findings and owners.
 
-**Accept:** Record task completion/problems as actual research, without invented interview evidence.
+    **Inspected source status:** PARTIAL: dated evidence documents exist; contradictory claims and missing raw/live proof require reconciliation.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [End-to-end release proof](docs/quality/acceptance.md#end-to-end-release-proof).
+    **Flow and records:** Record source/build/schema/policy/browser/device/locale, fixture/steps, expected/observed, redacted artifacts, defects and reviewer/date for every claimed accepted phase.
 
-#### F39.14 — Security review and penetration exercise
+    **Documented constraints:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
 
-- [ ] **S · Deliver:** Review introduced trust boundaries and perform scoped authorized negative testing before release.
+    **Accept:** Unchecked or disabled capabilities cannot be reported as implemented or released.
 
-**Flow and records:** Perform scoped security review/negative testing against applicable controls and deployed build; release-blocking findings stay open until evidenced fix/mitigation and owner review.
+    **Docs basis:** Documented parent requirement/contract: [End-to-end release proof](docs/quality/acceptance.md#end-to-end-release-proof).
 
-**Documented constraints:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
+  - [ ] <a id="f39-12"></a>**F39.12 — Compatibility tests** · `S`
 
-**Accept:** Release-blocking findings retain ownership until verified mitigation or fix evidence exists.
+    **Requires:** [F38.02](#f38-02)
 
-**Docs basis:** Documented parent requirement/contract: [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure).
+    **Deliver:** Verify declared schema/API windows for stale tabs and queued jobs.
+
+    **Flow and records:** Test old supported tab/contracts and durable jobs through staged migrations, unknown protocol versions and forward/rollback boundaries without deleting pending data.
+
+    **Documented constraints:** Expand compatibility before writes and bounded backfill; remove old formats only after the published window, with explicit recovery for failed migration.
+
+    **Accept:** Old contracts fail safely or remain compatible instead of corrupting new records.
+
+    **Docs basis:** Documented parent requirement/contract: [Persistence and migrations](docs/architecture/data-lifecycle.md#persistence-and-migrations).
+
+  - [ ] <a id="f39-13"></a>**F39.13 — Usability validation** · `E`
+
+    **Requires:** [F04.01](#f04-01)
+
+    **Deliver:** Observe representative freelancers and small teams on critical bilingual journeys.
+
+    **Proposed flow and records:** User research remains proposed observed task evidence from representative bilingual workflows, with consent/privacy and actual findings instead of invented interview results.
+
+    **Documented constraints:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
+
+    **Accept:** Record task completion/problems as actual research, without invented interview evidence.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [End-to-end release proof](docs/quality/acceptance.md#end-to-end-release-proof).
+
+  - [ ] <a id="f39-14"></a>**F39.14 — Security review and penetration exercise** · `S`
+
+    **Requires:** [F38.08](#f38-08)
+
+    **Deliver:** Review introduced trust boundaries and perform scoped authorized negative testing before release.
+
+    **Flow and records:** Perform scoped security review/negative testing against applicable controls and deployed build; release-blocking findings stay open until evidenced fix/mitigation and owner review.
+
+    **Documented constraints:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
+
+    **Accept:** Release-blocking findings retain ownership until verified mitigation or fix evidence exists.
+
+    **Docs basis:** Documented parent requirement/contract: [Before deployment/public exposure](docs/security/release-checklist.md#before-deploymentpublic-exposure).
 
 <a id="category-40"></a>
 
 ### 9.40 Advanced identity and organizational controls
 
-**Owner/package:** P01 enterprise extension. **Prerequisites for each phase:** F02.15 assessment; Q-08/Q-12 approval; managed-auth support proof. **Optional extension wave:** X5.
+**Owner/package:** P01 enterprise extension. **Original branch context (specific Requires below governs feature order):** F02.15 assessment; Q-08/Q-12 approval; managed-auth support proof. **Optional extension wave:** X5.
 
 **Authority:** Proposed only. Stay within the selected Better Auth architecture and small-team product boundary.
 
-**Research context:** [Clockify paid-feature inventory](https://clockify.me/paid-features) for boundary review; identity details remain architecture proposals. Candidate selection is SoloDesk product judgment, not a claim of exact competitor parity.
-
 **Required group acceptance:** Apply the phase-specific acceptance proof and the common release gate.
 
-#### F40.01 — Verified business domains
+- **F40 — Advanced identity and organizational controls**
 
-- [ ] **E · Deliver:** Verify control of a domain for an approved organization policy.
+  - [ ] <a id="f40-01"></a>**F40.01 — Verified business domains** · `E`
 
-**Proposed flow and records:** Domain verification remains a proposed identity policy; Q-08 must define ownership proof/expiry and account/member effects, with no membership inferred from email suffix.
+    **Requires:** [F03.06](#f03-06), [F02.07](#f02-07)
 
-**Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
+    **Deliver:** Verify control of a domain for an approved organization policy.
 
-**Accept:** A matching email suffix alone never grants membership or SSO authority.
+    **Proposed flow and records:** Domain verification remains a proposed identity policy; Q-08 must define ownership proof/expiry and account/member effects, with no membership inferred from email suffix.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
+    **Documented constraints:** Q decisions are unresolved gates, not implicit defaults; select policy, provider, budget and legal treatment before the dependent feature is activated.
 
-#### F40.02 — Enterprise single sign-on
+    **Accept:** A matching email suffix alone never grants membership or SSO authority.
 
-- [ ] **E · Deliver:** Add one explicitly selected OIDC/SAML enterprise identity path if supported.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Complex decisions still open](docs/planning/decisions.md#complex-decisions-still-open).
 
-**Proposed flow and records:** Enterprise OIDC/SAML remains proposed and conditional on managed Better Auth support, reviewed issuer/tenant mapping and approved recovery behavior.
+  - [ ] <a id="f40-02"></a>**F40.02 — Enterprise single sign-on** · `E`
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Requires:** [F03.06](#f03-06), [F40.01](#f40-01), [F02.01](#f02-01)
 
-**Accept:** A wrong issuer, audience or tenant mapping cannot authenticate a member.
+    **Deliver:** Add one explicitly selected OIDC/SAML enterprise identity path if supported.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Proposed flow and records:** Enterprise OIDC/SAML remains proposed and conditional on managed Better Auth support, reviewed issuer/tenant mapping and approved recovery behavior.
 
-#### F40.03 — Managed user provisioning
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-- [ ] **E · Deliver:** Add reviewed SCIM-style lifecycle sync with bounded organization mapping.
+    **Accept:** A wrong issuer, audience or tenant mapping cannot authenticate a member.
 
-**Proposed flow and records:** Managed provisioning has no approved SCIM schema/lifecycle contract; decide supported identity mapping, revocation and retained business-history behavior before enabling it.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+  - [ ] <a id="f40-03"></a>**F40.03 — Managed user provisioning** · `E`
 
-**Accept:** Deprovisioning revokes current grants and cannot delete retained financial evidence.
+    **Requires:** [F03.06](#f03-06), [F40.02](#f40-02)
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Deliver:** Add reviewed SCIM-style lifecycle sync with bounded organization mapping.
 
-#### F40.04 — Workspace MFA policy
+    **Proposed flow and records:** Managed provisioning has no approved SCIM schema/lifecycle contract; decide supported identity mapping, revocation and retained business-history behavior before enabling it.
 
-- [ ] **E · Deliver:** Require approved factors for chosen roles with tested recovery/rollout rules.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Proposed flow and records:** Workspace factor enforcement remains proposed Q-08 role/recovery policy; validate managed support and rollout without guessing factor requirements or locking out the final owner.
+    **Accept:** Deprovisioning revokes current grants and cannot delete retained financial evidence.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Accept:** An owner cannot lock out the final recovery path through a stale policy edit.
+  - [ ] <a id="f40-04"></a>**F40.04 — Workspace MFA policy** · `E`
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+    **Requires:** [F03.06](#f03-06), [F02.05](#f02-05)
 
-#### F40.05 — Session duration policy
+    **Deliver:** Require approved factors for chosen roles with tested recovery/rollout rules.
 
-- [ ] **E · Deliver:** Apply approved privileged-session expiry and step-up requirements.
+    **Proposed flow and records:** Workspace factor enforcement remains proposed Q-08 role/recovery policy; validate managed support and rollout without guessing factor requirements or locking out the final owner.
 
-**Proposed flow and records:** Session-duration enforcement remains proposed exact expiry/cache/revocation policy; approved limits must be measurable across stale cookies and already-open tabs.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
+    **Accept:** An owner cannot lock out the final recovery path through a stale policy edit.
 
-**Accept:** A cached cookie cannot exceed the documented revocation window.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+  - [ ] <a id="f40-05"></a>**F40.05 — Session duration policy** · `E`
 
-#### F40.06 — High-risk dual approval
+    **Requires:** [F03.06](#f03-06), [F02.06](#f02-06)
 
-- [ ] **E · Deliver:** Require a second independent finance approver above selected posting thresholds.
+    **Deliver:** Apply approved privileged-session expiry and step-up requirements.
 
-**Proposed flow and records:** Optional second approval for high-value credits/refunds is contemplated by the role contract but requires explicit threshold, actor-independence and delegation policy.
+    **Proposed flow and records:** Session-duration enforcement remains proposed exact expiry/cache/revocation policy; approved limits must be measurable across stale cookies and already-open tabs.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Documented constraints:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
-**Accept:** The requesting actor cannot satisfy both approvals through retries or delegated tokens.
+    **Accept:** A cached cookie cannot exceed the documented revocation window.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Better Auth and sessions](docs/architecture/security-and-privacy.md#better-auth-and-sessions).
 
-#### F40.07 — Member access reviews
+  - [ ] <a id="f40-06"></a>**F40.06 — High-risk dual approval** · `E`
 
-- [ ] **E · Deliver:** Review active grants, contractors and overdue expiry with audit evidence.
+    **Requires:** [F03.06](#f03-06), [F02.07](#f02-07), [F03.05](#f03-05)
 
-**Proposed flow and records:** Periodic member review remains proposed grant governance over current scoped membership/expiry, not a renewal of access merely because a review checkbox is completed.
+    **Deliver:** Require a second independent finance approver above selected posting thresholds.
 
-**Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
+    **Proposed flow and records:** Optional second approval for high-value credits/refunds is contemplated by the role contract but requires explicit threshold, actor-independence and delegation policy.
 
-**Accept:** Completing a review does not extend an expired contractor grant silently.
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
+    **Accept:** The requesting actor cannot satisfy both approvals through retries or delegated tokens.
 
-#### F40.08 — Multiple seller profiles
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering).
 
-- [ ] **E · Deliver:** Separate approved legal sellers, number series, contracts and receivables within a reviewed model.
+  - [ ] <a id="f40-07"></a>**F40.07 — Member access reviews** · `E`
 
-**Proposed flow and records:** Multiple legal sellers are an unresolved finance decision; define identity, series, debt/allocation and correction boundaries before permitting more than the approved seller model.
+    **Requires:** [F03.06](#f03-06), [F03.09](#f03-09)
 
-**Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+    **Deliver:** Review active grants, contractors and overdue expiry with audit evidence.
 
-**Accept:** An invoice cannot mix sellers or transfer historic debt by changing a profile ID.
+    **Proposed flow and records:** Periodic member review remains proposed grant governance over current scoped membership/expiry, not a renewal of access merely because a review checkbox is completed.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering); [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+    **Documented constraints:** Role templates are proposed; current capability plus resource scope controls access, and bulk actions never widen that scope.
 
-#### F40.09 — Business brand profiles
+    **Accept:** Completing a review does not extend an expired contractor grant silently.
 
-- [ ] **E · Deliver:** Apply selected identity/template defaults per engagement after seller rules exist.
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Access templates](docs/specs/platform-and-workspaces.md#access-templates).
 
-**Proposed flow and records:** Brand profiles remain proposed presentation presets under current semantic components; legal seller fields/history and mandatory disclosures cannot be altered by style selection.
+  - [ ] <a id="f40-08"></a>**F40.08 — Multiple seller profiles** · `E`
 
-**Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
+    **Requires:** [F03.06](#f03-06), [F19.01](#f19-01), [F20.02](#f20-02)
 
-**Accept:** A branding change never alters legal seller history or hides mandatory disclosures.
+    **Deliver:** Separate approved legal sellers, number series, contracts and receivables within a reviewed model.
 
-**Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Components](DESIGN.md#components).
+    **Proposed flow and records:** Multiple legal sellers are an unresolved finance decision; define identity, series, debt/allocation and correction boundaries before permitting more than the approved seller model.
+
+    **Documented constraints:** Country, precision, tax/discount order, number series, correction policy, reporting basis and providers are unresolved until explicitly selected.
+
+    **Accept:** An invoice cannot mix sellers or transfer historic debt by changing a profile ID.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Decisions requiring user input before dependent work](docs/specs/finance.md#decisions-requiring-user-input-before-dependent-work); [Invoice issuance, ownership, and numbering](docs/specs/finance.md#invoice-issuance-ownership-and-numbering); [Balances, payments, credits, refunds, and deposits](docs/specs/finance.md#balances-payments-credits-refunds-and-deposits).
+
+  - [ ] <a id="f40-09"></a>**F40.09 — Business brand profiles** · `E`
+
+    **Requires:** [F03.06](#f03-06), [F40.08](#f40-08), [F03.13](#f03-13)
+
+    **Deliver:** Apply selected identity/template defaults per engagement after seller rules exist.
+
+    **Proposed flow and records:** Brand profiles remain proposed presentation presets under current semantic components; legal seller fields/history and mandatory disclosures cannot be altered by style selection.
+
+    **Documented constraints:** Reuse shared shadcn/Base UI components and semantic tokens with keyboard/focus/RTL; the current monochrome design overrides older visual recipes.
+
+    **Accept:** A branding change never alters legal seller history or hides mandatory disclosures.
+
+    **Docs basis:** Supporting contract; feature-specific extension remains unapproved: [Components](DESIGN.md#components).
 
 ## 10. Delivery waves and the first complete product
 
@@ -7451,7 +8718,9 @@ Public website and legal/accessibility fixes can run before the pilot when indep
 
 Maintain phase status as Proposed, Ready, In progress, Blocked, Verified or Released in the chosen issue/coverage tool, with owner, Q dependencies, estimate range/confidence, artifact/build and evidence link. A checked box means Verified, not automatically Released. Do not invent status or mark S/E discovery labels as implementation evidence. Implementation-only details are planned immediately before their phase so the roadmap does not freeze premature interfaces.
 
-## 11. Research record and scope boundaries
+## 11. Previously recorded research and scope boundaries
+
+The external research below is retained from the prior plan as historical planning context; provider offerings and linked page contents were not rechecked on 31 October 2026. Implementation choices require fresh primary-source/version checks.
 
 Research performed 30 October 2026 using official product/help pages. Observations below are narrow feature-family signals. SoloDesk's scope, security rules and acceptance examples are our synthesis, not copied product specifications or measured customer demand. Provider availability, plan limits, legal validity, integration support and commercial terms require rechecking when selected. No paid account, vendor demo, user interview or hands-on competitor test was performed.
 
@@ -7497,6 +8766,10 @@ Validate the first target segment and launch countries; interview users about th
 
 ## 12. Documentation verification and handoff
 
-The feature inventory is a roadmap, not a completed implementation or security audit. The detail pass preserves all 550 phase IDs, category groupings, S/E scope labels, unchecked status and earlier acceptance examples. Deliverable wording is retained except F37.09: its unsupported tamper-protection claim is narrowed to a scoped export with checksums; independently tamper-evident audit remains the unapproved F37.10 extension, matching the security policy. Each phase now has a feature-specific flow/records explanation, documented constraints, acceptance proof and a current documentation link. Structural checks validate phase/detail completeness, source headings/anchors, local file links, preserved deliverables with the documented F37.09 correction and the absence of dangling feature references. Extension flows are labeled proposed; links to shared contracts do not imply that a missing extension specification is already approved. Runtime builds, database calls, fresh advisory scans, provider connections and paid services were not executed for this documentation-only update.
+This update inspects current source and retains all 550 previous feature IDs, names, S/E labels, deliverables, feature-specific flows, constraints, acceptance examples and documentation links. It adds a current implementation inventory, a nested tree, explicit per-feature dependencies, shared compatibility contracts and six concrete next work packages. All 550 acceptance boxes remain open; existing code is identified separately rather than falsely reported as fully accepted.
 
-Before implementing a selected phase, read its canonical spec and current code, the relevant installed Next.js guide, applicable SEC controls and required skills. Expand only that phase into a small executable plan with exact files/interfaces/fixtures and checks. Keep all existing unrelated work intact. This planning request authorizes the document, not execution of the roadmap.
+Documentation checks for this update cover feature uniqueness/completeness, one prerequisite list and acceptance contract per feature, reference resolution, an acyclic feature graph, all 143 stable functional/nonfunctional requirement IDs, local file/heading links and whitespace. These structural checks cannot establish integration compatibility or application security. The dependency graph describes the proposed order and contracts; meaningful positive, negative, concurrent, recovery and migration tests must prove each implemented combination.
+
+No application build/test, live auth/Neon call, browser/human evaluation, migration, fresh advisory scan, provider research or deployment was performed for this documentation update. Previously recorded research and test claims remain dated source material; no new claim of current competitor offerings, provider support or clean dependencies is made. Future implementation must compare exact lockfile/deployed/managed versions to fresh advisories; unavailable scans are gaps.
+
+The next executable slice is NEXT-01, followed by the workspace and first billable journey work in section 8.1. Before coding each selected slice, inspect current changes and canonical specs, read installed version-matched Next.js guides, load the applicable skills/SEC controls and name exact files/interfaces/fixtures/checks. Keep the root plan as the feature/dependency ledger; keep small execution plans in the owning feature specification. Append future features under the matching branch without renumbering existing IDs. This document does not authorize the entire backlog to be built or remotely activated in one operation.

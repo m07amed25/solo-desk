@@ -3,11 +3,20 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
-import { SignIn } from "@/components/sign-in";
-import { SiteHeader } from "@/components/site-header";
-import { normalizedAuthPath, type AuthEntry } from "@/lib/site";
+import { ArrowLeft, Languages, Moon, Sun, Monitor } from "lucide-react";
+import { locale as rootLocale, theme as rootTheme } from "next/root-params";
+import { AuthInteractivePanel } from "@/components/auth-interactive-panel";
+import { AuthFormSkeleton } from "@/components/auth-skeleton";
+import { WorkPreview } from "@/components/landing/work-preview";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { currentSession } from "@/lib/auth/server";
+import {
+  normalizedAuthPath,
+  presentation,
+  themes,
+  type AuthEntry,
+} from "@/lib/site";
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
@@ -62,7 +71,10 @@ async function Entry({
         </p>
       </div>
       <NextIntlClientProvider messages={{ Auth: messages.Auth }}>
-        <SignIn entry={entry} failed={params.get("authError") === "1"} />
+        <AuthInteractivePanel
+          entry={entry}
+          failed={params.get("authError") === "1"}
+        />
       </NextIntlClientProvider>
       <p className="text-sm text-muted-foreground">
         {t(signingUp ? "haveAccount" : "needAccount")}{" "}
@@ -91,34 +103,112 @@ export async function AuthEntryPage({
 }) {
   const t = await getTranslations("Auth");
   const c = await getTranslations("Common");
+  const nav = await getTranslations("Navigation");
+  const { locale, theme } = presentation(await rootLocale(), await rootTheme());
+  const nextLocale = locale === "en" ? "ar" : "en";
+  const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+
   return (
     <>
-      <SiteHeader returnTo={`/${entry}`} />
-      <main id="main-content" className="account-layout site-container">
-        <aside className="account-intro">
-          <h2 className="whitespace-pre-line text-4xl leading-tight font-medium tracking-tight sm:text-6xl">
-            {t(entry === "sign-up" ? "signUpTitle" : "signInTitle")}
-          </h2>
-          <p className="max-w-sm text-lg text-muted-foreground">
-            {t("sideNote")}
-          </p>
-          <div className="account-art" aria-hidden="true">
-            <span />
-            <span />
-            <span />
+      <a href="#main-content" className="skip-link">
+        {nav("skip")}
+      </a>
+      <main id="main-content" className="account-layout">
+        {/* Form region is FIRST in DOM for keyboard and accessibility order */}
+        <section className="account-form-pane">
+          {/* Top navigation row with Back to home button & preferences */}
+          <div className="flex items-center justify-between w-full">
+            <a
+              href="/"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md py-1.5 px-2 -mx-2"
+              aria-label={c("home")}
+            >
+              <ArrowLeft
+                className="h-4 w-4 transition-transform group-hover:-translate-x-1 rtl:rotate-180 rtl:group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+              <span>{c("home")}</span>
+            </a>
+
+            <div className="flex items-center gap-1">
+              <form action="/api/preferences" method="post">
+                <input type="hidden" name="returnTo" value={`/${entry}`} />
+                <input type="hidden" name="locale" value={nextLocale} />
+                <input type="hidden" name="theme" value={theme} />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon-lg"
+                  aria-label={nav("switchLanguage", {
+                    language: nextLocale === "ar" ? "العربية" : "English",
+                  })}
+                  title={nav("switchLanguage", {
+                    language: nextLocale === "ar" ? "العربية" : "English",
+                  })}
+                >
+                  <Languages aria-hidden="true" />
+                </Button>
+              </form>
+              <form action="/api/preferences" method="post">
+                <input type="hidden" name="returnTo" value={`/${entry}`} />
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="theme" value={nextTheme} />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon-lg"
+                  aria-label={nav("switchTheme", {
+                    current: nav(theme),
+                    next: nav(nextTheme),
+                  })}
+                  title={nav("switchTheme", {
+                    current: nav(theme),
+                    next: nav(nextTheme),
+                  })}
+                >
+                  <ThemeIcon aria-hidden="true" />
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <div className="w-full max-w-md mx-auto my-auto py-8 flex flex-col gap-7">
+            <Suspense
+              fallback={
+                <AuthFormSkeleton entry={entry} statusText={c("loading")} />
+              }
+            >
+              <Entry entry={entry} searchParams={searchParams} />
+            </Suspense>
+          </div>
+
+          <div className="w-full max-w-md mx-auto" />
+        </section>
+
+        {/* Illustrative visual region is SECOND in DOM */}
+        <aside
+          className="account-visual-pane hidden md:flex"
+          aria-label={t("illustrativeCaption")}
+        >
+          <div className="account-visual-card">
+            <div className="account-visual-content">
+              <h2 className="whitespace-pre-line text-3xl font-medium tracking-tight sm:text-4xl text-foreground">
+                {t(entry === "sign-up" ? "signUpTitle" : "signInTitle")}
+              </h2>
+              <p className="max-w-sm text-base text-muted-foreground leading-relaxed">
+                {t("sideNote")}
+              </p>
+            </div>
+            <div className="account-visual-preview">
+              <WorkPreview />
+              <p className="account-visual-caption text-xs text-muted-foreground text-center mt-3">
+                {t("illustrativeCaption")}
+              </p>
+            </div>
           </div>
         </aside>
-        <section className="flex min-w-0 flex-col gap-7 py-10 lg:py-20">
-          <Suspense fallback={<p role="status">{c("loading")}</p>}>
-            <Entry entry={entry} searchParams={searchParams} />
-          </Suspense>
-          <a
-            href="/"
-            className="w-fit text-sm text-muted-foreground underline underline-offset-4"
-          >
-            {c("home")}
-          </a>
-        </section>
       </main>
     </>
   );
