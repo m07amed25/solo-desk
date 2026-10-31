@@ -24,7 +24,7 @@ Use an app password with spaces removed, and an approved sender address matching
 - `npm run email:export` writes sample HTML to `.next/email-preview`.
 - `npm run test:email` runs isolated checks without Gmail or a database connection.
 
-The official preview UI is development-only; generated previews contain synthetic fixtures. Do not put production email bodies, codes or reset links in preview files. The templates have English copy; submitted Arabic content is retained with automatic text direction. Full Arabic email copy and a real email-client rendering matrix remain future work.
+The official preview UI is development-only; generated previews contain synthetic fixtures. Do not put production email bodies, codes or reset links in preview files. The templates support full bilingual English and Arabic delivery for account verification (`email-verification`) and password recovery (`forget-password`), rendering exact 6-digit codes in dedicated high-contrast LTR panels while maintaining proper text direction for surrounding copy. Real email-client rendering matrix across diverse client engines remains future release verification.
 
 ## Contact messages and client copies
 
@@ -40,6 +40,8 @@ There is no automatic application retry. If the internal notification succeeds b
 ## Managed Neon Auth
 
 Managed Auth does not execute this application's Better Auth email callbacks. Custom OTP, verification-link and reset-link emails use Neon's signed `send.otp` and `send.magic_link` webhooks instead. See [Neon email customization](https://neon.com/docs/auth/guides/customize-emails) and [signature and retry contract](https://neon.com/docs/auth/guides/webhooks).
+
+All application-delivered auth emails use SoloDesk in the subject, English/Arabic headings and sender display name. Provider `context.project_name` never supplies customer-facing branding. In managed Auth settings, set Application Name to `SoloDesk`; this updates the default header, but does not remove all shared Neon branding. Fully SoloDesk-branded subjects and content require the custom delivery path below. Editing local templates alone does not change managed Auth's default emails, and a disabled `SOLODESK_AUTH_EMAIL_ENABLED` leaves this handler unavailable.
 
 The handler at `/api/webhooks/neon-auth` is disabled by default. Before enabling it:
 

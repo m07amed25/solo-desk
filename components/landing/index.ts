@@ -1,0 +1,14 @@
+export { StatusBadge } from "@/components/landing/status-badge";
+export { WorkPreview } from "@/components/landing/work-preview";
+export { HeroSection } from "@/components/landing/hero-section";
+export { HighlightsSection } from "@/components/landing/highlights-section";
+export { TourSection } from "@/components/landing/tour-section";
+export { FeaturesSection } from "@/components/landing/features-section";
+export { HowItWorksSection } from "@/components/landing/how-it-works-section";
+export { PrinciplesSection } from "@/components/landing/principles-section";
+export { SecuritySection } from "@/components/landing/security-section";
+export { AudienceSection } from "@/components/landing/audience-section";
+export { FaqSection } from "@/components/landing/faq-section";
+export { ContactSection } from "@/components/landing/contact-section";
+export { ClosingSection } from "@/components/landing/closing-section";
+export { FooterSection } from "@/components/landing/footer-section";

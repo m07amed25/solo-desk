@@ -51,18 +51,18 @@ HttpOnly preferences; theme cycles Dark → Light → System. English is LTR and
 The showcase has its own explicit light/dark scope and changes no preferences. A nested Light
 scope excludes inherited Dark utility variants, including when the page uses System on a dark OS.
 
-| Role | Light OKLCH | Dark OKLCH |
-| --- | --- | --- |
-| Background | 0.99 0 0 | 0 0 0 |
-| Foreground | 0 0 0 | 1 0 0 |
-| Card | 1 0 0 | 0.14 0 0 |
+| Role                 | Light OKLCH   | Dark OKLCH    |
+| -------------------- | ------------- | ------------- |
+| Background           | 0.99 0 0      | 0 0 0         |
+| Foreground           | 0 0 0         | 1 0 0         |
+| Card                 | 1 0 0         | 0.14 0 0      |
 | Primary / on primary | black / white | white / black |
-| Secondary | 0.94 0 0 | 0.25 0 0 |
-| Muted | 0.97 0 0 | 0.23 0 0 |
-| Muted foreground | 0.44 0 0 | 0.72 0 0 |
-| Accent | 0.94 0 0 | 0.32 0 0 |
-| Border | 0.92 0 0 | 0.26 0 0 |
-| Ring | 0 0 0 | 0.72 0 0 |
+| Secondary            | 0.94 0 0      | 0.25 0 0      |
+| Muted                | 0.97 0 0      | 0.23 0 0      |
+| Muted foreground     | 0.44 0 0      | 0.72 0 0      |
+| Accent               | 0.94 0 0      | 0.32 0 0      |
+| Border               | 0.92 0 0      | 0.26 0 0      |
+| Ring                 | 0 0 0         | 0.72 0 0      |
 
 Use semantic Tailwind roles: background, foreground, card, primary, secondary, muted,
 accent, destructive, border, input, ring and sidebar. Do not hardcode a separate screen palette.
@@ -131,6 +131,21 @@ scroll-linked perspective preview, and different heading/content parallax speeds
 headline returns to its original markup after entry. Compact screens use smaller movement;
 reduced motion restores the static layout. FAQ answers and contact controls stay stationary.
 No new sourced or generated imagery is part of this surface. See [motion verification](docs/design/motion-validation.md).
+
+### Account entry layout and visual asset
+
+The account entry pages (`/sign-in` and `/sign-up`) implement a responsive form-first split-panel architecture:
+
+- **DOM Hierarchy**: The interactive form (`.account-form-pane`) precedes the illustrative visual region (`.account-visual-pane`) in the DOM, guaranteeing natural screen reader and keyboard focus without tab-order skips.
+- **Desktop Grid (≥1024px)**: Uses CSS grid `minmax(360px, 460px) minmax(360px, 1fr)` with `gap: clamp(1.5rem, 4vw, 3rem)`. In English (LTR), the form is on the left; in Arabic (RTL), the form naturally renders at inline-start (on the right) without `order` or flex direction overrides.
+- **Mobile Collapse (<768px)**: The visual pane is completely hidden (`display: none !important`), collapsing the page into a clean single-column form with zero mobile network requests for the background image.
+- **Asset Receipt**: Sourced from Jens Riesenberg via Unsplash (free commercial Unsplash License):
+  - Path: `public/auth/architecture.webp`
+  - Dimensions: 1000 × 1499 px
+  - File Size: 81,540 bytes (~79.6 KiB, compliant with ≤200 KiB budget)
+  - Hash: `7ba00ed2c4b0ccbb0ca2f226044f608c8c050e07ec96c0944b2640c6638f8998`
+  - Fallback: Delivered strictly via CSS `@media (min-width: 768px)` background-image with full neutral gradient fallback (`linear-gradient(90deg, rgba(125, 125, 125, 0.04) 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(to bottom, var(--card), var(--background))`).
+- **Directional Hygiene**: Email addresses, passwords, and OTP verification codes specify `dir="ltr"` to prevent character and digit scrambling in RTL mode. Full bilingual parity is maintained across English and Arabic catalogs.
 
 ## Do's and Don'ts
 

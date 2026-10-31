@@ -6,7 +6,14 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    files: ["components/site-header.tsx", "components/landing-page.tsx", "components/auth-entry-page.tsx", "app/**/app/page.tsx"],
+    files: [
+      "components/site-header.tsx",
+      "components/site-header-auth.tsx",
+      "components/landing-page.tsx",
+      "components/landing/**",
+      "components/auth-entry-page.tsx",
+      "app/**/app/page.tsx",
+    ],
     // Full document links intentionally discard private/prefetched shells at account boundaries.
     rules: { "@next/next/no-html-link-for-pages": "off" },
   },

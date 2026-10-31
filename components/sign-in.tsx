@@ -10,9 +10,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export function SignIn({
   entry,
   failed,
+  disabled = false,
+  onInFlightChange,
 }: {
   entry: AuthEntry;
   failed: boolean;
+  disabled?: boolean;
+  onInFlightChange?: (inFlight: boolean) => void;
 }) {
   const t = useTranslations("Auth");
   const inFlight = useRef(false);
@@ -22,8 +26,9 @@ export function SignIn({
   const [providerName, setProviderName] = useState("");
 
   async function signInWith(provider: "google" | "github") {
-    if (inFlight.current) return;
+    if (inFlight.current || disabled) return;
     inFlight.current = true;
+    onInFlightChange?.(true);
     setAttempt("pending");
     setProviderName(provider === "google" ? "Google" : "GitHub");
     try {
@@ -36,6 +41,7 @@ export function SignIn({
       // Keep the guard closed until document navigation completes.
     } catch {
       inFlight.current = false;
+      onInFlightChange?.(false);
       setAttempt("failed");
     }
   }
@@ -47,7 +53,7 @@ export function SignIn({
           type="button"
           variant="outline"
           size="lg"
-          disabled={attempt === "pending"}
+          disabled={attempt === "pending" || disabled}
           onClick={() => signInWith("google")}
         >
           <span
@@ -61,7 +67,7 @@ export function SignIn({
           type="button"
           variant="outline"
           size="lg"
-          disabled={attempt === "pending"}
+          disabled={attempt === "pending" || disabled}
           onClick={() => signInWith("github")}
         >
           <span
