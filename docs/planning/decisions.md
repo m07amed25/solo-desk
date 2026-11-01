@@ -55,10 +55,10 @@ Updated 29 October 2026. Website requirements below supersede the earlier native
 | Q-02 | Cloud region/data residency, monthly budget, expected active users/workspaces, storage and support hours | Provisioning, plan selection, operational promises | Product owner |
 | Q-03 | Exact time rounding, grouping, minimums, tax/discount order, currency precision, numbering series | Approval of financial fixtures | Product owner + finance reviewer |
 | Q-04 | Browser sleep/suspension/gap review, timer reminders and maximum manual duration | Final timer UX | Product owner |
-| Q-05 | Role templates, time/expense approval rules, project grants, financial dual approval | Permission matrix sign-off | Product owner |
+| Q-05 | Role templates, time/expense approval rules, project grants, financial dual approval. **Scoped resolution for Feature 004**: Bounded 3-role slice (Owner, Admin, Member) with fixed action ceilings confirmed. Broader 6-role templates, approval rules, and custom policy editors remain open. | Permission matrix sign-off | Product owner |
 | Q-06 | Eligible offline draft classes, access duration, expiry and account-switch retention; no seven-day native lease default | Browser offline-drafting release | Product + security |
 | Q-07 | Reviewed browser draft encryption/key custody, quotas/eviction and recovery; protected persistence disabled until proven | Browser offline-drafting release | Engineering + security |
-| Q-08 | Mandatory MFA policies, SSO/social providers, account recovery, invite expiry | Identity release | Product + security |
+| Q-08 | Mandatory MFA policies, SSO/social providers, account recovery, invite expiry. **Scoped resolution for Feature 004**: 72-hour invitation token lifetime with CSPRNG token rotation confirmed. Broader MFA, enterprise SSO, and recovery policy remain open. | Identity release | Product + security |
 | Q-09 | First connector/provider list: GitHub/GitLab, calendar, email, payments, accounting; operator credentials and countries | P07 connector commitments | Product owner |
 | Q-10 | Portal login versus expiring verified links; legal signature provider, signatory evidence, branding | P02 signatures / P08 portal | Product + legal/security |
 | Q-11 | Supported browser/version and phone/tablet/wide-screen matrix, assistive technology and deployment hosting | Website support and release evidence | Engineering + product |

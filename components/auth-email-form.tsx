@@ -21,6 +21,7 @@ export type AuthEmailFormProps = {
   onInFlightChange?: (inFlight: boolean) => void;
   onStepChange?: (step: Step) => void;
   disabled?: boolean;
+  credentialsEnabled?: boolean;
 };
 
 export type Step = "form" | "verify" | "forgot" | "reset";
@@ -30,6 +31,7 @@ export function AuthEmailForm({
   onInFlightChange,
   onStepChange,
   disabled = false,
+  credentialsEnabled = false,
 }: AuthEmailFormProps) {
   const t = useTranslations("Auth");
   const router = useRouter();
@@ -100,6 +102,16 @@ export function AuthEmailForm({
       setCode("");
     };
   }, [step]);
+
+  if (!credentialsEnabled) {
+    return (
+      <Alert className="border-muted bg-muted/40 text-muted-foreground">
+        <AlertDescription className="text-xs leading-relaxed">
+          {t("credentialsUnavailable")}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   // Email format validation
   function isValidEmail(val: string): boolean {

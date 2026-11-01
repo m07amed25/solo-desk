@@ -2,7 +2,7 @@
 
 Website baseline: [architecture](../architecture/overview.md) and [design patterns](../architecture/design-patterns.md) govern this module: shared shadcn/ui design-system components, scalable server services, Neon PostgreSQL, Better Auth and security-first authorization. Offline behavior below applies only to eligible drafts after the [browser-storage gate](../architecture/sync-and-collaboration.md); protected persistence stays disabled until proven.
 
-Status: proposed functional specification under confirmed cloud/team/offline/encryption choices. P01 is mandatory for the first usable release. The current Next.js starter implements none of these domain capabilities. Related authority: [security](../architecture/security-and-privacy.md), [sync](../architecture/sync-and-collaboration.md), [API contracts](../architecture/api-contracts.md).
+Status: active functional specification under confirmed cloud/team/offline/encryption choices. Feature 004 implements PLT-001–PLT-005 (core workspace platform, membership, role ceilings, recipient-bound invitations, atomic command receipts, and audit log) via [`migrations/002-workspace-platform.sql`](file:///home/mohamed-s/Desktop/Projects/solor-desk/migrations/002-workspace-platform.sql) and [`lib/workspaces.ts`](file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/workspaces.ts); downstream offline drafting (PLT-007–PLT-010) and financial business domains remain future work. Related authority: [security](../architecture/security-and-privacy.md), [sync](../architecture/sync-and-collaboration.md), [API contracts](../architecture/api-contracts.md).
 
 ## Capability requirements
 

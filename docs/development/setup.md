@@ -21,6 +21,7 @@ Tailwind source detection in `app/globals.css` explicitly scans `app/`, `compone
 | --- | --- |
 | `npm run dev` | Next.js development server |
 | `npm run lint` | ESLint |
+| `npm run db:migrate` | Apply all pending SQL migrations using `DATABASE_URL_UNPOOLED`; select files with `npm run db:migrate -- 001 002` ([migration guide](../../migrations/README.md)) |
 | `npm run build` | Production build |
 | `npm test` | Local site/profile tests and isolated email tests; no live database or SMTP connection |
 | `npm run test:full` | ESLint, generated Next.js types, TypeScript checks, translation parity, all local tests and a production build; stops on the first failure |

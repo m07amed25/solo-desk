@@ -1,6 +1,6 @@
 # Conceptual data model and integrity catalogue
 
-Design only: no schemas/migrations exist. Neon PostgreSQL holds authoritative accepted business data and Better Auth identity/session tables; eligible encrypted IndexedDB drafts and pending operations exist only after the browser-storage gate passes. Document field types below are conceptual, not executable SQL.
+Neon PostgreSQL holds authoritative accepted business data and Better Auth identity/session tables; eligible encrypted IndexedDB drafts and pending operations exist only after the browser-storage gate passes. The foundational workspace platform schema is implemented in [`migrations/002-workspace-platform.sql`](file:///home/mohamed-s/Desktop/Projects/solor-desk/migrations/002-workspace-platform.sql) (defining `solodesk.workspaces`, `workspace_memberships`, `workspace_grants`, `workspace_invitations`, `command_receipts`, `audit_events`, `outbox_events`, and `rate_limit_buckets`). Additional downstream business entities below remain conceptual designs.
 
 ## Shared fields and types
 

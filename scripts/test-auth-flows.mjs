@@ -19,7 +19,7 @@ export function validateTargetEnv(env = process.env) {
   );
   assert.ok(
     !/prod/i.test(env.NEON_BRANCH),
-    `Production or prod-like branch '${env.NEON_BRANCH}' cannot run test fixtures`,
+    `Production or prod-like branch '${redact(env.NEON_BRANCH)}' cannot run test fixtures`,
   );
   if (env.DATABASE_URL) {
     assert.ok(
@@ -27,6 +27,74 @@ export function validateTargetEnv(env = process.env) {
       "DATABASE_URL appears to point to a production database",
     );
   }
+  return true;
+}
+
+/**
+ * Validates an isolated target manifest binding app, auth, db, branch, sink, and synthetic fixtures.
+ * Rejects production-labelled endpoints, mismatched identities, and real-data fixtures.
+ */
+export function validateTargetManifest(manifest) {
+  assert.ok(
+    manifest && typeof manifest === "object",
+    "Target manifest must be a non-null object",
+  );
+  assert.equal(
+    manifest.environment,
+    "isolated",
+    "Target manifest must specify environment='isolated'",
+  );
+  assert.ok(manifest.appUrl, "Target manifest requires appUrl");
+  assert.ok(manifest.databaseUrl, "Target manifest requires databaseUrl");
+  assert.ok(manifest.neonBranch, "Target manifest requires neonBranch");
+  assert.ok(manifest.authBaseUrl, "Target manifest requires authBaseUrl");
+  assert.ok(manifest.webhookSinkId, "Target manifest requires webhookSinkId");
+  assert.ok(
+    manifest.fixtureNamespace,
+    "Target manifest requires fixtureNamespace",
+  );
+
+  // Reject production-labelled targets
+  assert.ok(
+    !/prod/i.test(manifest.neonBranch),
+    `Production or prod-like branch '${redact(manifest.neonBranch)}' cannot run test fixtures`,
+  );
+  assert.ok(
+    !/prod/i.test(manifest.databaseUrl),
+    "databaseUrl must not point to a production database",
+  );
+  assert.ok(
+    !/solodesk\.com|production/i.test(manifest.appUrl),
+    "appUrl must not point to a production endpoint",
+  );
+  assert.ok(
+    !/prod/i.test(manifest.authBaseUrl),
+    "authBaseUrl must not point to a production auth service",
+  );
+
+  // Mismatched branch check
+  if (manifest.branchId && manifest.neonBranch) {
+    assert.equal(
+      manifest.branchId,
+      manifest.neonBranch,
+      "Target manifest branchId and neonBranch must match",
+    );
+  }
+
+  // Reject copied real-data fixtures or non-synthetic fixture ownership
+  assert.ok(
+    /^solodesk-(?:test|synthetic|auth-[a-z0-9-]+)/i.test(
+      manifest.fixtureNamespace,
+    ),
+    `Fixture namespace '${redact(manifest.fixtureNamespace)}' must be an isolated synthetic prefix (e.g. solodesk-synthetic-*)`,
+  );
+  if (manifest.sampleAccount) {
+    assert.ok(
+      /@(?:example\.com|test\.local|invalid)$/i.test(manifest.sampleAccount),
+      "Sample account must not use real public domain; must use example.com, test.local or invalid",
+    );
+  }
+
   return true;
 }
 
@@ -950,12 +1018,21 @@ export async function testRecoveryScenarios(
     // Verify session revocation for previously active sessions
     if (haveActiveSessions) {
       console.log("[US4] Verifying previous sessions revoked after reset...");
-      const profileA = await testRequest(base, "/api/profile", jarA);
+      const targetUserId = identity.id || identity.uuid;
+      const profileA = await testRequest(
+        base,
+        `/api/profile?userId=${targetUserId}`,
+        jarA,
+      );
       assert.ok(
         [401, 403].includes(profileA.response.status),
         `Session A must be revoked after reset, got ${profileA.response.status}`,
       );
-      const profileB = await testRequest(base, "/api/profile", jarB);
+      const profileB = await testRequest(
+        base,
+        `/api/profile?userId=${targetUserId}`,
+        jarB,
+      );
       assert.ok(
         [401, 403].includes(profileB.response.status),
         `Session B must be revoked after reset, got ${profileB.response.status}`,
@@ -1002,10 +1079,35 @@ if (process.argv[1]?.endsWith("test-auth-flows.mjs")) {
   const isSelfCheck =
     process.argv.includes("--self-check") ||
     process.env.SOLODESK_TEST_GUARD_ONLY === "1";
+  const isIntegration = process.argv.includes("--integration");
 
   if (isSelfCheck) {
     runGuardSelfChecks();
+    console.log(
+      "PASS [LOCAL] Offline guard self-checks completed successfully.",
+    );
     process.exit(0);
+  }
+
+  if (!isIntegration) {
+    console.error(
+      "Usage: node scripts/test-auth-flows.mjs --self-check | --integration [--manifest <path>]",
+    );
+    process.exit(1);
+  }
+
+  // In integration mode, manifest is mandatory
+  const manifestIdx = process.argv.indexOf("--manifest");
+  const manifestPath =
+    manifestIdx !== -1
+      ? process.argv[manifestIdx + 1]
+      : process.env.SOLODESK_TARGET_MANIFEST;
+
+  if (!manifestPath || !existsSync(manifestPath)) {
+    console.error(
+      `BLOCKED: Target manifest is missing or not found: '${manifestPath || "none specified"}'. Integration requires an independently verified target manifest.`,
+    );
+    process.exit(2);
   }
 
   // Check if .env.local exists and try loading
@@ -1018,7 +1120,16 @@ if (process.argv[1]?.endsWith("test-auth-flows.mjs")) {
   }
 
   try {
+    const { readFileSync } = await import("node:fs");
+    const manifestContent = JSON.parse(readFileSync(manifestPath, "utf8"));
+    validateTargetManifest(manifestContent);
     validateTargetEnv(process.env);
+  } catch (err) {
+    console.error(`BLOCKED: Target validation failed: ${err.message}`);
+    process.exit(2);
+  }
+
+  try {
     console.log(
       "Target environment is isolated and valid. Proceeding with remote test suite...",
     );
@@ -1035,9 +1146,7 @@ if (process.argv[1]?.endsWith("test-auth-flows.mjs")) {
     console.log("PASS All auth flow scenarios completed successfully.");
     process.exit(0);
   } catch (err) {
-    console.error(`TARGET REJECTED: ${err.message}`);
-    console.log("Running offline guard self-checks instead...");
-    runGuardSelfChecks();
-    process.exit(0);
+    console.error(`FAIL: Auth flow assertion failure: ${err.message}`);
+    process.exit(1);
   }
 }

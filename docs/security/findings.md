@@ -43,6 +43,46 @@ The initial registry audit failed with `EAI_AGAIN`; a retry with network access 
 
 Application/config ESLint completed with zero errors and one existing unused-import warning. Repository-wide `npm run lint` failed with 17 errors in agent-skill scripts and 35 warnings. `npm run build` failed both before and after an access retry because Turbopack could not bind a local worker port (`Operation not permitted`); production build verification remains unavailable. These results do not pass the release gate or establish deployed-artifact security.
 
+## Advisory Triage & Assessment — November 2026 (T052)
+
+Fresh `npm audit` was executed on the current lockfile. 27 advisory matches were reported across devDependencies and transitive build tooling:
+
+### 1. GHSA-g3hv-75wg-m249 (minimatch < 11.0.1)
+- **Severity**: Moderate
+- **Title**: minimatch has potential denial of service via globparts amplification
+- **Affected Packages**: `minimatch` transitive under `eslint`, `eslint-config-next`, `@typescript-eslint/*`, and `ts-morph`.
+- **Reachability Assessment**:
+  - `minimatch` is used exclusively during offline build/lint execution (`eslint`, Next.js build config file matching).
+  - It is NOT bundled into client-side JS bundles, server action runtimes, or production API endpoints.
+  - No untrusted user input or request payload is evaluated by `minimatch` glob expansion.
+- **Remediation & Action**:
+  - Upstream `npm audit fix --force` would attempt breaking downgrade to `eslint@4.0.0` (which is incompatible with Next.js 16 and React 19).
+  - Risk Accepted for tooling: strictly isolated to local/CI development pipelines. Monitored for future upstream non-breaking minor/patch updates from `@typescript-eslint` and Next.js.
+
+### 2. GHSA-3g3m-2fjr-6pw4 (glob 3.0.0 - 14.0.1)
+- **Severity**: Moderate
+- **Title**: Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal
+- **Affected Packages**: `glob` transitive under `react-email`.
+- **Reachability Assessment**:
+  - `react-email` is a devDependency used only for local email template previews (`npm run email:dev`, `npm run email:export`).
+  - Not bundled into application runtime or production email delivery workers (`scripts/dispatch-workspace-invitations.mjs` uses `nodemailer` directly).
+- **Remediation & Action**: Tooling-only; no production runtime impact.
+
+### 3. GHSA-gcqx-w48m-w2h4 (deepmerge >= 4.2.0)
+- **Severity**: Low
+- **Title**: deepmerge mergeObject() allows prototype poisoning of returned objects
+- **Affected Packages**: `deepmerge` under `shadcn` CLI and `@react-email/render`.
+- **Reachability Assessment**:
+  - Used during CLI component installation (`shadcn add`) and email template rendering.
+  - Application runtime deep merges and intent digests (`computeIntentDigest` in `lib/workspaces.ts`) use custom deterministic sort/hash implementations and do not invoke `deepmerge`.
+- **Remediation & Action**: No unpatched upstream version available without breaking downgrade to `shadcn@1.0.0`. Tooling-only impact.
+
+### Summary of Open Security Gaps
+- **SEC-GAP-001**: Superseded by explicit triage above.
+- **SEC-GAP-002**: Workspaces authorization and tenant isolation controls implemented and validated offline (all 26 test suite assertions pass). Production database integration remains gated behind synthetic target manifest.
+- **SEC-GAP-003**: Production hosted build and remote deployment scans remain open until staging environment provisioning.
+
+
 ## Finding record template
 
 Copy for an actual finding; never fill unknown fields with invented success:

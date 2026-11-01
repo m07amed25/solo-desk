@@ -16,7 +16,9 @@ export async function currentSession() {
     session?.session && new Date(session.session.expiresAt).getTime();
   return session?.user &&
     session.user.emailVerified === true &&
+    session.user.banned !== true &&
     expiry &&
+    Number.isFinite(expiry) &&
     expiry > Date.now()
     ? session
     : null;

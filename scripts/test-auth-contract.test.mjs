@@ -392,3 +392,181 @@ test("SDK client transport adheres to strict contract for password recovery and 
     globalThis.fetch = originalFetch;
   }
 });
+
+test("target manifest validation enforces synthetic boundaries and rejects production and mismatched targets", async () => {
+  const { validateTargetManifest } = await import("./test-auth-flows.mjs");
+
+  const validManifest = {
+    environment: "isolated",
+    appUrl: "http://localhost:3000",
+    databaseUrl: "postgres://synthetic:secret@preview-123.neon.tech/testdb",
+    neonBranch: "preview-123",
+    branchId: "preview-123",
+    authBaseUrl: "https://auth-preview-123.neon.tech",
+    webhookSinkId: "sink-synth-001",
+    fixtureNamespace: "solodesk-synthetic-tests",
+    sampleAccount: "fixture-01@example.com",
+  };
+
+  // 1. Valid isolated synthetic manifest succeeds
+  assert.equal(validateTargetManifest(validManifest), true);
+
+  // 2. Missing or invalid environment
+  assert.throws(
+    () =>
+      validateTargetManifest({ ...validManifest, environment: "production" }),
+    /environment='isolated'/,
+  );
+  assert.throws(
+    () => validateTargetManifest({ ...validManifest, environment: undefined }),
+    /environment='isolated'/,
+  );
+
+  // 3. Production neonBranch rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({ ...validManifest, neonBranch: "production" }),
+    /Production or prod-like branch/,
+  );
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        neonBranch: "main-prod-branch",
+      }),
+    /Production or prod-like branch/,
+  );
+
+  // 4. Production databaseUrl rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        databaseUrl: "postgres://u:p@prod-db.neon.tech/db",
+      }),
+    /databaseUrl must not point to a production database/,
+  );
+
+  // 5. Production appUrl rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        appUrl: "https://solodesk.com",
+      }),
+    /appUrl must not point to a production endpoint/,
+  );
+
+  // 6. Production authBaseUrl rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        authBaseUrl: "https://auth-prod.neon.tech",
+      }),
+    /authBaseUrl must not point to a production auth service/,
+  );
+
+  // 7. Mismatched branch IDs rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        branchId: "different-branch-456",
+      }),
+    /branchId and neonBranch must match/,
+  );
+
+  // 8. Copied real-data fixture namespace rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        fixtureNamespace: "customer-prod-fixtures",
+      }),
+    /isolated synthetic prefix/,
+  );
+
+  // 9. Real email domain sample account rejected
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        sampleAccount: "realuser@company.com",
+      }),
+    /Sample account must not use real public domain/,
+  );
+});
+
+test("server capability policy enforces default-off credential gating and allows social/session paths", async () => {
+  const { readFileSync } = await import("node:fs");
+  const vm = await import("node:vm");
+  const ts = (await import("typescript")).default;
+
+  function loadCapabilities() {
+    const source = readFileSync(
+      new URL("../lib/auth/capabilities.ts", import.meta.url),
+      "utf8",
+    );
+    const output = ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+      },
+    }).outputText;
+    const exports = {};
+    vm.runInNewContext(output, {
+      exports,
+      require(name) {
+        if (name === "server-only") return {};
+        throw new Error(`Unexpected import: ${name}`);
+      },
+      process,
+    });
+    return exports;
+  }
+
+  const { isAllowedAuthPath } = loadCapabilities();
+
+  // Test 1: By default, credentials are off
+  delete process.env.SOLODESK_AUTH_CREDENTIALS_ENABLED;
+
+  // Social / session / sign-out paths are always allowed
+  assert.equal(isAllowedAuthPath("/api/auth/sign-in/social").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/callback/google").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/callback/github").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/get-session").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/session").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/sign-out").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/ok").allowed, true);
+
+  // Credential paths denied when toggle is off
+  const assertDisabled = (path) => {
+    const res = isAllowedAuthPath(path);
+    assert.equal(res.allowed, false);
+    assert.equal(res.reason, "CAPABILITY_DISABLED");
+  };
+
+  assertDisabled("/api/auth/sign-in/email");
+  assertDisabled("/api/auth/sign-up/email");
+  assertDisabled("/api/auth/email-otp/verify-email");
+  assertDisabled("/api/auth/email-otp/send-verification-otp");
+  assertDisabled("/api/auth/email-otp/reset-password");
+  assertDisabled("/api/auth/forget-password");
+  assertDisabled("/api/auth/reset-password");
+  assertDisabled("/api/auth/change-password");
+  assertDisabled("/api/auth/link-social");
+  assertDisabled("/api/auth/unknown-credential-alias");
+
+  // Test 2: When credentials toggle is explicitly "true"
+  process.env.SOLODESK_AUTH_CREDENTIALS_ENABLED = "true";
+  assert.equal(isAllowedAuthPath("/api/auth/sign-in/email").allowed, true);
+  assert.equal(isAllowedAuthPath("/api/auth/sign-up/email").allowed, true);
+  assert.equal(
+    isAllowedAuthPath("/api/auth/email-otp/verify-email").allowed,
+    true,
+  );
+
+  // Reset toggle back
+  delete process.env.SOLODESK_AUTH_CREDENTIALS_ENABLED;
+});
