@@ -11,6 +11,7 @@ import { WorkPreview } from "@/components/landing/work-preview";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { currentSession } from "@/lib/auth/server";
+import { isCredentialsEnabled } from "@/lib/auth/capabilities";
 import {
   normalizedAuthPath,
   presentation,
@@ -74,6 +75,7 @@ async function Entry({
         <AuthInteractivePanel
           entry={entry}
           failed={params.get("authError") === "1"}
+          credentialsEnabled={isCredentialsEnabled()}
         />
       </NextIntlClientProvider>
       <p className="text-sm text-muted-foreground">

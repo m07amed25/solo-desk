@@ -9,9 +9,11 @@ import type { AuthEntry } from "@/lib/site";
 export function AuthInteractivePanel({
   entry,
   failed,
+  credentialsEnabled = false,
 }: {
   entry: AuthEntry;
   failed: boolean;
+  credentialsEnabled?: boolean;
 }) {
   const t = useTranslations("Auth");
   const [inFlight, setInFlight] = useState(false);
@@ -28,14 +30,16 @@ export function AuthInteractivePanel({
             disabled={inFlight}
             onInFlightChange={setInFlight}
           />
-          <div className="relative my-1 flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
+          {credentialsEnabled && (
+            <div className="relative my-1 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <span className="relative bg-background px-3 text-xs uppercase text-muted-foreground font-medium">
+                {t("orDivider")}
+              </span>
             </div>
-            <span className="relative bg-background px-3 text-xs uppercase text-muted-foreground font-medium">
-              {t("orDivider")}
-            </span>
-          </div>
+          )}
         </>
       )}
 
@@ -43,6 +47,7 @@ export function AuthInteractivePanel({
       <AuthEmailForm
         entry={entry}
         disabled={inFlight}
+        credentialsEnabled={credentialsEnabled}
         onInFlightChange={setInFlight}
         onStepChange={(step) => setIsInnerStep(step !== "form")}
       />

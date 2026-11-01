@@ -1,6 +1,6 @@
 # Website command, query and draft-submission contracts
 
-Status: proposed Next.js website contracts; business services, Neon access and Better Auth integration remain future work. P01 owns transport/error conventions; each domain spec owns business validation. Concrete OpenAPI/JSON schemas are an implementation deliverable after rules are approved.
+Status: active Next.js website contracts; Better Auth integration and workspace platform command/query services (Feature 004: Workspace Platform & Authorization) implemented in [`lib/workspaces.ts`](file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/workspaces.ts) and [`app/workspace-actions.ts`](file:///home/mohamed-s/Desktop/Projects/solor-desk/app/workspace-actions.ts); downstream business domain services remain future work. P01 owns transport/error conventions; each domain spec owns business validation. Concrete OpenAPI/JSON schemas are an implementation deliverable after rules are approved.
 
 ## Common request/result envelope
 

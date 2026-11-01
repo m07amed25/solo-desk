@@ -102,10 +102,23 @@ test("fresh session helper rejects unverified, expired, revoked, malformed and u
   result = { data: null, error: null };
   assert.equal(await currentSession(), null);
 
-  // 7. Auth service failure throws unavailable
+  // 7. Banned user returns null
+  result = {
+    data: {
+      user: { id: userId, emailVerified: true, banned: true },
+      session: {
+        id: sessionId,
+        expiresAt: new Date(Date.now() + 60000).toISOString(),
+      },
+    },
+    error: null,
+  };
+  assert.equal(await currentSession(), null);
+
+  // 8. Auth service failure throws unavailable
   result = { data: null, error: { code: "unavailable" } };
   await assert.rejects(currentSession, /Authentication unavailable/);
-  assert.equal(calls, 7);
+  assert.equal(calls, 8);
 });
 
 test("profile service denies unverified, mismatched, expired or revoked users and seals only current verified own rows", async () => {
@@ -113,11 +126,13 @@ test("profile service denies unverified, mismatched, expired or revoked users an
   let queries = 0;
   let seals = 0;
   let rows = [{ id: userId, name: "Synthetic member" }];
+  let shouldFailQuery = false;
   const { loadProfile } = service("../lib/profile.ts", {
     "@/lib/auth/server": { currentSession: async () => session },
     "@/lib/db": {
       db: {
         async query(sql, params) {
+          if (shouldFailQuery) throw new Error("DB connection unavailable");
           queries++;
           assert.equal(params[0], userId);
           assert.equal(params[1], sessionId);
@@ -169,6 +184,14 @@ test("profile service denies unverified, mismatched, expired or revoked users an
   assert.equal(await loadProfile(userId), null);
   assert.equal(seals, 0);
 
+  // Database failure propagates as rejected promise
+  shouldFailQuery = true;
+  await assert.rejects(
+    async () => await loadProfile(userId),
+    /DB connection unavailable/,
+  );
+  shouldFailQuery = false;
+
   // Active verified user with valid DB row succeeds and query is sealed
   rows = [{ id: userId, name: "Synthetic member" }];
   const profile = await loadProfile(userId);
@@ -183,4 +206,45 @@ test("profile service denies unverified, mismatched, expired or revoked users an
     "userId",
   ]);
   assert.equal(seals, 1);
+});
+
+test("saveProfile action preserves parameter contracts, error codes, and own-user authorization", async () => {
+  let profileMock = { userId };
+  let updateResult = { error: null };
+  const { saveProfile } = service("../app/actions.ts", {
+    "@/lib/profile": {
+      loadProfile: async (id) =>
+        id === profileMock?.userId ? profileMock : null,
+    },
+    "@/lib/auth/server": {
+      auth: {
+        updateUser: async ({ name }) => {
+          assert.equal(name, "Updated Name");
+          return updateResult;
+        },
+      },
+    },
+  });
+
+  // Invalid name checks
+  assert.equal((await saveProfile(userId, "")).error, "invalidName");
+  assert.equal((await saveProfile(userId, "   ")).error, "invalidName");
+  assert.equal(
+    (await saveProfile(userId, "a".repeat(101))).error,
+    "invalidName",
+  );
+
+  // Unauthorized when loadProfile returns null (e.g. foreign user or unverified)
+  assert.equal(
+    (await saveProfile(otherId, "Updated Name")).error,
+    "unauthorized",
+  );
+
+  // Save failed when auth.updateUser returns error or throws
+  updateResult = { error: { code: "FAILED" } };
+  assert.equal((await saveProfile(userId, "Updated Name")).error, "saveFailed");
+
+  // Successful save
+  updateResult = { error: null };
+  assert.equal((await saveProfile(userId, "Updated Name")).error, null);
 });

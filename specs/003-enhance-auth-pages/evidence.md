@@ -1,5 +1,8 @@
 # Implementation & Verification Evidence: Enhanced Sign In and Sign Up
 
+> [!NOTE]
+> **Supersession Notice (2026-11-01)**: The evidence, gate labels, and test status claims in this historical document are superseded by the canonical G1–G6 ledger and owned findings in [004 evidence](../../specs/004-workspace-platform-and-authorization/evidence.md). This file is retained as an immutable historical record of the 003 cycle.
+
 Feature: `003-enhance-auth-pages`  
 Date: 2026-10-30  
 Repository: `m07amed25/solo-desk`
