@@ -44,7 +44,19 @@
     "system": "حسب النظام",
     "apply": "تطبيق التفضيلات",
     "switchLanguage": "التبديل إلى {language}",
-    "switchTheme": "المظهر: {current}. التبديل إلى {next}"
+    "switchTheme": "المظهر: {current}. التبديل إلى {next}",
+    "overview": "نظرة عامة",
+    "workspaceAndTeam": "مساحة العمل والفريق",
+    "personalAccount": "الحساب الشخصي",
+    "publicSite": "الموقع العام",
+    "appHome": "الرئيسية في SoloDesk",
+    "workspaceSwitcher": "تبديل مساحة العمل",
+    "noAvailableWorkspaces": "لا توجد مساحات عمل متاحة",
+    "workspacesDisabled": "مساحات العمل معطلة",
+    "workspacesUnavailable": "مساحات العمل غير متاحة",
+    "loadMore": "تحميل المزيد",
+    "loadingMore": "جارٍ التحميل…",
+    "breadcrumbsApp": "SoloDesk"
   },
   "Landing": {
     "title": "عملك. وقتك.\nكلّه في مكان واحد.",
@@ -558,5 +570,20 @@
       "unauthorized": "يرجى تسجيل الدخول للمتابعة.",
       "generic": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
     }
+  },
+  "Overview": {
+    "title": "نظرة عامة",
+    "welcome": "مرحبًا، {name}",
+    "description": "يوفر SoloDesk مساحة عمل موحدة لإدارة مشاريعك وملفك الشخصي.",
+    "workspaceCardTitle": "مساحة العمل والفريق",
+    "workspaceCardDesc": "إدارة أعضاء الفريق والإعدادات وتفضيلات مساحة العمل.",
+    "accountCardTitle": "الملف الشخصي",
+    "accountCardDesc": "تحديث اسمك وبيانات ملفك الشخصي وتفضيلات الحساب.",
+    "noWorkspacesTitle": "لا توجد مساحات عمل متاحة",
+    "noWorkspacesDesc": "لست عضوًا في أي مساحة عمل بعد. يمكنك إنشاء مساحة عمل أو قبول دعوة.",
+    "createWorkspace": "إنشاء مساحة عمل",
+    "goToWorkspace": "فتح مساحة العمل",
+    "goToAccount": "فتح الملف الشخصي",
+    "noAvailableWorkspaces": "لا توجد مساحات عمل متاحة"
   }
 }

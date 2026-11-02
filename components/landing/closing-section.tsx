@@ -23,7 +23,7 @@ export async function ClosingSection() {
         <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-md">
           {t("closingBody")}
         </p>
-        <div className="mt-7 flex flex-col items-center gap-2.5">
+        <div className="mt-7 flex flex-wrap justify-center items-center gap-3">
           <a
             href="/sign-up"
             className={cn(
@@ -38,10 +38,19 @@ export async function ClosingSection() {
               aria-hidden="true"
             />
           </a>
-          <p className="text-xs text-muted-foreground/75">
-            {t("accountAvailable")}
-          </p>
+          <a
+            href="/sign-in"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "default" }),
+              "h-9 px-4 text-xs sm:text-sm font-medium",
+            )}
+          >
+            {(await getTranslations("Navigation"))("signIn")}
+          </a>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground/75">
+          {t("accountAvailable")}
+        </p>
       </div>
     </section>
   );

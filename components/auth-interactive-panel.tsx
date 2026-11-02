@@ -4,14 +4,16 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { SignIn } from "@/components/sign-in";
 import { AuthEmailForm } from "@/components/auth-email-form";
-import type { AuthEntry } from "@/lib/site";
+import type { AppDestination, AuthEntry } from "@/lib/site";
 
 export function AuthInteractivePanel({
   entry,
+  returnTo = "/app",
   failed,
   credentialsEnabled = false,
 }: {
   entry: AuthEntry;
+  returnTo?: AppDestination;
   failed: boolean;
   credentialsEnabled?: boolean;
 }) {
@@ -26,6 +28,7 @@ export function AuthInteractivePanel({
         <>
           <SignIn
             entry={entry}
+            returnTo={returnTo}
             failed={failed}
             disabled={inFlight}
             onInFlightChange={setInFlight}
@@ -46,6 +49,7 @@ export function AuthInteractivePanel({
       {/* Email / password / verification / recovery form */}
       <AuthEmailForm
         entry={entry}
+        returnTo={returnTo}
         disabled={inFlight}
         credentialsEnabled={credentialsEnabled}
         onInFlightChange={setInFlight}

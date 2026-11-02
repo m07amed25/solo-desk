@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { currentSession } from "@/lib/auth/server";
 import { isCredentialsEnabled } from "@/lib/auth/capabilities";
 import {
+  authReturnPath,
   normalizedAuthPath,
   presentation,
   themes,
@@ -41,6 +42,11 @@ async function Entry({
   }
   const normalized = normalizedAuthPath(entry, params);
   if (normalized) redirect(normalized);
+
+  const rawReturnTo = params.get("returnTo");
+  const returnTo = authReturnPath(rawReturnTo);
+  const returnParam = rawReturnTo && returnTo !== "/app" ? `?returnTo=${encodeURIComponent(returnTo)}` : "";
+
   const t = await getTranslations("Auth");
   const c = await getTranslations("Common");
   let session;
@@ -58,7 +64,7 @@ async function Entry({
       </Alert>
     );
   }
-  if (session?.user) redirect("/app");
+  if (session?.user) redirect(`${returnTo}#`);
   const messages = await getMessages();
   const signingUp = entry === "sign-up";
   return (
@@ -74,6 +80,7 @@ async function Entry({
       <NextIntlClientProvider messages={{ Auth: messages.Auth }}>
         <AuthInteractivePanel
           entry={entry}
+          returnTo={returnTo}
           failed={params.get("authError") === "1"}
           credentialsEnabled={isCredentialsEnabled()}
         />
@@ -81,7 +88,7 @@ async function Entry({
       <p className="text-sm text-muted-foreground">
         {t(signingUp ? "haveAccount" : "needAccount")}{" "}
         <a
-          href={signingUp ? "/sign-in" : "/sign-up"}
+          href={signingUp ? `/sign-in${returnParam}` : `/sign-up${returnParam}`}
           className="font-medium text-foreground underline underline-offset-4"
         >
           {signingUp

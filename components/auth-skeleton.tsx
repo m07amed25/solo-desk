@@ -301,3 +301,58 @@ export function AccountPageSkeleton({
     </div>
   );
 }
+
+/**
+ * Application shell skeleton with dual-sidebar layout.
+ * Used for route-level loading.tsx and non-private Suspense fallbacks.
+ */
+export function AppShellSkeleton({
+  statusText = "Checking your account…",
+  className,
+}: ProfileSkeletonProps) {
+  return (
+    <div
+      className={cn("flex min-h-svh w-full bg-background", className)}
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+    >
+      <span className="sr-only">{statusText}</span>
+      {/* Sidebar skeleton: starts from top of screen */}
+      <div
+        aria-hidden="true"
+        className="hidden md:flex h-svh w-64 flex-col justify-between border-r border-sidebar-border bg-sidebar p-3 shrink-0"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2.5 px-1 py-0.5">
+            <Skeleton className="size-8 rounded-lg" />
+            <Skeleton className="h-4 w-24 rounded" />
+          </div>
+          <Skeleton className="h-9 w-full rounded-md" />
+          <div className="mt-4 flex flex-col gap-2">
+            <Skeleton className="h-8 w-full rounded-md" />
+            <Skeleton className="h-8 w-full rounded-md" />
+            <Skeleton className="h-8 w-full rounded-md" />
+          </div>
+        </div>
+        <div className="border-t border-sidebar-border pt-2">
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+      {/* Shell / Inset content: starts at end of sidebar */}
+      <div aria-hidden="true" className="flex flex-1 flex-col min-w-0">
+        <header className="flex h-14 items-center gap-4 border-b border-border/40 px-6">
+          <Skeleton className="size-8 rounded-md" />
+          <Skeleton className="h-4 w-32 rounded" />
+        </header>
+        <main className="flex-1 p-6">
+          <div className="mx-auto max-w-4xl flex flex-col gap-6">
+            <Skeleton className="h-8 w-48 rounded" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

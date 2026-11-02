@@ -11,6 +11,7 @@ import {
   parsePreferences,
   normalizedAuthPath,
   callbackEntry,
+  callbackReturnTo,
   authFailure,
 } from "../lib/site.ts";
 const en = JSON.parse(
@@ -35,12 +36,19 @@ test("finite presentation defaults and destination denials", () => {
     assert.equal(isLocale(bad), false);
   for (const bad of ["auto", "__proto__", null])
     assert.equal(isTheme(bad), false);
+  assert.equal(isReturnPath("/app"), true);
+  assert.equal(isReturnPath("/app/workspace"), true);
+  assert.equal(isReturnPath("/app/account"), true);
   for (const bad of [
     "https://evil.example",
     "//evil.example",
     "/app?x=1",
     "/app#x",
     "/app/",
+    "/app/other",
+    "/app/workspace/sub",
+    "/app/account/sub",
+    "/app/settings",
     "/\\evil.example",
     "/%2f%2fevil.example",
   ])
@@ -52,6 +60,22 @@ test("preferences accept precisely three bounded, unique fields", () => {
     theme: "system",
     returnTo: "/app",
   });
+  assert.deepEqual(
+    parsePreferences("locale=en&theme=dark&returnTo=%2Fapp%2Fworkspace"),
+    {
+      locale: "en",
+      theme: "dark",
+      returnTo: "/app/workspace",
+    },
+  );
+  assert.deepEqual(
+    parsePreferences("locale=ar&theme=light&returnTo=%2Fapp%2Faccount"),
+    {
+      locale: "ar",
+      theme: "light",
+      returnTo: "/app/account",
+    },
+  );
   for (const body of [
     "locale=en&locale=ar&theme=dark&returnTo=%2F",
     "locale=en&theme=dark&returnTo=%2F&role=owner",
@@ -80,6 +104,44 @@ test("auth errors discard arbitrary/duplicate fields and retain bounded entry", 
       normalizedAuthPath("sign-up", new URLSearchParams(q)),
       "/sign-up?authError=1",
     );
+  for (const validPath of ["/app", "/app/workspace", "/app/account"]) {
+    assert.equal(
+      normalizedAuthPath(
+        "sign-in",
+        new URLSearchParams(`returnTo=${encodeURIComponent(validPath)}`),
+      ),
+      null,
+    );
+    assert.equal(
+      normalizedAuthPath(
+        "sign-in",
+        new URLSearchParams(
+          `authError=1&returnTo=${encodeURIComponent(validPath)}`,
+        ),
+      ),
+      null,
+    );
+    assert.equal(
+      callbackReturnTo(
+        new URLSearchParams(`returnTo=${encodeURIComponent(validPath)}`),
+      ),
+      validPath,
+    );
+  }
+  for (const bad of [
+    "returnTo=https://evil.example",
+    "returnTo=//evil.example",
+    "returnTo=/app/other",
+    "returnTo=/app?x=1",
+    "returnTo=/app#frag",
+    "returnTo=/app&returnTo=/app/workspace",
+  ]) {
+    assert.equal(
+      normalizedAuthPath("sign-in", new URLSearchParams(bad)),
+      "/sign-in?authError=1",
+    );
+    assert.equal(callbackReturnTo(new URLSearchParams(bad)), "/app");
+  }
   assert.equal(callbackEntry(new URLSearchParams("entry=sign-up")), "sign-up");
   assert.equal(
     callbackEntry(new URLSearchParams("entry=sign-up&entry=sign-in")),
@@ -89,6 +151,7 @@ test("auth errors discard arbitrary/duplicate fields and retain bounded entry", 
     callbackEntry(new URLSearchParams("entry=https://evil.example")),
     "sign-in",
   );
+  assert.equal(callbackReturnTo(new URLSearchParams()), "/app");
   assert.equal(authFailure("sign-in"), "/sign-in?authError=1");
 });
 function leaves(value, prefix = "") {

@@ -130,8 +130,29 @@ export async function selectWorkspaceAction(
   workspaceId: string,
 ): Promise<ActionResult<{ selected: string }>> {
   try {
-    // Validate that the user is an active member with access
-    await getWorkspaceContext(workspaceId);
+    if (
+      !workspaceId ||
+      typeof workspaceId !== "string" ||
+      !/^[0-9a-f-]{36}$/i.test(workspaceId)
+    ) {
+      return {
+        success: false,
+        error: "VALIDATION",
+        message: "Invalid workspace ID",
+        statusHttp: 400,
+      };
+    }
+
+    // Validate that the user is an active member with read + select access
+    const ctx = await getWorkspaceContext(workspaceId);
+    if (!ctx.capabilities.includes("workspace.select")) {
+      return {
+        success: false,
+        error: "RESOURCE_UNAVAILABLE",
+        message: "Selection not authorized for this workspace",
+        statusHttp: 403,
+      };
+    }
 
     const cookieStore = await cookies();
     cookieStore.set("solodesk_workspace_id", workspaceId, {
@@ -165,10 +186,21 @@ export async function selectWorkspaceAction(
   }
 }
 
-export async function clearWorkspaceSelectionAction(): Promise<
-  ActionResult<{ cleared: true }>
-> {
+export async function clearWorkspaceSelectionAction(
+  expectedWorkspaceId?: string,
+): Promise<ActionResult<{ cleared: true }>> {
   const cookieStore = await cookies();
+  const currentCookie = cookieStore.get("solodesk_workspace_id")?.value;
+  if (
+    expectedWorkspaceId &&
+    currentCookie &&
+    currentCookie !== expectedWorkspaceId
+  ) {
+    return {
+      success: true,
+      data: { cleared: true },
+    };
+  }
   cookieStore.delete("solodesk_workspace_id");
   return {
     success: true,
@@ -185,6 +217,7 @@ export async function issueWorkspaceInvitationAction(
     workspaceId: string;
     operationId: string;
     targetId: string;
+    revision: string;
     code: string;
   }>
 > {
@@ -198,6 +231,7 @@ export async function issueWorkspaceInvitationAction(
         workspaceId: res.workspaceId,
         operationId: res.operationId,
         targetId: res.targetId,
+        revision: res.revision,
         code: res.code,
       },
     };
@@ -211,6 +245,7 @@ export async function issueWorkspaceInvitationAction(
         fields: err.fields,
       };
     }
+    console.error("issueWorkspaceInvitationAction unexpected error");
     return {
       success: false,
       error: "SERVICE_UNAVAILABLE",
@@ -280,6 +315,7 @@ export async function resendWorkspaceInvitationAction(
     workspaceId: string;
     operationId: string;
     targetId: string;
+    revision: string;
     code: string;
   }>
 > {
@@ -293,6 +329,7 @@ export async function resendWorkspaceInvitationAction(
         workspaceId: res.workspaceId,
         operationId: res.operationId,
         targetId: res.targetId,
+        revision: res.revision,
         code: res.code,
       },
     };
@@ -306,6 +343,7 @@ export async function resendWorkspaceInvitationAction(
         fields: err.fields,
       };
     }
+    console.error("resendWorkspaceInvitationAction unexpected error");
     return {
       success: false,
       error: "SERVICE_UNAVAILABLE",
@@ -324,6 +362,7 @@ export async function revokeWorkspaceInvitationAction(
     workspaceId: string;
     operationId: string;
     targetId: string;
+    revision: string;
     code: string;
   }>
 > {
@@ -337,6 +376,7 @@ export async function revokeWorkspaceInvitationAction(
         workspaceId: res.workspaceId,
         operationId: res.operationId,
         targetId: res.targetId,
+        revision: res.revision,
         code: res.code,
       },
     };
@@ -350,6 +390,7 @@ export async function revokeWorkspaceInvitationAction(
         fields: err.fields,
       };
     }
+    console.error("revokeWorkspaceInvitationAction unexpected error");
     return {
       success: false,
       error: "SERVICE_UNAVAILABLE",

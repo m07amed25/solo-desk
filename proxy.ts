@@ -47,7 +47,15 @@ export default async function proxy(request: NextRequest) {
   );
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}/${theme}${path === "/" ? "" : path}`;
-  return privateResponse(NextResponse.rewrite(url));
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", path);
+  return privateResponse(
+    NextResponse.rewrite(url, {
+      request: {
+        headers: requestHeaders,
+      },
+    }),
+  );
 }
 
 export const config = {

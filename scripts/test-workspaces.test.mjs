@@ -1435,3 +1435,143 @@ test("membership controls enforce active-owner invariant, role ceilings, leaving
   assert.equal(transferRes.code, "OWNERSHIP_TRANSFERRED");
   assert.equal(transferRes.revision, "2");
 });
+
+test("AP-02–05: persisted grant removal, capability gates, and reauth safeguards (local evidence)", async () => {
+  const wsId = "70000000-0000-0000-0000-000000000001";
+  const actor = { user: { id: "user-owner" } };
+
+  // 1. AP-02: Removing workspace.read grant without role change denies getWorkspaceContext
+  let grants = [{ action: "workspace.select" }]; // workspace.read intentionally omitted
+  const mockClient = {
+    async query(sql) {
+      if (sql.includes("FROM solodesk.workspaces w")) {
+        return {
+          rows: [
+            {
+              id: wsId,
+              name: "Grant Test Team",
+              slug: "grant-test",
+              timezone: "UTC",
+              locale: "en",
+              currency: "USD",
+              revision: 1,
+              membership_id: "mem-owner",
+              role: "owner",
+              membership_revision: 1,
+            },
+          ],
+        };
+      }
+      if (sql.includes("FROM solodesk.workspace_grants")) {
+        return { rows: grants };
+      }
+      return { rows: [] };
+    },
+  };
+
+  const ws = loadWorkspacesService({
+    "@/lib/db": { db: {} },
+    "@/lib/auth/server": { currentSession: async () => actor },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
+  });
+
+  // Without workspace.read, getWorkspaceContext must throw RESOURCE_UNAVAILABLE
+  await assert.rejects(
+    () => ws.getWorkspaceContext(wsId, actor, mockClient),
+    (err) => err.code === "RESOURCE_UNAVAILABLE" && err.statusCode === 404,
+  );
+
+  // When workspace.read is restored, getWorkspaceContext succeeds and projects only effective grants
+  grants = [{ action: "workspace.read" }];
+  const ctx = await ws.getWorkspaceContext(wsId, actor, mockClient);
+  assert.equal(ctx.workspace.id, wsId);
+  assert.deepEqual(ctx.capabilities, ["workspace.read"]);
+  assert.equal(ctx.capabilities.includes("workspace.select"), false);
+
+  // 2. AP-03: Narrower invitation gate fails closed when invitations disabled
+  const wsNoInvites = loadWorkspacesService({
+    "@/lib/db": { db: {} },
+    "@/lib/auth/server": { currentSession: async () => actor },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => false,
+      isOwnershipTransferEnabled: () => true,
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      wsNoInvites.issueWorkspaceInvitation(
+        {
+          operationId: "70000000-0000-0000-0000-000000000010",
+          workspaceId: wsId,
+          expectedRevision: "1",
+          recipientEmail: "colleague@example.com",
+          role: "member",
+        },
+        actor,
+        mockClient,
+      ),
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
+  );
+
+  await assert.rejects(
+    () => wsNoInvites.listWorkspaceInvitations(wsId, actor, mockClient),
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
+  );
+
+  // 3. AP-03: Global workspace gate fails closed before SQL
+  const wsDisabled = loadWorkspacesService({
+    "@/lib/db": { db: {} },
+    "@/lib/auth/server": { currentSession: async () => actor },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => false,
+      isWorkspaceInvitesEnabled: () => false,
+      isOwnershipTransferEnabled: () => false,
+    },
+  });
+
+  await assert.rejects(
+    () => wsDisabled.listWorkspaces(actor, {}, mockClient),
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
+  );
+
+  // 4. AP-05: verifyFreshReauth rejects missing authAt, createdAt fallback, future timestamps, and expired auth
+  // Rejects missing authAt / createdAt fallback
+  assert.throws(
+    () =>
+      ws.verifyFreshReauth({
+        session: { createdAt: new Date().toISOString() },
+      }),
+    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+  );
+
+  // Rejects future authAt timestamp
+  assert.throws(
+    () =>
+      ws.verifyFreshReauth({
+        session: { authAt: new Date(Date.now() + 60000).toISOString() },
+      }),
+    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+  );
+
+  // Rejects authAt older than 5 minutes
+  assert.throws(
+    () =>
+      ws.verifyFreshReauth({
+        session: { authAt: new Date(Date.now() - 6 * 60 * 1000).toISOString() },
+      }),
+    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+  );
+
+  // Accepts fresh authAt within 5 minutes
+  assert.doesNotThrow(() =>
+    ws.verifyFreshReauth({
+      session: { authAt: new Date(Date.now() - 60000).toISOString() },
+    }),
+  );
+});

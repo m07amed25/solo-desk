@@ -1,5 +1,5 @@
-import { AccountPageSkeleton } from "@/components/auth-skeleton";
+import { AppShellSkeleton } from "@/components/auth-skeleton";
 
-export default function AccountLoading() {
-  return <AccountPageSkeleton />;
+export default function AppLoading() {
+  return <AppShellSkeleton />;
 }

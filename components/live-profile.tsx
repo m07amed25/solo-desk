@@ -314,23 +314,34 @@ function ProfileForm({
   }
   if (!authorizedRows) return null;
   return (
-    <section className="flex flex-col gap-6">
-      <h2 className="break-words text-xl font-medium">
-        {t("welcome", { name: data[0].name })}
-      </h2>
-      <p role="status" className="text-sm text-muted-foreground">
-        {t(
-          status === "error"
-            ? "liveError"
-            : status === "stale"
-              ? "stale"
-              : "live",
-        )}
-      </p>
-      <form action={save}>
-        <FieldGroup>
+    <div className="rounded-xl border border-border/80 bg-card/60 p-6 sm:p-8 shadow-xs flex flex-col gap-6">
+      <div className="flex flex-col gap-1 pb-4 border-b border-border/60">
+        <h2 className="break-words text-xl sm:text-2xl font-semibold tracking-normal text-foreground">
+          {t("welcome", { name: data[0].name })}
+        </h2>
+        <p
+          role="status"
+          className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1"
+        >
+          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>
+            {t(
+              status === "error"
+                ? "liveError"
+                : status === "stale"
+                  ? "stale"
+                  : "live",
+            )}
+          </span>
+        </p>
+      </div>
+
+      <form action={save} className="flex flex-col gap-6">
+        <FieldGroup className="gap-4">
           <Field>
-            <FieldLabel htmlFor="profile-name">{t("displayName")}</FieldLabel>
+            <FieldLabel htmlFor="profile-name" className="text-sm font-medium">
+              {t("displayName")}
+            </FieldLabel>
             <Input
               id="profile-name"
               name="name"
@@ -343,9 +354,15 @@ function ProfileForm({
               required
               maxLength={100}
               disabled={pending}
+              className="h-10 mt-1.5"
             />
           </Field>
-          <Button type="submit" size="lg" disabled={pending || signingOutState}>
+          <Button
+            type="submit"
+            size="default"
+            className="h-10 font-medium"
+            disabled={pending || signingOutState}
+          >
             {pending && (
               <Loader2
                 className="animate-spin"
@@ -362,30 +379,33 @@ function ProfileForm({
           <AlertDescription>{t(message)}</AlertDescription>
         </Alert>
       )}
-      <p className="text-xs text-muted-foreground">{t("memory")}</p>
-      <Button
-        type="button"
-        variant="outline"
-        size="lg"
-        disabled={pending || signingOutState}
-        onClick={async () => {
-          setSigningOutState(true);
-          try {
-            await signOut();
-          } finally {
-            if (active.current) setSigningOutState(false);
-          }
-        }}
-      >
-        {signingOutState && (
-          <Loader2
-            className="animate-spin"
-            data-icon="inline-start"
-            aria-hidden="true"
-          />
-        )}
-        {t(signingOutState ? "signingOut" : "signOut")}
-      </Button>
-    </section>
+      <div className="pt-4 border-t border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <p className="text-xs text-muted-foreground max-w-sm">{t("memory")}</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="default"
+          className="h-10 font-medium text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+          disabled={pending || signingOutState}
+          onClick={async () => {
+            setSigningOutState(true);
+            try {
+              await signOut();
+            } finally {
+              if (active.current) setSigningOutState(false);
+            }
+          }}
+        >
+          {signingOutState && (
+            <Loader2
+              className="animate-spin"
+              data-icon="inline-start"
+              aria-hidden="true"
+            />
+          )}
+          {t(signingOutState ? "signingOut" : "signOut")}
+        </Button>
+      </div>
+    </div>
   );
 }

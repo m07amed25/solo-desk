@@ -248,3 +248,39 @@ test("saveProfile action preserves parameter contracts, error codes, and own-use
   updateResult = { error: null };
   assert.equal((await saveProfile(userId, "Updated Name")).error, null);
 });
+
+test("AP-01: generic shell identity reads require neither workspace membership nor Realtime envelope", async () => {
+  let sessionResult = { data: identity(), error: null };
+  const { currentSession } = service("../lib/auth/server.ts", {
+    "@neondatabase/auth/next/server": {
+      createNeonAuth() {
+        return {
+          async getSession() {
+            return sessionResult;
+          },
+        };
+      },
+    },
+  });
+
+  // 1. Fresh active session returns user and session directly without workspace or realtime
+  const active = await currentSession();
+  assert.ok(active);
+  assert.equal(active.user.id, userId);
+  assert.equal(active.user.emailVerified, true);
+  assert.equal(active.user.banned, undefined);
+  assert.equal(typeof active.session.expiresAt, "string");
+  // Proves no workspace or realtime query was invoked to resolve account identity
+
+  // 2. Missing session returns null (anonymous visitor)
+  sessionResult = { data: null, error: null };
+  assert.equal(await currentSession(), null);
+
+  // 3. Authority outage throws standard Authentication unavailable
+  sessionResult = { data: null, error: { message: "Auth service down" } };
+  await assert.rejects(
+    async () => await currentSession(),
+    /Authentication unavailable/,
+  );
+});
+
