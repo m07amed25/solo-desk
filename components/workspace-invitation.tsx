@@ -3,7 +3,13 @@
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Mail, Check, AlertCircle, Loader2 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { acceptWorkspaceInvitationAction } from "@/app/workspace-actions";
@@ -18,21 +24,43 @@ export function WorkspaceInvitation() {
   } | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hash) {
-      const match = window.location.hash.match(/[#&]invitation=([^&]+)/);
-      if (match && match[1]) {
-        const extracted = decodeURIComponent(match[1]);
-        // Immediately scrub the fragment from history and URL bar to protect the bearer token
-        window.history.replaceState(
-          null,
-          "",
-          window.location.pathname + window.location.search,
-        );
-        queueMicrotask(() => {
-          setToken(extracted);
-        });
+    if (typeof window === "undefined") return;
+
+    const captureInvitation = () => {
+      const rawHash = window.location.hash;
+      if (!rawHash) return;
+
+      // Immediately scrub the fragment before parsing, preserving history.state
+      window.history.replaceState(
+        window.history.state,
+        "",
+        window.location.pathname + window.location.search,
+      );
+
+      // Enforce 4096-character fragment bound
+      if (rawHash.length > 4096) {
+        return;
       }
-    }
+
+      const match = rawHash.match(/[#&]invitation=([^&]+)/);
+      if (match && match[1]) {
+        try {
+          const extracted = decodeURIComponent(match[1]);
+          // Enforce 1024-character decoded-proof bound
+          if (extracted.length <= 1024) {
+            queueMicrotask(() => {
+              setToken(extracted);
+            });
+          }
+        } catch {
+          // Ignore malformed URI components
+        }
+      }
+    };
+
+    captureInvitation();
+    window.addEventListener("hashchange", captureInvitation);
+    return () => window.removeEventListener("hashchange", captureInvitation);
   }, []);
 
   if (!token && !outcome) {

@@ -195,19 +195,22 @@ for (const locale of ["en", "ar"]) {
       );
     }
   }
-  const account = await get("/app", cookie);
-  if (process.env.TEST_AUTH_UNAVAILABLE === "1")
-    assert.ok(
-      account.body.includes(
-        locale === "en" ? "Could not connect" : "تعذّر الاتصال",
-      ),
-    );
-  else
-    assert.ok(
-      account.response.headers.get("location") === "/sign-in" ||
-        account.body.includes("/sign-in"),
-    );
-  assert.doesNotMatch(account.body, /id="profile-name"/);
+  for (const appPath of ["/app", "/app/workspace", "/app/account"]) {
+    const dest = await get(appPath, cookie);
+    if (process.env.TEST_AUTH_UNAVAILABLE === "1") {
+      assert.ok(
+        dest.body.includes(
+          locale === "en" ? "Could not connect" : "تعذّر الاتصال",
+        ),
+      );
+    } else {
+      assert.ok(
+        dest.response.headers.get("location") === "/sign-in" ||
+          dest.body.includes("/sign-in"),
+      );
+    }
+    assert.doesNotMatch(dest.body, /id="profile-name"/);
+  }
 }
 for (const [query, entry] of [
   ["entry=sign-up", "sign-up"],

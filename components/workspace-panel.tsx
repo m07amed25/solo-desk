@@ -98,7 +98,7 @@ function getErrorMessage(
     case "forbidden":
       return t("errors.forbidden");
     default:
-      return t("errors.generic") || fallback;
+      return fallback || t("errors.generic");
   }
 }
 
@@ -402,8 +402,8 @@ export function WorkspacePanel({
         const errorKey =
           res.error === "FORBIDDEN"
             ? "forbidden"
-            : res.error === "RATE_LIMITED"
-              ? "generic"
+            : res.error === "REVISION_CONFLICT"
+              ? "revisionConflict"
               : "generic";
         setStatusMessage({
           type: "error",
@@ -414,6 +414,19 @@ export function WorkspacePanel({
 
       setStatusMessage({ type: "success", text: t("inviteSentSuccess") });
       setInviteEmail("");
+      if (res.data.revision) {
+        setCurrentWs((prev) =>
+          prev
+            ? {
+                ...prev,
+                workspace: {
+                  ...prev.workspace,
+                  revision: res.data.revision,
+                },
+              }
+            : null,
+        );
+      }
       loadInvitations(currentWs.workspace.id);
     });
   };

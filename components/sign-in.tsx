@@ -3,17 +3,19 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth/client";
-import { authFailure, type AuthEntry } from "@/lib/site";
+import { authFailure, type AppDestination, type AuthEntry } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function SignIn({
   entry,
+  returnTo = "/app",
   failed,
   disabled = false,
   onInFlightChange,
 }: {
   entry: AuthEntry;
+  returnTo?: AppDestination;
   failed: boolean;
   disabled?: boolean;
   onInFlightChange?: (inFlight: boolean) => void;
@@ -32,9 +34,13 @@ export function SignIn({
     setAttempt("pending");
     setProviderName(provider === "google" ? "Google" : "GitHub");
     try {
+      const returnParam =
+        returnTo && returnTo !== "/app"
+          ? `&returnTo=${encodeURIComponent(returnTo)}`
+          : "";
       const result = await authClient.signIn.social({
         provider,
-        callbackURL: `${window.location.origin}/auth/callback?entry=${entry}`,
+        callbackURL: `${window.location.origin}/auth/callback?entry=${entry}${returnParam}`,
         errorCallbackURL: `${window.location.origin}${authFailure(entry)}`,
       });
       if (result.error) throw new Error("Provider unavailable");

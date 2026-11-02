@@ -44,7 +44,19 @@
     "system": "System",
     "apply": "Apply preferences",
     "switchLanguage": "Switch to {language}",
-    "switchTheme": "Appearance: {current}. Switch to {next}"
+    "switchTheme": "Appearance: {current}. Switch to {next}",
+    "overview": "Overview",
+    "workspaceAndTeam": "Workspace and team",
+    "personalAccount": "Personal account",
+    "publicSite": "Public website",
+    "appHome": "SoloDesk Home",
+    "workspaceSwitcher": "Switch workspace",
+    "noAvailableWorkspaces": "No available workspaces",
+    "workspacesDisabled": "Workspaces are disabled",
+    "workspacesUnavailable": "Workspaces unavailable",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more…",
+    "breadcrumbsApp": "SoloDesk"
   },
   "Landing": {
     "title": "Your work. Your time.\nAll in one place.",
@@ -558,5 +570,20 @@
       "unauthorized": "Please sign in to continue.",
       "generic": "An unexpected error occurred. Please try again."
     }
+  },
+  "Overview": {
+    "title": "Overview",
+    "welcome": "Welcome, {name}",
+    "description": "SoloDesk provides a unified workspace for managing your projects and personal profile.",
+    "workspaceCardTitle": "Workspace & Team",
+    "workspaceCardDesc": "Manage your team members, settings, and workspace preferences.",
+    "accountCardTitle": "Personal Profile",
+    "accountCardDesc": "Update your name, profile details, and account preferences.",
+    "noWorkspacesTitle": "No available workspaces",
+    "noWorkspacesDesc": "You are not a member of any workspace yet. You can create one or accept an invitation.",
+    "createWorkspace": "Create a workspace",
+    "goToWorkspace": "Open workspace",
+    "goToAccount": "Open personal profile",
+    "noAvailableWorkspaces": "No available workspaces"
   }
 }

@@ -3,10 +3,12 @@ import { createHash, randomUUID, randomBytes } from "node:crypto";
 import type { PoolClient } from "pg";
 import { db } from "@/lib/db";
 import { currentSession } from "@/lib/auth/server";
-import { isWorkspacesEnabled } from "@/lib/auth/capabilities";
+import {
+  isWorkspacesEnabled,
+  isWorkspaceInvitesEnabled,
+  isOwnershipTransferEnabled,
+} from "@/lib/auth/capabilities";
 import { encryptInvitationDelivery } from "@/lib/workspace-invitations";
-
-// --- Types & Constants (C01, C02, C03) ---
 
 export type WorkspaceRole = "owner" | "admin" | "member";
 export type MembershipStatus = "active" | "revoked";
@@ -819,7 +821,25 @@ export async function getWorkspaceContext(
 
     const r = res.rows[0];
     const role = r.role as WorkspaceRole;
-    const allowedGrants = ROLE_GRANTS[role] || [];
+
+    const grantsRes = await client.query(
+      `SELECT g.action FROM solodesk.workspace_grants g
+       WHERE g.workspace_id = $1 AND g.membership_id = $2`,
+      [workspaceId, r.membership_id],
+    );
+
+    const roleCeiling = new Set(ROLE_GRANTS[role] || []);
+    const effectiveGrants = grantsRes.rows
+      .map((row: { action: string }) => row.action as SupportedAction)
+      .filter((action: SupportedAction) => roleCeiling.has(action));
+
+    if (!effectiveGrants.includes("workspace.read")) {
+      throw new WorkspaceError(
+        "RESOURCE_UNAVAILABLE",
+        "Workspace not found or inaccessible",
+        404,
+      );
+    }
 
     return {
       workspace: {
@@ -836,7 +856,7 @@ export async function getWorkspaceContext(
         role,
         revision: r.membership_revision.toString(),
       },
-      capabilities: [...allowedGrants],
+      capabilities: effectiveGrants,
     };
   };
 
@@ -992,6 +1012,17 @@ export async function issueWorkspaceInvitation(
     throw new WorkspaceError(
       "CAPABILITY_DISABLED",
       "Workspaces feature is disabled",
+      503,
+    );
+  }
+
+  if (
+    typeof isWorkspaceInvitesEnabled === "function" &&
+    !isWorkspaceInvitesEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Workspace invitations feature is disabled",
       503,
     );
   }
@@ -1202,23 +1233,6 @@ export async function issueWorkspaceInvitation(
       generation,
     });
 
-    await client.query(
-      `INSERT INTO solodesk.outbox_events (
-        workspace_id, actor_id, operation_id, event_type, target_id, target_revision,
-        generation, payload, encrypted_delivery, key_id, status
-      ) VALUES ($1, $2, $3, 'workspace.invitation.queued', $4, 1, $5, $6, $7, $8, 'pending')`,
-      [
-        input.workspaceId,
-        actorId,
-        input.operationId,
-        invitationId,
-        generation,
-        JSON.stringify({ recipientEmail, role: input.role, generation }),
-        encrypted,
-        keyId,
-      ],
-    );
-
     // Write command receipt
     const resultObj = {
       invitationId,
@@ -1241,6 +1255,23 @@ export async function issueWorkspaceInvitation(
         nextWsRev.toString(),
         JSON.stringify(resultObj),
         correlationId,
+      ],
+    );
+
+    await client.query(
+      `INSERT INTO solodesk.outbox_events (
+        workspace_id, actor_id, operation_id, event_type, target_id, target_revision,
+        generation, payload, encrypted_delivery, key_id, status
+      ) VALUES ($1, $2, $3, 'workspace.invitation.queued', $4, 1, $5, $6, $7, $8, 'pending')`,
+      [
+        input.workspaceId,
+        actorId,
+        input.operationId,
+        invitationId,
+        generation,
+        JSON.stringify({ recipientEmail, role: input.role, generation }),
+        encrypted,
+        keyId,
       ],
     );
 
@@ -1296,6 +1327,17 @@ export async function acceptWorkspaceInvitation(
     throw new WorkspaceError(
       "CAPABILITY_DISABLED",
       "Workspaces feature is disabled",
+      503,
+    );
+  }
+
+  if (
+    typeof isWorkspaceInvitesEnabled === "function" &&
+    !isWorkspaceInvitesEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Workspace invitations feature is disabled",
       503,
     );
   }
@@ -1504,6 +1546,17 @@ export async function resendWorkspaceInvitation(
     );
   }
 
+  if (
+    typeof isWorkspaceInvitesEnabled === "function" &&
+    !isWorkspaceInvitesEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Workspace invitations feature is disabled",
+      503,
+    );
+  }
+
   const session = actorSession || (await currentSession());
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
@@ -1688,28 +1741,6 @@ export async function resendWorkspaceInvitation(
       generation: nextGeneration,
     });
 
-    await client.query(
-      `INSERT INTO solodesk.outbox_events (
-        workspace_id, actor_id, operation_id, event_type, target_id, target_revision,
-        generation, payload, encrypted_delivery, key_id, status
-      ) VALUES ($1, $2, $3, 'workspace.invitation.queued', $4, $5, $6, $7, $8, $9, 'pending')`,
-      [
-        input.workspaceId,
-        actorId,
-        input.operationId,
-        input.invitationId,
-        nextRevision.toString(),
-        nextGeneration,
-        JSON.stringify({
-          recipientEmail: inv.recipient_email,
-          role: inv.role,
-          generation: nextGeneration,
-        }),
-        encrypted,
-        keyId,
-      ],
-    );
-
     const correlationId = randomUUID();
     await client.query(
       `INSERT INTO solodesk.command_receipts (
@@ -1729,6 +1760,28 @@ export async function resendWorkspaceInvitation(
           generation: nextGeneration,
         }),
         correlationId,
+      ],
+    );
+
+    await client.query(
+      `INSERT INTO solodesk.outbox_events (
+        workspace_id, actor_id, operation_id, event_type, target_id, target_revision,
+        generation, payload, encrypted_delivery, key_id, status
+      ) VALUES ($1, $2, $3, 'workspace.invitation.queued', $4, $5, $6, $7, $8, $9, 'pending')`,
+      [
+        input.workspaceId,
+        actorId,
+        input.operationId,
+        input.invitationId,
+        nextRevision.toString(),
+        nextGeneration,
+        JSON.stringify({
+          recipientEmail: inv.recipient_email,
+          role: inv.role,
+          generation: nextGeneration,
+        }),
+        encrypted,
+        keyId,
       ],
     );
 
@@ -1793,6 +1846,17 @@ export async function revokeWorkspaceInvitation(
     throw new WorkspaceError(
       "CAPABILITY_DISABLED",
       "Workspaces feature is disabled",
+      503,
+    );
+  }
+
+  if (
+    typeof isWorkspaceInvitesEnabled === "function" &&
+    !isWorkspaceInvitesEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Workspace invitations feature is disabled",
       503,
     );
   }
@@ -1935,10 +1999,10 @@ export async function revokeWorkspaceInvitation(
     // Revoke invitation
     await client.query(
       `UPDATE solodesk.workspace_invitations
-       SET status = 'revoked', revoked_at = clock_timestamp(), revoked_by = $1,
-           revision = $2, updated_at = clock_timestamp()
-       WHERE id = $3`,
-      [inviter.id, nextRevision.toString(), input.invitationId],
+       SET status = 'revoked', revoked_at = clock_timestamp(),
+           revision = $1, updated_at = clock_timestamp()
+       WHERE id = $2`,
+      [nextRevision.toString(), input.invitationId],
     );
 
     // Cancel pending outbox delivery
@@ -2020,6 +2084,25 @@ export async function listWorkspaceInvitations(
   }>
 > {
   validateUUID(workspaceId, "workspaceId");
+  if (!isWorkspacesEnabled()) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Workspaces feature is disabled",
+      503,
+    );
+  }
+
+  if (
+    typeof isWorkspaceInvitesEnabled === "function" &&
+    !isWorkspaceInvitesEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Workspace invitations feature is disabled",
+      503,
+    );
+  }
+
   const session = actorSession || (await currentSession());
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
@@ -2147,14 +2230,11 @@ export function verifyFreshReauth(session: unknown): void {
     | {
         session?: {
           authAt?: string | Date | number;
-          createdAt?: string | Date | number;
-          updatedAt?: string | Date | number;
         };
       }
     | null
     | undefined;
-  const authAt =
-    s?.session?.authAt || s?.session?.createdAt || s?.session?.updatedAt;
+  const authAt = s?.session?.authAt;
   if (!authAt) {
     throw new WorkspaceError(
       "REAUTH_REQUIRED",
@@ -2163,7 +2243,12 @@ export function verifyFreshReauth(session: unknown): void {
     );
   }
   const authTime = new Date(authAt).getTime();
-  if (!Number.isFinite(authTime) || Date.now() - authTime > 5 * 60 * 1000) {
+  const now = Date.now();
+  if (
+    !Number.isFinite(authTime) ||
+    authTime > now ||
+    now - authTime > 5 * 60 * 1000
+  ) {
     throw new WorkspaceError(
       "REAUTH_REQUIRED",
       "Fresh authentication required within 5 minutes",
@@ -2889,6 +2974,17 @@ export async function transferWorkspaceOwnership(
     throw new WorkspaceError(
       "CAPABILITY_DISABLED",
       "Workspaces feature is disabled",
+      503,
+    );
+  }
+
+  if (
+    typeof isOwnershipTransferEnabled === "function" &&
+    !isOwnershipTransferEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Ownership transfer feature is disabled",
       503,
     );
   }

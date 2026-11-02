@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth/client";
-import type { AuthEntry } from "@/lib/site";
+import type { AppDestination, AuthEntry } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,7 @@ import { Check, Eye, EyeOff } from "lucide-react";
 
 export type AuthEmailFormProps = {
   entry: AuthEntry;
+  returnTo?: AppDestination;
   onInFlightChange?: (inFlight: boolean) => void;
   onStepChange?: (step: Step) => void;
   disabled?: boolean;
@@ -28,6 +29,7 @@ export type Step = "form" | "verify" | "forgot" | "reset";
 
 export function AuthEmailForm({
   entry,
+  returnTo = "/app",
   onInFlightChange,
   onStepChange,
   disabled = false,
@@ -287,9 +289,9 @@ export function AuthEmailForm({
         return;
       }
 
-      // Successful sign in: navigate to /app to pick up fresh server authority
+      // Successful sign in: navigate to destination to pick up fresh server authority
       setPassword("");
-      router.push("/app");
+      router.push(returnTo || "/app");
     } catch (err: unknown) {
       await processSignInError(err);
     }
@@ -327,7 +329,7 @@ export function AuthEmailForm({
 
       // Fresh verified session confirmed: navigate to protected app
       setCode("");
-      router.push("/app");
+      router.push(returnTo || "/app");
     } catch {
       setStatus("failed");
       setErrorMessage(t("verificationFailed"));
