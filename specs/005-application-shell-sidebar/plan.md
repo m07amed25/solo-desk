@@ -1,3 +1,5 @@
+> **Correction — 2 November 2026, Feature 006:** Historical completion/browser/live/human/security claims below are STALE where unsupported. [Current correction evidence](../006-shell-verification-completion/evidence.md) and [completion audit](../006-shell-verification-completion/artifacts/completion-audit.md) supersede them. Local44Node+6email/build and controlled Chrome checks do not establish real auth/DB, production Next history, navigation timing or human acceptance. G1–G6/AP-01–05 remain open. Original prose is retained as provenance, not current approval.
+
 # Implementation Plan: Application Shell and Sidebar Navigation
 
 **Branch**: `feat/004-workspace-platform-and-authorization` (checkout at completion; initially `main`, changed concurrently) | **Date**: 2026-11-01 | **Spec**: [spec.md](spec.md)

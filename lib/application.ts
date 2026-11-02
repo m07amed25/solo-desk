@@ -12,6 +12,7 @@ import {
   getWorkspaceContext,
   WorkspaceContext,
   WorkspaceError,
+  validateUUID,
 } from "@/lib/workspaces";
 
 export class ApplicationError extends Error {
@@ -80,8 +81,21 @@ export type ApplicationContext = {
 };
 
 export async function getApplicationContext(): Promise<ApplicationContext> {
-  const session = await currentSession();
-  if (!session?.user?.id) {
+  const session = await currentSession().catch(() => {
+    throw new ApplicationError(
+      "SERVICE_UNAVAILABLE",
+      "Authentication unavailable",
+      503,
+    );
+  });
+  const expiry =
+    session?.session && new Date(session.session.expiresAt).getTime();
+  if (
+    !session?.user?.id ||
+    !expiry ||
+    !Number.isFinite(expiry) ||
+    expiry <= Date.now()
+  ) {
     throw new ApplicationError("UNAUTHORIZED", "Authentication required", 401);
   }
 
@@ -89,7 +103,7 @@ export async function getApplicationContext(): Promise<ApplicationContext> {
     id: session.user.id,
     name: session.user.name || "User",
     avatar: (session.user as { image?: string | null }).image || null,
-    sessionExpiresAt: new Date(session.session.expiresAt).toISOString(),
+    sessionExpiresAt: new Date(expiry).toISOString(),
   };
 
   const capabilities: ApplicationCapabilities = {
@@ -122,7 +136,7 @@ export async function getApplicationContext(): Promise<ApplicationContext> {
   // Read initial page of choices
   let workspaces: ApplicationWorkspaces;
   try {
-    const listRes = await listWorkspaces(session, { limit: 20 });
+    const listRes = await listWorkspaces({ limit: 20 });
     const items: WorkspaceChoice[] = listRes.items.map((w) => ({
       id: w.id,
       name: w.name,
@@ -135,12 +149,12 @@ export async function getApplicationContext(): Promise<ApplicationContext> {
       items,
       nextCursor: listRes.nextCursor,
     };
-  } catch (err) {
+  } catch {
     workspaces = {
       state: "unavailable",
       items: [],
       nextCursor: null,
-      error: err instanceof Error ? err.message : "Workspaces unavailable",
+      error: "SERVICE_UNAVAILABLE",
     };
   }
 
@@ -151,55 +165,63 @@ export async function getApplicationContext(): Promise<ApplicationContext> {
       selectedId: null,
       context: null,
     };
-  } else if (!/^[0-9a-f-]{36}$/i.test(selectedWorkspaceId)) {
-    selection = {
-      state: "restricted",
-      selectedId: selectedWorkspaceId,
-      context: null,
-      error: "Malformed selection selector",
-    };
   } else {
     try {
-      const ctx = await getWorkspaceContext(selectedWorkspaceId, session);
-      if (!ctx.capabilities.includes("workspace.select")) {
+      const workspaceId = validateUUID(selectedWorkspaceId, "workspaceId");
+      const ctx = await getWorkspaceContext(workspaceId);
+      if (
+        ctx.workspace.id !== workspaceId ||
+        !ctx.capabilities.includes("workspace.select")
+      ) {
         selection = {
           state: "restricted",
-          selectedId: selectedWorkspaceId,
+          selectedId:
+            Buffer.byteLength(selectedWorkspaceId, "utf8") <= 4096
+              ? selectedWorkspaceId
+              : null,
           context: null,
-          error: "Selection restricted",
+          error: "RESOURCE_UNAVAILABLE",
         };
       } else {
         selection = {
           state: "ready",
-          selectedId: selectedWorkspaceId,
+          selectedId: workspaceId,
           context: ctx,
         };
       }
     } catch (err) {
       const isRestricted =
         (err instanceof WorkspaceError &&
-          (err.statusHttp === 404 || err.code === "RESOURCE_UNAVAILABLE")) ||
+          (err.statusHttp === 400 ||
+            err.statusHttp === 404 ||
+            err.code === "RESOURCE_UNAVAILABLE")) ||
         (err &&
           typeof err === "object" &&
-          ((err as { statusHttp?: number }).statusHttp === 404 ||
+          ((err as { statusHttp?: number }).statusHttp === 400 ||
+            (err as { statusHttp?: number }).statusHttp === 404 ||
             (err as { code?: string }).code === "RESOURCE_UNAVAILABLE"));
       if (isRestricted) {
         selection = {
           state: "restricted",
-          selectedId: selectedWorkspaceId,
+          selectedId:
+            Buffer.byteLength(selectedWorkspaceId, "utf8") <= 4096
+              ? selectedWorkspaceId
+              : null,
           context: null,
-          error: "Workspace restricted or not found",
+          error: "RESOURCE_UNAVAILABLE",
         };
       } else {
         selection = {
           state: "unavailable",
-          selectedId: selectedWorkspaceId,
+          selectedId:
+            Buffer.byteLength(selectedWorkspaceId, "utf8") <= 4096
+              ? selectedWorkspaceId
+              : null,
           context: null,
-          error: "Selected workspace unavailable",
+          error: "SERVICE_UNAVAILABLE",
         };
       }
     }
-
   }
 
   return {

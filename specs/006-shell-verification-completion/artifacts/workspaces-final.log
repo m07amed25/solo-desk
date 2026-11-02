@@ -1,0 +1,19 @@
+✔ workspace validators enforce C01/C02 constraints and reserved slugs (106.985632ms)
+✔ canonical v1 intent digest is deterministic and sensitive to all payload mutations (44.654478ms)
+✔ createWorkspace executes atomic creation, prevents conflicts, and supports idempotent replay (35.665982ms)
+✔ updateWorkspaceSettings checks revision, enforces member grants, and writes receipt (31.269355ms)
+✔ list, context, and receipt access controls enforce tenant isolation and prevent authority leakage (28.03561ms)
+✔ invitation issuance and acceptance enforce role ceilings, recipient matching, and outbox encryption (30.025071ms)
+✔ invitation resend and revoke enforce role ceilings, generation rotation, and outbox cancellation (24.551335ms)
+✔ membership controls enforce active-owner invariant, role ceilings, leaving, and ownership transfer (26.156528ms)
+✔ AP-02–05: persisted grant removal, capability gates, and reauth safeguards (local evidence) (82.893615ms)
+✔ removed action grants deny direct private receipt replay before returning accepted fields (27.44666ms)
+✔ bounded choices and current scoped role ceilings reach the actual query boundary (37.547792ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 711.645252

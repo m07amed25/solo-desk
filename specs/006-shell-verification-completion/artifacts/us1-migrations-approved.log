@@ -1,0 +1,14 @@
+✔ selection is ordered, deduplicated and limited to existing migration files (9.28823ms)
+✔ migration connections require a direct URL and retain certificate verification (0.362277ms)
+✔ migration SQL and checksum commit together after acquiring the runner lock (0.448853ms)
+✔ applied files are skipped and changed or missing history stops before new effects (0.328858ms)
+✔ SQL, receipt and deferred-commit failures roll back without reporting acceptance (0.334593ms)
+✔ CLI help and invalid selections need no database and expose no credentials (146.369151ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 216.154047

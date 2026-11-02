@@ -104,6 +104,59 @@ export class WorkspaceError extends Error {
   }
 }
 
+async function trustedWorkspaceSession() {
+  try {
+    return await currentSession();
+  } catch {
+    throw new WorkspaceError("SERVICE_UNAVAILABLE", "Authentication unavailable", 503);
+  }
+}
+
+// Replays return private fields and require the same current grant as a new command.
+async function requireWorkspaceAction(
+  client: PoolClient,
+  workspaceId: string,
+  actorId: string,
+  action: SupportedAction,
+) {
+  if (!isWorkspacesEnabled()) {
+    throw new WorkspaceError("CAPABILITY_DISABLED", "Workspaces feature is disabled", 503);
+  }
+  if (action === "workspace.invites.manage" && !isWorkspaceInvitesEnabled()) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Invitations are disabled",
+      503,
+    );
+  }
+  if (
+    action === "workspace.ownership.transfer" &&
+    !isOwnershipTransferEnabled()
+  ) {
+    throw new WorkspaceError(
+      "CAPABILITY_DISABLED",
+      "Ownership transfer is disabled",
+      503,
+    );
+  }
+  const { rows } = await client.query(
+    `SELECT m.role, g.action FROM solodesk.workspace_memberships m
+     JOIN solodesk.workspace_grants g ON g.workspace_id = m.workspace_id AND g.membership_id = m.id
+     WHERE m.workspace_id = $1 AND m.user_id = $2 AND m.status = 'active'
+       AND g.scope_type = 'workspace' AND g.scope_id = $1`,
+    [workspaceId, actorId],
+  );
+  if (
+    !rows.some(
+      (row) =>
+        row.action === action &&
+        (ROLE_GRANTS[row.role as WorkspaceRole] ?? []).includes(action),
+    )
+  ) {
+    throw new WorkspaceError("FORBIDDEN", "Workspace action unavailable", 403);
+  }
+}
+
 // --- Validation Functions (C01, C02, C05, C06) ---
 
 export function validateSlug(slug: string): string {
@@ -112,7 +165,7 @@ export function validateSlug(slug: string): string {
       slug: "invalidSlug",
     });
   }
-  const clean = slug.trim();
+  const clean = slug.trim().toLowerCase();
   if (clean.length < 3 || clean.length > 63) {
     throw new WorkspaceError(
       "VALIDATION",
@@ -209,7 +262,7 @@ export function validateWorkspaceName(name: string): string {
 }
 
 export function validateRevisionString(rev: unknown): string {
-  if (typeof rev !== "string" || !/^[1-9]\d*$/.test(rev)) {
+  if (typeof rev !== "string" || rev.length > 19 || !/^[1-9]\d*$/.test(rev) || BigInt(rev) > 9223372036854775807n) {
     throw new WorkspaceError(
       "VALIDATION",
       "Revision must be a positive decimal string",
@@ -223,7 +276,7 @@ export function validateDecimalString(
   rev: unknown,
   fieldName = "revision",
 ): string {
-  if (typeof rev !== "string" || !/^[1-9]\d*$/.test(rev)) {
+  if (typeof rev !== "string" || rev.length > 19 || !/^[1-9]\d*$/.test(rev) || BigInt(rev) > 9223372036854775807n) {
     throw new WorkspaceError(
       "VALIDATION",
       `${fieldName} must be a positive decimal string`,
@@ -279,6 +332,23 @@ export function computeIntentDigest(envelope: {
   return createHash("sha256").update(jsonStr).digest("hex");
 }
 
+function validateCommand<T extends object>(input: T, fields: readonly string[]): T {
+  if (!input || typeof input !== "object" || Array.isArray(input) ||
+      Object.keys(input).some((key) => !fields.includes(key) && key !== "commandVersion") ||
+      Buffer.byteLength(JSON.stringify(input), "utf8") > 16384) {
+    throw new WorkspaceError("VALIDATION", "Invalid command fields or size", 400);
+  }
+  const values = input as Record<string, unknown>;
+  if (values.commandVersion !== undefined && values.commandVersion !== 1) {
+    throw new WorkspaceError("VALIDATION", "Unsupported command version", 400);
+  }
+  const normalized = { ...input } as Record<string, unknown>;
+  for (const key of fields.filter((key) => key.endsWith("Id"))) {
+    normalized[key] = validateUUID(values[key], key);
+  }
+  return normalized as T;
+}
+
 // --- Transaction Primitives (C05, C06) ---
 
 export async function withTransaction<T>(
@@ -286,22 +356,30 @@ export async function withTransaction<T>(
   pool = db,
 ): Promise<T> {
   const client = await pool.connect();
+  let committing = false;
+  let discard = false;
   try {
-    await client.query("SET statement_timeout = 5000;");
-    await client.query("SET lock_timeout = 1000;");
-    await client.query("BEGIN;");
+    await client.query("BEGIN");
+    await client.query("SET LOCAL statement_timeout = 5000");
+    await client.query("SET LOCAL lock_timeout = 1000");
     const result = await callback(client);
-    await client.query("COMMIT;");
+    committing = true;
+    await client.query("COMMIT");
     return result;
   } catch (err) {
+    discard = committing;
     try {
-      await client.query("ROLLBACK;");
+      await client.query("ROLLBACK");
     } catch {
-      // Discard broken client on rollback failure
+      discard = true;
+    }
+    // SQLSTATE errors report rejection; transport loss during COMMIT is ambiguous.
+    if (committing && !/^[0-9A-Z]{5}$/.test((err as { code?: string }).code ?? "")) {
+      throw new WorkspaceError("OUTCOME_UNKNOWN", "Reconcile the original operation before retrying", 503);
     }
     throw err;
   } finally {
-    client.release();
+    client.release(discard);
   }
 }
 
@@ -318,8 +396,6 @@ export type CreateWorkspaceInput = {
 
 export async function createWorkspace(
   input: CreateWorkspaceInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<AcceptedResult> {
   if (!isWorkspacesEnabled()) {
     throw new WorkspaceError(
@@ -329,11 +405,12 @@ export async function createWorkspace(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "name", "slug", "timezone", "locale", "currency"]);
 
   // Validate envelope & inputs
   if (!input.operationId || !/^[0-9a-f-]{36}$/i.test(input.operationId)) {
@@ -352,6 +429,7 @@ export async function createWorkspace(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
     // 1. Check existing receipt for actor + operationId
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -367,6 +445,12 @@ export async function createWorkspace(
           409,
         );
       }
+      await requireWorkspaceAction(
+        client,
+        receipt.workspace_id,
+        actorId,
+        "workspace.read",
+      );
       return {
         status: "accepted" as const,
         replayed: true,
@@ -470,9 +554,6 @@ export async function createWorkspace(
     };
   };
 
-  if (clientOverride) {
-    return runWithClient(clientOverride);
-  }
   return withTransaction(runWithClient);
 }
 
@@ -488,8 +569,6 @@ export type UpdateWorkspaceSettingsInput = {
 
 export async function updateWorkspaceSettings(
   input: UpdateWorkspaceSettingsInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<AcceptedResult> {
   if (!isWorkspacesEnabled()) {
     throw new WorkspaceError(
@@ -499,11 +578,12 @@ export async function updateWorkspaceSettings(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "expectedRevision", "name", "timezone", "locale", "currency"]);
 
   const name = validateWorkspaceName(input.name);
   const timezone = validateTimezone(input.timezone);
@@ -521,6 +601,14 @@ export async function updateWorkspaceSettings(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.settings.update",
+    );
     // Check existing receipt
     const existing = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -560,6 +648,12 @@ export async function updateWorkspaceSettings(
       );
     }
     const ws = wsRes.rows[0];
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.settings.update",
+    );
 
     // Check actor membership and grant
     const memberRes = await client.query(
@@ -674,7 +768,6 @@ export async function updateWorkspaceSettings(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -687,9 +780,7 @@ export type WorkspaceListItem = {
 };
 
 export async function listWorkspaces(
-  actorSession?: { user: { id: string } } | null,
   options: { limit?: number; cursor?: string } = {},
-  clientOverride?: PoolClient,
 ): Promise<{ items: WorkspaceListItem[]; nextCursor: string | null }> {
   if (!isWorkspacesEnabled()) {
     throw new WorkspaceError(
@@ -699,13 +790,18 @@ export async function listWorkspaces(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
 
-  const limit = Math.min(Math.max(options.limit || 20, 1), 50);
+  if (!options || typeof options !== "object" ||
+      Object.keys(options).some((key) => !["limit", "cursor"].includes(key)) ||
+      (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 1))) {
+    throw new WorkspaceError("VALIDATION", "Invalid pagination options", 400);
+  }
+  const limit = Math.min(options.limit ?? 20, 50);
   let cursorWorkspaceId: string | null = null;
   if (options.cursor) {
     if (
@@ -726,7 +822,9 @@ export async function listWorkspaces(
       SELECT w.id, w.name, w.slug, m.role, w.revision
       FROM solodesk.workspace_memberships m
       JOIN solodesk.workspaces w ON w.id = m.workspace_id
-      WHERE m.user_id = $1 AND m.status = 'active'
+      WHERE m.user_id = $1 AND m.status = 'active' AND m.role IN ('owner', 'admin', 'member')
+        AND EXISTS (SELECT 1 FROM solodesk.workspace_grants g WHERE g.workspace_id = w.id AND g.membership_id = m.id AND g.scope_type = 'workspace' AND g.scope_id = w.id AND g.action = 'workspace.read')
+        AND EXISTS (SELECT 1 FROM solodesk.workspace_grants g WHERE g.workspace_id = w.id AND g.membership_id = m.id AND g.scope_type = 'workspace' AND g.scope_id = w.id AND g.action = 'workspace.select')
     `;
     const params: unknown[] = [actorId];
 
@@ -752,7 +850,6 @@ export async function listWorkspaces(
     return { items, nextCursor };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -776,8 +873,6 @@ export type WorkspaceContext = {
 
 export async function getWorkspaceContext(
   workspaceId: string,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<WorkspaceContext> {
   if (!isWorkspacesEnabled()) {
     throw new WorkspaceError(
@@ -787,7 +882,7 @@ export async function getWorkspaceContext(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
@@ -824,7 +919,8 @@ export async function getWorkspaceContext(
 
     const grantsRes = await client.query(
       `SELECT g.action FROM solodesk.workspace_grants g
-       WHERE g.workspace_id = $1 AND g.membership_id = $2`,
+       WHERE g.workspace_id = $1 AND g.membership_id = $2
+         AND g.scope_type = 'workspace' AND g.scope_id = $1`,
       [workspaceId, r.membership_id],
     );
 
@@ -860,14 +956,11 @@ export async function getWorkspaceContext(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
 export async function getReceiptStatus(
   operationId: string,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ) {
   if (!isWorkspacesEnabled()) {
     throw new WorkspaceError(
@@ -877,7 +970,7 @@ export async function getReceiptStatus(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
@@ -914,18 +1007,36 @@ export async function getReceiptStatus(
       };
     }
 
-    // Recheck current membership in the workspace
     const memberCheck = await client.query(
       `SELECT 1 FROM solodesk.workspace_memberships WHERE workspace_id = $1 AND user_id = $2 AND status = 'active'`,
       [r.workspace_id, actorId],
     );
-    if (memberCheck.rows.length === 0) {
+    if (!memberCheck.rows.length)
       throw new WorkspaceError(
         "RESOURCE_UNAVAILABLE",
         "Workspace no longer accessible",
         404,
       );
-    }
+
+    const receiptActions: Record<string, SupportedAction> = {
+      "workspace.create": "workspace.read",
+      "workspace.settings.update": "workspace.settings.update",
+      "workspace.invitation.issue": "workspace.invites.manage",
+      "workspace.invitation.resend": "workspace.invites.manage",
+      "workspace.invitation.revoke": "workspace.invites.manage",
+      "workspace.invitation.accept": "workspace.read",
+      "workspace.member.role.change": "workspace.members.role.change",
+      "workspace.member.remove": "workspace.members.remove",
+      "workspace.ownership.transfer": "workspace.ownership.transfer",
+    };
+    const action = receiptActions[r.kind];
+    if (!action)
+      throw new WorkspaceError(
+        "RESOURCE_UNAVAILABLE",
+        "Receipt unavailable",
+        404,
+      );
+    await requireWorkspaceAction(client, r.workspace_id, actorId, action);
 
     return {
       status: "accepted" as const,
@@ -938,7 +1049,6 @@ export async function getReceiptStatus(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -1005,8 +1115,6 @@ export interface IssueInvitationInput {
 
 export async function issueWorkspaceInvitation(
   input: IssueInvitationInput,
-  actorSession?: { user: { id: string; name?: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<AcceptedResult> {
   if (!isWorkspacesEnabled()) {
     throw new WorkspaceError(
@@ -1027,11 +1135,12 @@ export async function issueWorkspaceInvitation(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "expectedRevision", "recipientEmail", "role"]);
   const inviterName = session.user.name || "A team member";
 
   const recipientEmail = validateEmail(input.recipientEmail);
@@ -1051,6 +1160,14 @@ export async function issueWorkspaceInvitation(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.invites.manage",
+    );
     // 1. Check existing receipt for idempotent replay
     const existing = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -1100,6 +1217,12 @@ export async function issueWorkspaceInvitation(
       );
     }
     const ws = wsRes.rows[0];
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.invites.manage",
+    );
 
     // Check revision
     if (BigInt(ws.revision) !== expectedRev) {
@@ -1303,7 +1426,6 @@ export async function issueWorkspaceInvitation(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -1314,8 +1436,6 @@ export interface AcceptInvitationInput {
 
 export async function acceptWorkspaceInvitation(
   input: AcceptInvitationInput,
-  actorSession?: { user: { id: string; email?: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -1342,11 +1462,12 @@ export async function acceptWorkspaceInvitation(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id || !session.user.email) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "token"]);
   const actorEmail = session.user.email.trim().toLowerCase();
 
   if (!input.token || typeof input.token !== "string") {
@@ -1510,7 +1631,6 @@ export async function acceptWorkspaceInvitation(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -1526,8 +1646,6 @@ export interface ResendInvitationInput {
 
 export async function resendWorkspaceInvitation(
   input: ResendInvitationInput,
-  actorSession?: { user: { id: string; email?: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -1557,11 +1675,12 @@ export async function resendWorkspaceInvitation(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "invitationId", "expectedInvitationRevision"]);
 
   validateUUID(input.operationId, "operationId");
   validateUUID(input.workspaceId, "workspaceId");
@@ -1582,6 +1701,14 @@ export async function resendWorkspaceInvitation(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.invites.manage",
+    );
     // Check previous receipt
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -1621,6 +1748,12 @@ export async function resendWorkspaceInvitation(
       );
     }
     const ws = wsRes.rows[0];
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.invites.manage",
+    );
 
     // Check actor grant workspace.invites.manage
     const inviterMemRes = await client.query(
@@ -1816,7 +1949,6 @@ export async function resendWorkspaceInvitation(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -1830,8 +1962,6 @@ export interface RevokeInvitationInput {
 
 export async function revokeWorkspaceInvitation(
   input: RevokeInvitationInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -1861,11 +1991,12 @@ export async function revokeWorkspaceInvitation(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "invitationId", "expectedInvitationRevision"]);
 
   validateUUID(input.operationId, "operationId");
   validateUUID(input.workspaceId, "workspaceId");
@@ -1886,6 +2017,14 @@ export async function revokeWorkspaceInvitation(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.invites.manage",
+    );
     // Check previous receipt
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -2061,7 +2200,6 @@ export async function revokeWorkspaceInvitation(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -2069,8 +2207,6 @@ export async function revokeWorkspaceInvitation(
 
 export async function listWorkspaceInvitations(
   workspaceId: string,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<
   Array<{
     id: string;
@@ -2103,13 +2239,19 @@ export async function listWorkspaceInvitations(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
 
   const runWithClient = async (client: PoolClient) => {
+    await requireWorkspaceAction(
+      client,
+      workspaceId,
+      actorId,
+      "workspace.invites.manage",
+    );
     const grant = await client.query(
       `SELECT g.action FROM solodesk.workspace_grants g
        JOIN solodesk.workspace_memberships m ON m.id = g.membership_id
@@ -2146,14 +2288,11 @@ export async function listWorkspaceInvitations(
     }));
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
 export async function listWorkspaceMembers(
   workspaceId: string,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<
   Array<{
     id: string;
@@ -2167,13 +2306,19 @@ export async function listWorkspaceMembers(
   }>
 > {
   validateUUID(workspaceId, "workspaceId");
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
 
   const runWithClient = async (client: PoolClient) => {
+    await requireWorkspaceAction(
+      client,
+      workspaceId,
+      actorId,
+      "workspace.members.read",
+    );
     const grant = await client.query(
       `SELECT g.action FROM solodesk.workspace_grants g
        JOIN solodesk.workspace_memberships m ON m.id = g.membership_id
@@ -2212,49 +2357,15 @@ export async function listWorkspaceMembers(
     }));
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
 // --- User Story 5: Member Management & Ownership Controls ---
 
-export function verifyFreshReauth(session: unknown): void {
-  if (process.env.SOLODESK_REAUTH_DISABLED === "true") {
-    throw new WorkspaceError(
-      "CAPABILITY_DISABLED",
-      "Fresh reauthentication capability is currently disabled",
-      503,
-    );
-  }
-  const s = session as
-    | {
-        session?: {
-          authAt?: string | Date | number;
-        };
-      }
-    | null
-    | undefined;
-  const authAt = s?.session?.authAt;
-  if (!authAt) {
-    throw new WorkspaceError(
-      "REAUTH_REQUIRED",
-      "Fresh authentication required within 5 minutes",
-      403,
-    );
-  }
-  const authTime = new Date(authAt).getTime();
-  const now = Date.now();
-  if (
-    !Number.isFinite(authTime) ||
-    authTime > now ||
-    now - authTime > 5 * 60 * 1000
-  ) {
-    throw new WorkspaceError(
-      "REAUTH_REQUIRED",
-      "Fresh authentication required within 5 minutes",
-      403,
-    );
-  }
+export function verifyFreshReauth(_session: unknown): never {
+  void _session;
+  // No managed account/session/action-bound step-up adapter has been verified.
+  throw new WorkspaceError("CAPABILITY_DISABLED", "Fresh reauthentication is unavailable", 503);
 }
 
 export interface ChangeMemberRoleInput {
@@ -2268,8 +2379,6 @@ export interface ChangeMemberRoleInput {
 
 export async function changeWorkspaceMemberRole(
   input: ChangeMemberRoleInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -2288,11 +2397,12 @@ export async function changeWorkspaceMemberRole(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "membershipId", "expectedMembershipRevision", "role"]);
 
   validateUUID(input.operationId, "operationId");
   validateUUID(input.workspaceId, "workspaceId");
@@ -2318,6 +2428,14 @@ export async function changeWorkspaceMemberRole(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.members.role.change",
+    );
     // Check previous receipt
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -2357,6 +2475,12 @@ export async function changeWorkspaceMemberRole(
       );
     }
     const ws = wsRes.rows[0];
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.members.role.change",
+    );
 
     // Check actor has workspace.members.role.change
     const actorMemRes = await client.query(
@@ -2411,7 +2535,7 @@ export async function changeWorkspaceMemberRole(
 
     // If target is currently owner and changing to a lower role (demotion)
     if (target.role === "owner" && input.role !== "owner") {
-      if (ws.owner_id === target.user_id) {
+      if (ws.owner_id === target.id) {
         throw new WorkspaceError(
           "LAST_OWNER",
           "Cannot demote designated workspace owner without ownership transfer",
@@ -2490,6 +2614,13 @@ export async function changeWorkspaceMemberRole(
       ],
     );
 
+    await client.query(
+      `INSERT INTO solodesk.outbox_events (
+        workspace_id, actor_id, operation_id, event_type, target_id, target_revision, generation, payload, status
+      ) VALUES ($1, $2, $3, 'workspace.member.role_changed', $4, $5, 0, $6, 'pending')`,
+      [input.workspaceId, actorId, input.operationId, input.membershipId, nextRev.toString(), JSON.stringify({ membershipId: input.membershipId, role: input.role })],
+    );
+
     return {
       status: "accepted" as const,
       operationId: input.operationId,
@@ -2501,7 +2632,6 @@ export async function changeWorkspaceMemberRole(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -2515,8 +2645,6 @@ export interface RemoveMemberInput {
 
 export async function removeWorkspaceMember(
   input: RemoveMemberInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -2535,11 +2663,12 @@ export async function removeWorkspaceMember(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "membershipId", "expectedMembershipRevision"]);
 
   validateUUID(input.operationId, "operationId");
   validateUUID(input.workspaceId, "workspaceId");
@@ -2560,6 +2689,14 @@ export async function removeWorkspaceMember(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.members.remove",
+    );
     // Check previous receipt
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -2599,6 +2736,12 @@ export async function removeWorkspaceMember(
       );
     }
     const ws = wsRes.rows[0];
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.members.remove",
+    );
 
     // Check actor membership and grant workspace.members.remove
     const actorMemRes = await client.query(
@@ -2662,7 +2805,7 @@ export async function removeWorkspaceMember(
     } else if (actorMem.role === "owner") {
       if (target.role === "owner") {
         verifyFreshReauth(session);
-        if (ws.owner_id === target.user_id) {
+        if (ws.owner_id === target.id) {
           throw new WorkspaceError(
             "LAST_OWNER",
             "Cannot remove designated workspace owner",
@@ -2740,6 +2883,13 @@ export async function removeWorkspaceMember(
       ],
     );
 
+    await client.query(
+      `INSERT INTO solodesk.outbox_events (
+        workspace_id, actor_id, operation_id, event_type, target_id, target_revision, generation, payload, status
+      ) VALUES ($1, $2, $3, 'workspace.member.removed', $4, $5, 0, $6, 'pending')`,
+      [input.workspaceId, actorId, input.operationId, input.membershipId, nextRev.toString(), JSON.stringify({ membershipId: input.membershipId, status: "revoked" })],
+    );
+
     return {
       status: "accepted" as const,
       operationId: input.operationId,
@@ -2751,7 +2901,6 @@ export async function removeWorkspaceMember(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -2764,8 +2913,6 @@ export interface LeaveWorkspaceInput {
 
 export async function leaveWorkspace(
   input: LeaveWorkspaceInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -2780,11 +2927,12 @@ export async function leaveWorkspace(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
   const actorId = session.user.id;
+  input = validateCommand(input, ["operationId", "workspaceId", "expectedMembershipRevision"]);
 
   validateUUID(input.operationId, "operationId");
   validateUUID(input.workspaceId, "workspaceId");
@@ -2802,6 +2950,8 @@ export async function leaveWorkspace(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
     // Check previous receipt
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -2823,6 +2973,13 @@ export async function leaveWorkspace(
         code: r.result_code,
       };
     }
+
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.members.leave",
+    );
 
     // Lock workspace
     const wsRes = await client.query(
@@ -2862,7 +3019,7 @@ export async function leaveWorkspace(
     }
 
     // Designated owner check
-    if (ws.owner_id === actorId) {
+    if (ws.owner_id === mem.id) {
       throw new WorkspaceError(
         "LAST_OWNER",
         "Designated workspace owner must transfer ownership before leaving",
@@ -2935,6 +3092,13 @@ export async function leaveWorkspace(
       ],
     );
 
+    await client.query(
+      `INSERT INTO solodesk.outbox_events (
+        workspace_id, actor_id, operation_id, event_type, target_id, target_revision, generation, payload, status
+      ) VALUES ($1, $2, $3, 'workspace.member.left', $4, $5, 0, $6, 'pending')`,
+      [input.workspaceId, actorId, input.operationId, mem.id, nextRev.toString(), JSON.stringify({ membershipId: mem.id })],
+    );
+
     return {
       status: "accepted" as const,
       operationId: input.operationId,
@@ -2942,7 +3106,6 @@ export async function leaveWorkspace(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }
 
@@ -2958,8 +3121,6 @@ export interface TransferOwnershipInput {
 
 export async function transferWorkspaceOwnership(
   input: TransferOwnershipInput,
-  actorSession?: { user: { id: string } } | null,
-  clientOverride?: PoolClient,
 ): Promise<{
   status: "accepted";
   replayed?: boolean;
@@ -2989,7 +3150,7 @@ export async function transferWorkspaceOwnership(
     );
   }
 
-  const session = actorSession || (await currentSession());
+  const session = await trustedWorkspaceSession();
   if (!session?.user?.id) {
     throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
   }
@@ -3021,6 +3182,14 @@ export async function transferWorkspaceOwnership(
   });
 
   const runWithClient = async (client: PoolClient) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [JSON.stringify([actorId, input.operationId])]);
+    await client.query("SELECT id FROM solodesk.workspaces WHERE id = $1 FOR UPDATE", [input.workspaceId]);
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.ownership.transfer",
+    );
     // Check previous receipt
     const existingReceipt = await client.query(
       `SELECT * FROM solodesk.command_receipts WHERE actor_id = $1 AND operation_id = $2`,
@@ -3063,6 +3232,12 @@ export async function transferWorkspaceOwnership(
       );
     }
     const ws = wsRes.rows[0];
+    await requireWorkspaceAction(
+      client,
+      input.workspaceId,
+      actorId,
+      "workspace.ownership.transfer",
+    );
 
     // Initiator must be designated owner
     if (ws.owner_id !== actorId) {
@@ -3235,6 +3410,5 @@ export async function transferWorkspaceOwnership(
     };
   };
 
-  if (clientOverride) return runWithClient(clientOverride);
   return withTransaction(runWithClient);
 }

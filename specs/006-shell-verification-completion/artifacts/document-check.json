@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-02",
+  "checks": {
+    "prerequisite_script": "exit 0; active Feature006; tasks/design docs resolve",
+    "tasks": {
+      "total": 65,
+      "checked": 50,
+      "open": 15
+    },
+    "FR": 33,
+    "SC": 12,
+    "root": {
+      "features": 550,
+      "complete": [
+        "F01.01",
+        "F01.02",
+        "F04.05"
+      ],
+      "open": 547,
+      "checked_subtasks": 51,
+      "partial_parents": 35,
+      "graph": "resolved/acyclic; dependency lists unchanged"
+    },
+    "identity": "package/lock/pointer/checklist unchanged; final source hash map matches",
+    "documents": {
+      "files": 35,
+      "local_links": 817,
+      "missing": [],
+      "whitespace": [],
+      "anchor_scope": "root explicit feature anchors/dependencies checked; inherited prose heading anchors not comprehensively revalidated"
+    },
+    "hooks": "extensions.yml absent"
+  },
+  "errors": []
+}

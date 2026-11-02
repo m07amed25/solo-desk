@@ -1,0 +1,5 @@
+# Fluent-Arabic acceptance — BLOCKED
+
+2026-11-02; operator Codex. Final source/build/lock/runtime and synthetic fixture hashes: [identity](final-identity.json). Baseline and earlier red logs use the recorded baseline plus stated regression-test edits; they are historical failures, not final-build failures. Local Node checks have no locale/theme/viewport. Mounted checks use Chrome 155.0.8059.84, real product components/CSS with explicitly mocked navigation/auth/actions/transport/Realtime at loopback4316; they cannot establish Next Cache Components/history or live authority. Assertion code and declared fixture inputs are retained in [controlled fixture](controlled-fixture/README.md).
+
+T055/SC-010: no fluent reviewer obtained. Catalog parity/ICU and Chrome RTL/media/long-name checks cannot approve wording, shaping, bidi, accessibility names or reading/keyboard order. Owner Localization+Design+QA; requires actual reviewer and current build/state coverage. Arabic strings remain subject to correction.

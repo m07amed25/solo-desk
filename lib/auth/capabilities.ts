@@ -16,11 +16,13 @@ export function isWorkspacesEnabled(): boolean {
 }
 
 export function isWorkspaceInvitesEnabled(): boolean {
-  return process.env.SOLODESK_WORKSPACE_INVITES_ENABLED === "true";
+  // Acceptance, abuse accounting and operational delivery still require T061 proof.
+  return false;
 }
 
 export function isOwnershipTransferEnabled(): boolean {
-  return process.env.SOLODESK_OWNERSHIP_TRANSFER_ENABLED === "true";
+  // The managed provider has no verified account/session/action-bound step-up adapter.
+  return false;
 }
 
 export function getPublicCapabilities(): AuthCapabilities {
@@ -72,5 +74,14 @@ export function isAllowedAuthPath(
     };
   }
 
-  return { allowed: true };
+  const credentialPaths = new Set([
+    "sign-in/email",
+    "sign-up/email",
+    "email-otp/verify-email",
+    "email-otp/send-verification-otp",
+    "email-otp/reset-password",
+  ]);
+  return credentialPaths.has(clean)
+    ? { allowed: true }
+    : { allowed: false, reason: "CAPABILITY_DISABLED" };
 }

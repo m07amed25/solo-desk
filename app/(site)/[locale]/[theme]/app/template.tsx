@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -37,13 +38,17 @@ async function AuthenticatedAppRuntime({
       redirect(`/sign-in${returnParam}`);
     }
 
+    const common = await getTranslations("Common");
     return (
       <div className="flex min-h-[50svh] items-center justify-center p-6">
         <Alert className="max-w-md">
           <AlertDescription>
-            SoloDesk is temporarily unavailable.{" "}
-            <a href={currentPath} className="underline font-medium">
-              Retry
+            {common("unavailable")}{" "}
+            <a
+              href={`${isAppDestination(currentPath) ? currentPath : "/app"}#`}
+              className="underline font-medium"
+            >
+              {common("retry")}
             </a>
           </AlertDescription>
         </Alert>

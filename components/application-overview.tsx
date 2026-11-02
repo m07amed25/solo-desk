@@ -33,11 +33,13 @@ export function ApplicationOverview() {
   const t = useTranslations("Overview");
   const tWorkspaces = useTranslations("Workspaces");
   const tNav = useTranslations("Navigation");
-  const { account, workspaces, selection, capabilities } =
+  const { account, workspaces, selection, capabilities, navigate } =
     useApplicationRuntime();
 
-  const selectedWorkspace = selection.context?.workspace || null;
-  const userRole = selection.context?.membership?.role || null;
+  const selectedWorkspace =
+    selection.state === "ready" ? selection.context?.workspace : null;
+  const userRole =
+    selection.state === "ready" ? selection.context?.membership?.role : null;
   const initials = (account.name || "U")
     .split(" ")
     .map((n) => n[0])
@@ -53,7 +55,7 @@ export function ApplicationOverview() {
           <Sparkles className="size-3.5 text-primary" />
           <span>{tNav("overview")}</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-normal text-foreground">
+        <h1 className="break-words text-3xl sm:text-4xl font-semibold tracking-normal text-foreground">
           {t("welcome", { name: account.name || "there" })}
         </h1>
         <p className="text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed mt-1">
@@ -85,7 +87,13 @@ export function ApplicationOverview() {
                   variant="outline"
                   className="capitalize text-xs font-medium shrink-0 px-2.5 py-0.5"
                 >
-                  {userRole}
+                  {tWorkspaces(
+                    userRole === "owner"
+                      ? "roleOwner"
+                      : userRole === "admin"
+                        ? "roleAdmin"
+                        : "roleMember",
+                  )}
                 </Badge>
               )}
             </div>
@@ -100,7 +108,7 @@ export function ApplicationOverview() {
                 </AlertDescription>
               </Alert>
             ) : workspaces.state === "unavailable" ? (
-              <Alert variant="destructive" className="py-3">
+              <Alert className="py-3">
                 <AlertCircle className="size-4 shrink-0" />
                 <AlertDescription className="text-xs">
                   {tWorkspaces("unavailable")}
@@ -117,7 +125,7 @@ export function ApplicationOverview() {
                       {tWorkspaces("currentWorkspace")}
                     </span>
                     <span className="font-semibold text-sm truncate text-foreground">
-                      {selectedWorkspace.name}
+                      <bdi>{selectedWorkspace.name}</bdi>
                     </span>
                     <span className="text-xs text-muted-foreground font-mono truncate">
                       /{selectedWorkspace.slug}
@@ -129,7 +137,13 @@ export function ApplicationOverview() {
                     variant="secondary"
                     className="shrink-0 capitalize text-xs"
                   >
-                    {userRole}
+                    {tWorkspaces(
+                      userRole === "owner"
+                        ? "roleOwner"
+                        : userRole === "admin"
+                          ? "roleAdmin"
+                          : "roleMember",
+                    )}
                   </Badge>
                 )}
               </div>
@@ -165,10 +179,20 @@ export function ApplicationOverview() {
               <Button
                 size="default"
                 className="w-full h-10 font-medium"
-                render={<Link href="/app/workspace" />}
+                render={
+                  <Link
+                    href="/app/workspace"
+                    prefetch={false}
+                    onNavigate={(event) => {
+                      event.preventDefault();
+                      void navigate("/app/workspace");
+                    }}
+                  />
+                }
                 nativeButton={false}
+                role="link"
               >
-                <Plus className="mr-2 size-4" />
+                <Plus className="me-2 size-4" />
                 {t("createWorkspace")}
               </Button>
             ) : (
@@ -176,11 +200,21 @@ export function ApplicationOverview() {
                 variant="outline"
                 size="default"
                 className="w-full h-10 font-medium justify-between group"
-                render={<Link href="/app/workspace" />}
+                render={
+                  <Link
+                    href="/app/workspace"
+                    prefetch={false}
+                    onNavigate={(event) => {
+                      event.preventDefault();
+                      void navigate("/app/workspace");
+                    }}
+                  />
+                }
                 nativeButton={false}
+                role="link"
               >
                 <span>{t("goToWorkspace")}</span>
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="size-4 transition-transform ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180" />
               </Button>
             )}
           </CardFooter>
@@ -223,7 +257,7 @@ export function ApplicationOverview() {
                     {account.name}
                   </span>
                   <span className="text-xs text-muted-foreground font-mono truncate">
-                    ID:{" "}
+                    {t("accountId")}:{" "}
                     {account.id
                       ? `${account.id.slice(0, 8)}...${account.id.slice(-6)}`
                       : "—"}
@@ -232,9 +266,9 @@ export function ApplicationOverview() {
               </div>
               <Badge
                 variant="outline"
-                className="shrink-0 text-xs text-emerald-500 border-emerald-500/30 bg-emerald-500/10 font-medium px-2.5 py-0.5"
+                className="shrink-0 text-xs font-medium px-2.5 py-0.5"
               >
-                Active
+                {t("accountActive")}
               </Badge>
             </div>
           </CardContent>
@@ -244,11 +278,21 @@ export function ApplicationOverview() {
               variant="outline"
               size="default"
               className="w-full h-10 font-medium justify-between group"
-              render={<Link href="/app/account" />}
+              render={
+                <Link
+                  href="/app/account"
+                  prefetch={false}
+                  onNavigate={(event) => {
+                    event.preventDefault();
+                    void navigate("/app/account");
+                  }}
+                />
+              }
               nativeButton={false}
+              role="link"
             >
               <span>{t("goToAccount")}</span>
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="size-4 transition-transform ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180" />
             </Button>
           </CardFooter>
         </Card>
@@ -258,6 +302,11 @@ export function ApplicationOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
         <Link
           href="/app/workspace"
+          prefetch={false}
+          onNavigate={(event) => {
+            event.preventDefault();
+            void navigate("/app/workspace");
+          }}
           className="rounded-xl border border-border/60 bg-card/40 p-4 hover:bg-card hover:border-border transition-all flex flex-col gap-2 group shadow-2xs"
         >
           <div className="flex items-center justify-between">
@@ -276,6 +325,11 @@ export function ApplicationOverview() {
 
         <Link
           href="/app/account"
+          prefetch={false}
+          onNavigate={(event) => {
+            event.preventDefault();
+            void navigate("/app/account");
+          }}
           className="rounded-xl border border-border/60 bg-card/40 p-4 hover:bg-card hover:border-border transition-all flex flex-col gap-2 group shadow-2xs"
         >
           <div className="flex items-center justify-between">
@@ -294,6 +348,11 @@ export function ApplicationOverview() {
 
         <Link
           href="/"
+          prefetch={false}
+          onNavigate={(event) => {
+            event.preventDefault();
+            void navigate("/");
+          }}
           className="rounded-xl border border-border/60 bg-card/40 p-4 hover:bg-card hover:border-border transition-all flex flex-col gap-2 group shadow-2xs"
         >
           <div className="flex items-center justify-between">

@@ -199,6 +199,7 @@ test("English/Arabic catalogs match keys and ICU arguments; all messages format"
         assert.ok(
           t(key, {
             name: "Example",
+            user: (name) => name,
             provider: "Google",
             hours: 2,
             minutes: 30,
@@ -216,4 +217,51 @@ test("English/Arabic catalogs match keys and ICU arguments; all messages format"
       );
     }),
   );
+});
+
+test("shell recovery, modal and discard messages exist and format in both catalogs", () => {
+  const keys = [
+    "Navigation.checkingAccount",
+    "Navigation.contextUnavailable",
+    "Navigation.signOutFailed",
+    "Navigation.discardChanges",
+    "Navigation.drawerTitle",
+    "Navigation.drawerDescription",
+    "Navigation.closeNavigation",
+    "Navigation.toggleNavigation",
+    "Workspaces.selectionRestricted",
+    "Workspaces.clearSelection",
+    "Workspaces.memory",
+    "Workspaces.invitationAwaitingAccount",
+    "Workspaces.invitationDisabled",
+    "Workspaces.invitationReopen",
+    "Workspaces.invitationUncertain",
+    "Workspaces.roleOwner",
+    "Workspaces.roleAdmin",
+    "Workspaces.roleMember",
+    "Workspaces.refreshMembers",
+    "Workspaces.refreshInvitations",
+    "Overview.accountActive",
+  ];
+  for (const [locale, messages] of [
+    ["en", en],
+    ["ar", ar],
+  ]) {
+    const t = createTranslator({
+      locale,
+      messages,
+      onError(error) {
+        throw error;
+      },
+    });
+    for (const key of keys) assert.ok(t(key).trim(), `${locale}:${key}`);
+    assert.ok(
+      t
+        .rich("Workspaces.transferConfirmation", {
+          name: "A فريق",
+          user: (name) => name,
+        })
+        .includes("A فريق"),
+    );
+  }
 });

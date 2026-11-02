@@ -1,5 +1,7 @@
 # Application Shell & Sidebar Navigation Browser Testing Guide
 
+This is a procedure, not recorded acceptance. Follow the current [Feature 006 guide](../specs/006-shell-verification-completion/quickstart.md) and [evidence contract](../specs/006-shell-verification-completion/contracts/verification-and-evidence.md). HTTP/source scripts and mocked adapters do not launch a browser or approve these journeys. Independently verify isolated targets before authenticated/live work.
+
 This document defines the automated and manual browser verification protocol for Feature 005: Application Shell and Sidebar Navigation across User Stories US1–US6, locales (en, ar), themes (light, dark, system), viewports, and accessibility criteria.
 
 ---
@@ -11,10 +13,10 @@ This document defines the automated and manual browser verification protocol for
 - **Objective**: Verify standard browser navigation among Overview (`/app`), Workspace (`/app/workspace`), and Personal Account (`/app/account`) with real links, breadcrumbs, and active state indicators.
 - **Test Steps**:
   1. Authenticate with a valid session and navigate to `/app`.
-  2. Verify shell layout renders: sidebar with brand link, navigation items (Overview, Workspace, Personal Account), workspace switcher, and user menu.
+  2. Verify shell layout renders: sidebar with workspace switcher, navigation items (Overview, Workspace, Personal Account), workspace switcher, and user menu.
   3. Click "Workspace" (`/app/workspace`); verify URL updates via client navigation, breadcrumb reads `Overview / Workspace`, and active sidebar item updates.
   4. Click "Personal Account" (`/app/account`); verify profile form renders, breadcrumb reads `Overview / Personal Account`, and workspace-independent state.
-  5. Test browser Back and Forward buttons; verify route history works cleanly without stale component states or layout re-mounts.
+  5. Test browser Back and Forward buttons; verify route history works cleanly after current authority validation; cached Activity state is not fresh authority.
   6. Reload page on `/app/workspace`; verify state hydrates truthfully with current workspace selection.
   7. Compare against public `/` and auth pages (`/sign-in`, `/sign-up`); verify application shell layout is strictly separated from public/auth layouts.
 
@@ -22,7 +24,7 @@ This document defines the automated and manual browser verification protocol for
 
 ### Journey 2: Workspace Switching & Race Condition Prevention (US2)
 
-- **Objective**: Verify atomic workspace selection, pagination (>20 choices), delayed responses, and zero cross-team data leakage.
+- **Objective**: Verify serialized workspace selection with fresh context validation, pagination (>20 choices), delayed responses, and zero cross-team data leakage.
 - **Test Steps**:
   1. Open workspace switcher in sidebar.
   2. For users with >20 workspaces, verify initial 20 choices render with a "Load more" / next-page affordance using cursor pagination.
@@ -43,9 +45,9 @@ This document defines the automated and manual browser verification protocol for
   3. Enter dirty input in personal profile or workspace settings form; click an external or sidebar navigation link. Verify dirty-input confirmation dialog ("Discard unsaved changes?") prevents accidental data loss.
   4. Open invitation URL containing fragment proof (`/app#invitation=<token>`).
   5. Verify fragment is captured into memory and scrubbed from browser address bar immediately before rendering.
-  6. Verify invitation card displays workspace name and role with explicit "Accept" and "Dismiss" buttons (no auto-acceptance).
-  7. Click "Accept"; verify membership creation and automatic transition to the newly accepted workspace.
-  8. Test malformed or oversized (>4096 chars) fragments; verify safe rejection and error toast without crashing the runtime.
+  6. Verify a generic invitation card with explicit Accept/Dismiss only under current authority/capability. No speculative private team/recipient details.
+  7. Click "Accept"; verify permitted membership creation, then explicit authorized selection of the joined workspace; no automatic retargeting.
+  8. Test malformed or oversized (>4096 chars) fragments; verify safe rejection and localized recovery guidance without crashing the runtime.
 
 ---
 
@@ -58,7 +60,7 @@ This document defines the automated and manual browser verification protocol for
   3. Sign in; verify user is returned directly to the requested destination (`returnTo`) and fragment is cleared.
   4. Test tampered `returnTo` parameters (e.g., `returnTo=https://evil.example` or `returnTo=/app/unsupported`); verify fallback to `/app`.
   5. With an authenticated session open, trigger session expiry or revocation in another tab.
-  6. Refocus the application tab; verify runtime recheck detects invalid session within 55s or on window focus, conceals private data, and transitions to signed-out state.
+  6. Refocus the application tab; verify runtime recheck detects invalid session within 55s and immediately on window focus, conceals private data, and transitions to signed-out state.
   7. Click "Sign out" from user menu; verify sign-out request completes, local runtime state is cleared, and user is redirected to `/sign-in#` without leaving cached profile data in BFCache.
 
 ---
@@ -82,10 +84,10 @@ This document defines the automated and manual browser verification protocol for
 
 - **Objective**: Verify full visual and semantic parity across English (LTR) and Arabic (RTL) in Light, Dark, and System themes.
 - **Test Steps**:
-  1. Switch language to Arabic (`ar`); verify `html[dir="rtl"]`, sidebar positions on right side, chevron icons flip appropriately, and font switches to Sahabah/Cairo typography.
+  1. Switch language to Arabic (`ar`); verify `html[dir="rtl"]`, sidebar positions on right side, chevron icons flip appropriately, and font switches to Sahabah headings with existing body fallback typography.
   2. Verify mixed-direction strings (e.g., email addresses, English workspace slugs, timestamps) render correctly without text mangling.
   3. Switch themes: Light, Dark, and System. Verify semantic color tokens adapt cleanly:
-     - Monochrome tokens maintain WCAG AA contrast (≥4.5:1 for text, ≥3:1 for UI boundaries).
+     - Measure affected contrast (≥4.5:1 text, ≥3:1 UI boundaries); supplied palette has documented gaps and is not an AA approval.
      - Borders, cards, and backgrounds use correct token values (`bg-background`, `text-foreground`, `border-border`).
   4. Test OS theme changes: when System theme is active, toggling OS dark mode immediately updates application appearance.
   5. Test with `prefers-reduced-motion: reduce`; verify CSS transitions and drawer animations are disabled or reduced to instant swaps.

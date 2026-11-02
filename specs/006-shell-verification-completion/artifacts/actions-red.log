@@ -1,0 +1,32 @@
+✔ application loader projects narrow account and truthful workspace states (51.200475ms)
+✔ client generation counter only rejects old results and grants no access (0.128469ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (10.175513ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (16.790287ms)
+✖ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (12.665083ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 304.640299
+
+✖ failing tests:
+
+test at scripts/test-application.test.mjs:292:1
+✖ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (12.665083ms)
+  AssertionError [ERR_ASSERTION]: a cookie mutation requires a fresh account
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:315:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,1 @@
+export const saveProfile = (...args) => window.fixture.saveProfile(...args);

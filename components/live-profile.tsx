@@ -1,13 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslations } from "next-intl";
 import {
   createRealtimeClient,
   type SealedLiveQuery,
 } from "@neon/realtime/client";
 import { RealtimeProvider, useLiveQuery } from "@neon/realtime-react";
-import { authClient } from "@/lib/auth/client";
+import { useApplicationRuntime } from "@/components/application-runtime";
 import { saveProfile } from "@/app/actions";
 import type { Profile } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
@@ -29,6 +35,8 @@ export function LiveProfile({
   userId,
   realtimeUrl,
 }: Envelope & { realtimeUrl: string }) {
+  const runtime = useApplicationRuntime();
+  const { accountState, account, registerDirtyForm, signOut } = runtime;
   const t = useTranslations("Profile");
   const c = useTranslations("Common");
   const [view, setView] = useState<
@@ -37,21 +45,19 @@ export function LiveProfile({
   const [profile, setProfile] = useState<
     (Envelope & { draftName: string }) | null
   >(null);
-  const [message, setMessage] = useState<"signOutFailed" | null>(null);
+  const [draftEpoch, setDraftEpoch] = useState(0);
+  const savedName = useRef("");
   const draft = useRef<Draft | null>(null);
   const protectedRoot = useRef<HTMLDivElement>(null);
   const generation = useRef(0);
   const controller = useRef<AbortController | null>(null);
-  const expiry = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useRef(false);
-  const signingOut = useRef(false);
 
   const conceal = useCallback(() => {
     // pagehide must conceal the existing DOM before a history snapshot can be restored.
     if (protectedRoot.current) protectedRoot.current.hidden = true;
     generation.current++;
     controller.current?.abort();
-    if (expiry.current) clearTimeout(expiry.current);
     setView("checking");
   }, []);
   const deny = useCallback(() => {
@@ -59,12 +65,13 @@ export function LiveProfile({
     draft.current = null;
     setProfile(null);
     setView("denied");
-    window.location.replace("/sign-in");
+    window.location.replace("/sign-in?returnTo=%2Fapp%2Faccount#");
   }, [conceal]);
   const revalidate = useCallback(async () => {
     if (
       !mounted.current ||
-      signingOut.current ||
+      accountState !== "ready" ||
+      account.id !== userId ||
       document.visibilityState === "hidden"
     )
       return;
@@ -107,9 +114,9 @@ export function LiveProfile({
         };
       else if (!draft.current.dirty)
         draft.current.name = next.initialData[0].name;
+      savedName.current = next.initialData[0].name;
       setProfile({ ...next, draftName: draft.current.name });
       setView("authorized");
-      expiry.current = setTimeout(deny, Math.min(remaining, 2147483647));
       return next;
     } catch {
       if (mounted.current && current === generation.current) {
@@ -117,69 +124,68 @@ export function LiveProfile({
         setView("unavailable");
       }
     }
-  }, [conceal, deny, userId]);
-  useEffect(() => {
+  }, [account.id, accountState, conceal, deny, userId]);
+  useLayoutEffect(() => {
     mounted.current = true;
-    const firstCheck = setTimeout(() => void revalidate(), 0);
-    const foreground = () => {
-      if (document.visibilityState === "hidden") conceal();
-      else void revalidate();
-    };
-    const restore = () => {
-      void revalidate();
-    };
-    window.addEventListener("pagehide", conceal);
-    window.addEventListener("pageshow", restore);
-    window.addEventListener("focus", restore);
-    document.addEventListener("visibilitychange", foreground);
-    const timer = setInterval(restore, 55000);
     return () => {
       mounted.current = false;
-      controller.current?.abort();
-      clearTimeout(firstCheck);
-      if (expiry.current) clearTimeout(expiry.current);
-      clearInterval(timer);
-      window.removeEventListener("pagehide", conceal);
-      window.removeEventListener("pageshow", restore);
-      window.removeEventListener("focus", restore);
-      document.removeEventListener("visibilitychange", foreground);
+      conceal();
       draft.current = null;
     };
-  }, [conceal, revalidate]);
-  async function signOut() {
-    if (signingOut.current) return;
-    signingOut.current = true;
-    conceal();
-    draft.current = null;
-    setProfile(null);
-    setMessage(null);
-    try {
-      const result = await authClient.signOut();
-      if (result.error) throw new Error("Unavailable");
-      deny();
-    } catch {
-      signingOut.current = false;
-      if (mounted.current) {
-        setMessage("signOutFailed");
-        await revalidate();
+  }, [conceal]);
+  useEffect(() => {
+    let current = true;
+    queueMicrotask(() => {
+      if (!current) return;
+      if (accountState === "ready" && account.id === userId) void revalidate();
+      else {
+        conceal();
+        if (
+          accountState === "denied" ||
+          accountState === "signing-out" ||
+          account.id !== userId
+        ) {
+          draft.current = null;
+          setProfile(null);
+        }
       }
-    }
-  }
+    });
+    return () => {
+      current = false;
+    };
+  }, [account.id, accountState, conceal, revalidate, userId]);
+  useEffect(
+    () =>
+      registerDirtyForm("personal-profile", {
+        isDirty: () => draft.current?.dirty === true,
+        discard: () => {
+          draft.current = { userId, name: savedName.current, dirty: false };
+          setProfile((previous) =>
+            previous ? { ...previous, draftName: savedName.current } : null,
+          );
+          setDraftEpoch((epoch) => epoch + 1);
+        },
+      }),
+    [registerDirtyForm, userId],
+  );
   const updateDraft = useCallback(
     (name: string, dirty: boolean) => {
-      draft.current = { userId, name, dirty };
+      draft.current = {
+        userId,
+        name,
+        dirty: dirty && name !== savedName.current,
+      };
+      if (!dirty) savedName.current = name;
     },
     [userId],
   );
   return (
     <>
-      {message && (
-        <Alert>
-          <AlertDescription>{t(message)}</AlertDescription>
-        </Alert>
-      )}
       {view === "authorized" && profile ? (
-        <div ref={protectedRoot} key={profile.sealedQuery.expiresAt}>
+        <div
+          ref={protectedRoot}
+          key={`${profile.sealedQuery.expiresAt}:${draftEpoch}`}
+        >
           <AuthorizedProfile
             profile={profile}
             realtimeUrl={realtimeUrl}
@@ -385,7 +391,7 @@ function ProfileForm({
           type="button"
           variant="outline"
           size="default"
-          className="h-10 font-medium text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+          className="h-10 font-medium"
           disabled={pending || signingOutState}
           onClick={async () => {
             setSigningOutState(true);

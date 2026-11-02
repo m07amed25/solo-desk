@@ -1,0 +1,11 @@
+### Result
+{"themes":{"light":true,"dark":true,"system":true},"side":"right","motion":"0s"}
+### Ran Playwright code
+```js
+await (async(page)=>{const themes={};await page.setViewportSize({width:390,height:844});for(const theme of ['light','dark','system']){await page.goto('http://127.0.0.1:4316/app?locale=ar&theme='+theme);await page.emulateMedia({colorScheme:'light'});const light=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor);await page.emulateMedia({colorScheme:'dark'});const dark=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor);themes[theme]=theme==='system'?light!==dark:light===dark}await page.emulateMedia({reducedMotion:'reduce'});await page.getByRole('button',{name:'فتح أو طي التنقل',exact:true}).click();const popup=page.getByRole('dialog');await popup.waitFor();const side=await popup.getAttribute('data-side'),motion=await popup.evaluate(el=>getComputedStyle(el).transitionDuration);if(!Object.values(themes).every(Boolean)||side!=='right'||motion.split(',').some(x=>parseFloat(x)!==0))throw Error('theme/motion regression');return{themes,side,motion}})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4316/app?locale=ar&theme=system
+### Events
+- New console entries: ../../../.playwright-cli/console-2026-11-02T16-21-37-349Z.log#L62-L65
+

@@ -1,0 +1,68 @@
+(node:178726) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ application loader projects narrow account and truthful workspace states (51.308396ms)
+✔ client generation counter only rejects old results and grants no access (0.126493ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (13.190582ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (7.200938ms)
+✔ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (16.732055ms)
+✖ actual preference redirects explicitly clear fragments and retain origin/body bounds (9.480906ms)
+✖ actual callback render clears fragments on success, denial and bounded-query rejection (9.583549ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 395.639918
+
+✖ failing tests:
+
+test at scripts/test-application.test.mjs:488:1
+✖ actual preference redirects explicitly clear fragments and retain origin/body bounds (9.480906ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'https://example.invalid/app'
+  - 'https://example.invalid/app#'
+                                ^
+  
+      at TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:500:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'https://example.invalid/app',
+    expected: 'https://example.invalid/app#',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/test-application.test.mjs:510:1
+✖ actual callback render clears fragments on success, denial and bounded-query rejection (9.583549ms)
+  AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+  
+  Caught error:
+  
+  Error: Redirect
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:526:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: Redirect
+        at redirect (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:516:72)
+        at Object.Complete [as type] (evalmachine.<anonymous>:40:38)
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async waitForActual (node:assert:646:5)
+        at async strict.rejects (node:assert:769:25)
+        at async TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:526:3)
+        at async Test.run (node:internal/test_runner/test:1409:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:974:7),
+    operator: 'rejects',
+    diff: 'simple'
+  }

@@ -58,3 +58,8 @@ Thumbs.db
 
 # Local browser verification captures
 /.impeccable/review/
+
+# Browser working output stays local; reviewed evidence lives with Feature 006.
+/.playwright-cli/
+/output/playwright/
+!specs/006-shell-verification-completion/artifacts/*.log

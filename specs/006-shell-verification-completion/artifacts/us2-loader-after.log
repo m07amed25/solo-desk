@@ -1,0 +1,24 @@
+✔ application loader projects narrow account and truthful workspace states (53.122636ms)
+✔ client generation counter only rejects old results and grants no access (0.188759ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (10.800958ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (18.242359ms)
+✔ fresh session helper rejects unverified, expired, revoked, malformed and unavailable authority (45.32339ms)
+✔ profile service denies unverified, mismatched, expired or revoked users and seals only current verified own rows (10.717497ms)
+✔ saveProfile action preserves parameter contracts, error codes, and own-user authorization (7.079755ms)
+✔ AP-01: generic shell identity reads require neither workspace membership nor Realtime envelope (3.489052ms)
+(node:116034) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ finite presentation defaults and destination denials (1.548992ms)
+✔ preferences accept precisely three bounded, unique fields (0.437432ms)
+✔ auth errors discard arbitrary/duplicate fields and retain bounded entry (0.562681ms)
+✔ English/Arabic catalogs match keys and ICU arguments; all messages format (179.462697ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 393.361223

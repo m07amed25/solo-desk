@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { parse } from "@formatjs/icu-messageformat-parser";
 
 const rootDir = process.cwd();
 const enPath = path.join(rootDir, "messages", "en.json");
@@ -14,6 +15,37 @@ if (!fs.existsSync(enPath) || !fs.existsSync(arPath)) {
 
 const en = JSON.parse(fs.readFileSync(enPath, "utf-8"));
 const ar = JSON.parse(fs.readFileSync(arPath, "utf-8"));
+
+function argumentSignature(message) {
+  const argumentsFound = [];
+  function visit(nodes) {
+    for (const node of nodes) {
+      if (node.type !== 0 && node.value)
+        argumentsFound.push(`${node.type}:${node.value}`);
+      if (node.options)
+        for (const option of Object.values(node.options)) visit(option.value);
+      if (node.children) visit(node.children);
+    }
+  }
+  visit(parse(message));
+  return argumentsFound.sort().join("\n");
+}
+
+function checkArguments(english, arabic, prefix = "") {
+  if (typeof english === "string" && typeof arabic === "string") {
+    if (argumentSignature(english) !== argumentSignature(arabic)) {
+      throw new Error(`ICU argument mismatch: ${prefix}`);
+    }
+  } else if (
+    english &&
+    arabic &&
+    typeof english === "object" &&
+    typeof arabic === "object"
+  ) {
+    for (const key of Object.keys(english))
+      checkArguments(english[key], arabic[key], `${prefix}.${key}`);
+  }
+}
 
 function collectKeys(obj, prefix = "") {
   const keys = [];
@@ -53,6 +85,7 @@ if (missingInAr.length > 0 || missingInEn.length > 0) {
   process.exit(1);
 }
 
+checkArguments(en, ar);
 console.log(
   `✓ Translation key parity confirmed: ${enKeys.size} keys and structures match 100% between en and ar.`,
 );

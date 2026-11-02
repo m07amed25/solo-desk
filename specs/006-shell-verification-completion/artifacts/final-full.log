@@ -1,0 +1,171 @@
+
+> solo-desk@0.1.0 test:full
+> npm run lint && next typegen && tsc --noEmit && node scripts/check-translations.mjs && npm test && npm run build
+
+
+> solo-desk@0.1.0 lint
+> eslint
+
+Generating route types...
+✓ Types generated successfully
+✓ Translation key parity confirmed: 464 keys and structures match 100% between en and ar.
+
+> solo-desk@0.1.0 test
+> node --test scripts/*.test.mjs && npm run test:email
+
+(node:188236) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ application loader projects narrow account and truthful workspace states (64.825652ms)
+✔ client generation counter only rejects old results and grants no access (0.156733ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (13.079716ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (7.934164ms)
+✔ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (17.589148ms)
+✔ actual preference redirects explicitly clear fragments and retain origin/body bounds (12.279622ms)
+✔ actual callback render clears fragments on success, denial and bounded-query rejection (11.697129ms)
+✔ SDK client transport adheres to strict contract for signup, verify, and resend (43.675157ms)
+✔ SDK client transport adheres to strict contract for password sign-in and unverified continuation (4.621099ms)
+✔ Social provider initiation and callback contracts preserve initiating entry and generic failure markers (2.790886ms)
+✔ SDK client transport adheres to strict contract for password recovery and combined reset submission (2.728884ms)
+✔ target manifest validation enforces synthetic boundaries and rejects production and mismatched targets (6.529345ms)
+✔ server capability policy enforces default-off credential gating and allows social/session paths (204.41437ms)
+▶ HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication state
+  ✔ Pending session: shows skeleton placeholder while loading auth state (6.314623ms)
+  ✔ Unauthenticated: shows Sign in and Sign up buttons, hides avatar and workspace (0.802731ms)
+  ✔ Authenticated via Email (no avatar): shows Workspace button to /app, hides Sign buttons and avatar (3.533103ms)
+  ✔ Authenticated via Social login (has avatar image): shows avatar and Workspace button, hides Sign buttons (2.60526ms)
+✔ HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication state (139.623095ms)
+✔ selection is ordered, deduplicated and limited to existing migration files (9.243937ms)
+✔ migration connections require a direct URL and retain certificate verification (0.339631ms)
+✔ migration SQL and checksum commit together after acquiring the runner lock (0.404354ms)
+✔ applied files are skipped and changed or missing history stops before new effects (0.413409ms)
+✔ SQL, receipt and deferred-commit failures roll back without reporting acceptance (0.35394ms)
+✔ CLI help and invalid selections need no database and expose no credentials (176.825624ms)
+✔ fresh session helper rejects unverified, expired, revoked, malformed and unavailable authority (45.383525ms)
+✔ profile service denies unverified, mismatched, expired or revoked users and seals only current verified own rows (10.423829ms)
+✔ saveProfile action preserves parameter contracts, error codes, and own-user authorization (5.078679ms)
+✔ AP-01: generic shell identity reads require neither workspace membership nor Realtime envelope (4.554013ms)
+(node:188251) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ finite presentation defaults and destination denials (1.15955ms)
+✔ preferences accept precisely three bounded, unique fields (0.360152ms)
+✔ auth errors discard arbitrary/duplicate fields and retain bounded entry (0.54094ms)
+✔ English/Arabic catalogs match keys and ICU arguments; all messages format (177.922458ms)
+✔ shell recovery, modal and discard messages exist and format in both catalogs (0.592556ms)
+✔ workspace validators enforce C01/C02 constraints and reserved slugs (172.188973ms)
+✔ canonical v1 intent digest is deterministic and sensitive to all payload mutations (46.435292ms)
+✔ createWorkspace executes atomic creation, prevents conflicts, and supports idempotent replay (44.476792ms)
+✔ updateWorkspaceSettings checks revision, enforces member grants, and writes receipt (30.139736ms)
+✔ list, context, and receipt access controls enforce tenant isolation and prevent authority leakage (36.236676ms)
+✔ invitation issuance and acceptance enforce role ceilings, recipient matching, and outbox encryption (27.453224ms)
+✔ invitation resend and revoke enforce role ceilings, generation rotation, and outbox cancellation (24.077773ms)
+✔ membership controls enforce active-owner invariant, role ceilings, leaving, and ownership transfer (29.158484ms)
+✔ AP-02–05: persisted grant removal, capability gates, and reauth safeguards (local evidence) (71.467464ms)
+✔ removed action grants deny direct private receipt replay before returning accepted fields (20.197785ms)
+✔ bounded choices and current scoped role ceilings reach the actual query boundary (27.634977ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 793.799084
+
+> solo-desk@0.1.0 test:email
+> node scripts/test-email.mjs
+
+✔ auth subjects and headings use SoloDesk regardless of provider branding (39.732693ms)
+✔ templates escape visitor text and provide readable HTML and plain text (26.598206ms)
+✔ contact tokens reject test bypasses, tampering, instant and expired submissions (0.607601ms)
+✔ contact sends to the fixed inbox with Reply-To, and never invents delivery success (20.115556ms)
+✔ Neon webhook verifies the exact signed body and rejects replay/forgery (2.831481ms)
+✔ durable receipts deduplicate success and prevent automatic resends after uncertain failure (0.429454ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 95.377097
+
+> solo-desk@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.4.3 (webpack)
+- Environments: .env.local
+✓ Running next.config.ts took 61ms
+- Cache Components enabled
+- Partial Prefetching enabled
+- Experiments (use with caution):
+  ✓ agentFeedback
+  ✓ globalNotFound
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.3s
+  Running TypeScript ...
+  Finished TypeScript in 3.8s ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/54) ...
+  Generating static pages using 19 workers (13/54) 
+  Generating static pages using 19 workers (26/54) 
+  Generating static pages using 19 workers (40/54) 
+✓ Generating static pages using 19 workers (54/54) in 1264ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)                            Revalidate  Expire
+┌ ƒ /_not-found
+├   /[locale]/[theme]                         30d      1y
+│ ├ ◐ /[locale]/[theme]                       30d      1y
+│ ├ ○ /en/dark                                30d      1y
+│ ├ ○ /en/light                               30d      1y
+│ └ ◐ [+4 more paths]
+├   /[locale]/[theme]/app
+│ ├ ◐ /[locale]/[theme]/app
+│ ├ ◐ /en/dark/app
+│ ├ ◐ /en/light/app
+│ └ ◐ [+4 more paths]
+├   /[locale]/[theme]/app/account
+│ ├ ◐ /[locale]/[theme]/app/account
+│ ├ ◐ /en/dark/app/account
+│ ├ ◐ /en/light/app/account
+│ └ ◐ [+4 more paths]
+├   /[locale]/[theme]/app/workspace
+│ ├ ◐ /[locale]/[theme]/app/workspace
+│ ├ ◐ /en/dark/app/workspace
+│ ├ ◐ /en/light/app/workspace
+│ └ ◐ [+4 more paths]
+├   /[locale]/[theme]/sign-in
+│ ├ ◐ /[locale]/[theme]/sign-in
+│ ├ ◐ /en/dark/sign-in
+│ ├ ◐ /en/light/sign-in
+│ └ ◐ [+4 more paths]
+├   /[locale]/[theme]/sign-up
+│ ├ ◐ /[locale]/[theme]/sign-up
+│ ├ ◐ /en/dark/sign-up
+│ ├ ◐ /en/light/sign-up
+│ └ ◐ [+4 more paths]
+├ ƒ /api/app/context
+├ ƒ /api/auth/[...path]
+├ ƒ /api/contact
+├ ƒ /api/preferences
+├ ƒ /api/profile
+├ ƒ /api/webhooks/neon-auth
+├ ƒ /api/workspaces
+├ ƒ /api/workspaces/receipts
+├ ◐ /auth/callback
+├ ○ /design-system
+└ ○ /icon.png
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+

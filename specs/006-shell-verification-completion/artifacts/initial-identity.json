@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-02",
+  "head": "fbd653da3057531894b2ae92b0771eb22653bd79",
+  "branch": "main",
+  "node": "v24.21.0",
+  "npm": "11.19.0",
+  "feature": {
+    "feature_directory": "specs/006-shell-verification-completion"
+  },
+  "initial_untracked_sha256": {
+    "specs/006-shell-verification-completion/checklists/requirements.md": "50ea667e2f82bfbd9dbb580e025d993b11275604b8c74668728a22a257800e38",
+    "specs/006-shell-verification-completion/contracts/runtime-and-navigation.md": "68f001bdd848e241d4f788a95083e8a081741f1e926d643f46605f37c8ba9bb7",
+    "specs/006-shell-verification-completion/contracts/verification-and-evidence.md": "de4fa90b83d0475ba6d44a656d51b74d38cba5cae7b289e92ac3c1863938d8fa",
+    "specs/006-shell-verification-completion/data-model.md": "3055c840f27b6e18dc986622f9ea7a32b7115b6bdd632a99445df2e32e9fb7cb",
+    "specs/006-shell-verification-completion/plan.md": "41d6caed8cff54e12d6d1d661e277713581d44920e3553480387822a81b903e7",
+    "specs/006-shell-verification-completion/quickstart.md": "4b9cc095fdc073552f557cc350af17c7d064655ce01af543492b0efc2377fce3",
+    "specs/006-shell-verification-completion/research.md": "0c7991cbbe05527068923011e1e83f3c7cb478020985aa2840879dc3e175dd99",
+    "specs/006-shell-verification-completion/spec.md": "63c47181faf08da86b8edaa6e8aac752a95a89c1dd6280f5bb1e25a862f36be5",
+    "specs/006-shell-verification-completion/tasks.md": "0bcd8d966a4d786502075d930e850a601c8c5a2f341e8b8d6afe026b1e2a86d2"
+  },
+  "identity_sha256": {
+    "package.json": "e9d755ee487ec29a34bbe5e136394d85dac82d62c0152129fef4f535b8cf95a8",
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b",
+    ".specify/feature.json": "32940cd527da6df2de4d7c43b6a9ccd95fd186b65314151cc0ef8f0128a3c4e2"
+  },
+  "installed": {
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "next-intl": "4.14.9",
+    "@base-ui/react": "1.9.0",
+    "pg": "8.23.1",
+    "better-auth": "1.7.14",
+    "shadcn": "4.23.0",
+    "typescript": "5.9.3",
+    "eslint": "9.39.5",
+    "tailwindcss": "4.3.3",
+    "@neondatabase/auth": "0.7.0-beta"
+  }
+}

@@ -31,7 +31,10 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { NavUser } from "@/components/nav-user";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
-import { WorkspaceInvitation } from "@/components/workspace-invitation";
+import {
+  useInvitationEntry,
+  WorkspaceInvitation,
+} from "@/components/workspace-invitation";
 import { useApplicationRuntime } from "@/components/application-runtime";
 import {
   LayoutDashboard,
@@ -45,12 +48,20 @@ import {
 
 export function ApplicationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { clear: clearInvitation } = useInvitationEntry();
   const locale = useLocale();
   const t = useTranslations("Navigation");
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { setOpenMobile } = useSidebar();
 
-  const { account, signOut, isAnyFormDirty, confirmNavigationDiscard } =
-    useApplicationRuntime();
+  const {
+    account,
+    signOut,
+    navigate,
+    confirmNavigationDiscard,
+    capabilities,
+    accountState,
+    refreshContext,
+  } = useApplicationRuntime();
 
   // Determine current active destination
   const activePath = pathname.endsWith("/workspace")
@@ -80,28 +91,27 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
     },
   ];
 
-  // Intercept in-app navigation if forms are dirty
-  const handleNavClick = async (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string,
-  ) => {
-    // Let browser handle new tab / modified click
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    if (href === activePath) {
-      e.preventDefault();
+  const focusAfterCommit = React.useRef(true);
+  React.useLayoutEffect(() => {
+    focusAfterCommit.current = true;
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
+  React.useLayoutEffect(() => {
+    if (accountState !== "ready") {
+      setOpenMobile(false);
       return;
     }
-
-    if (isAnyFormDirty()) {
-      e.preventDefault();
-      const confirmed = await confirmNavigationDiscard();
-      if (!confirmed) return;
-    }
-
-    if (isMobile) {
-      setOpenMobile(false);
-    }
-  };
+    if (!focusAfterCommit.current) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(
+        "#main-content h1, #main-content",
+      );
+      target?.setAttribute("tabindex", "-1");
+      target?.focus();
+      focusAfterCommit.current = false;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [accountState, pathname, setOpenMobile]);
 
   const currentItem = navItems.find((item) => item.isActive) || navItems[0];
 
@@ -124,27 +134,34 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
     theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
 
   const handlePreferenceSubmit = async (
-    e: React.FormEvent<HTMLFormElement>,
+    event: React.FormEvent<HTMLFormElement>,
   ) => {
-    if (isAnyFormDirty()) {
-      const confirmed = await confirmNavigationDiscard();
-      if (!confirmed) {
-        e.preventDefault();
-      }
-    }
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!(await confirmNavigationDiscard())) return;
+    clearInvitation();
+    HTMLFormElement.prototype.submit.call(form);
   };
 
   return (
     <div className="flex min-h-svh w-full flex-1">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow-md focus:ring-2 focus:ring-ring"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:start-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow-md focus:ring-2 focus:ring-ring"
       >
         {t("skip")}
       </a>
 
       {/* Application Sidebar: Starts from top of screen */}
-      <Sidebar collapsible="icon" side={locale === "ar" ? "right" : "left"}>
+      <Sidebar
+        collapsible="icon"
+        side={locale === "ar" ? "right" : "left"}
+        title={t("drawerTitle")}
+        description={t("drawerDescription")}
+        closeLabel={t("closeNavigation")}
+        role="navigation"
+        aria-label={t("drawerTitle")}
+      >
         <SidebarHeader className="p-2 border-b border-sidebar-border">
           <WorkspaceSwitcher />
         </SidebarHeader>
@@ -159,6 +176,7 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
+                      size="lg"
                       tooltip={{
                         children: item.title,
                         hidden: false,
@@ -166,7 +184,14 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
                       render={
                         <Link
                           href={item.href}
-                          onClick={(e) => handleNavClick(e, item.href)}
+                          prefetch={false}
+                          onNavigate={(event) => {
+                            event.preventDefault();
+                            void navigate(
+                              item.href as
+                                "/app" | "/app/workspace" | "/app/account",
+                            );
+                          }}
                           aria-current={item.isActive ? "page" : undefined}
                         />
                       }
@@ -198,29 +223,33 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       {/* Main Content Inset (Shell starts from end of sidebar) */}
-      <SidebarInset id="main-content">
+      <SidebarInset id="main-content" tabIndex={-1}>
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/95 backdrop-blur-sm px-4">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger label={t("toggleNavigation")} />
             <Separator
               orientation="vertical"
-              className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+              className="me-2 data-vertical:h-4 data-vertical:self-auto"
             />
-            <Breadcrumb>
+            <Breadcrumb aria-label={t("currentLocation")}>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden sm:block">
                   <BreadcrumbLink
                     render={
                       <Link
                         href="/app"
-                        onClick={(e) => handleNavClick(e, "/app")}
+                        prefetch={false}
+                        onNavigate={(event) => {
+                          event.preventDefault();
+                          void navigate("/app");
+                        }}
                       />
                     }
                   >
                     {t("breadcrumbsApp")}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden sm:block" />
+                <BreadcrumbSeparator className="hidden sm:block rtl:rotate-180" />
                 <BreadcrumbItem>
                   <BreadcrumbPage>{currentItem.title}</BreadcrumbPage>
                 </BreadcrumbItem>
@@ -241,8 +270,7 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
               <Button
                 type="submit"
                 variant="ghost"
-                size="icon"
-                className="size-8"
+                size="icon-lg"
                 aria-label={t("switchLanguage", {
                   language: nextLocale === "ar" ? "العربية" : "English",
                 })}
@@ -265,8 +293,7 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
               <Button
                 type="submit"
                 variant="ghost"
-                size="icon"
-                className="size-8"
+                size="icon-lg"
                 aria-label={t("switchTheme", {
                   current: t(theme),
                   next: t(nextTheme),
@@ -289,7 +316,14 @@ export function ApplicationShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 min-w-0">
-          <WorkspaceInvitation />
+          <WorkspaceInvitation
+            enabled={
+              capabilities.workspacesEnabled &&
+              capabilities.workspaceInvitesEnabled
+            }
+            accountReady={accountState === "ready"}
+            onAccepted={refreshContext}
+          />
           {children}
         </div>
       </SidebarInset>

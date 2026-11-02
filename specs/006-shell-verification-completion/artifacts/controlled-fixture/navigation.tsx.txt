@@ -1,0 +1,6 @@
+import React, {useSyncExternalStore} from 'react';
+const subscribe = (f) => {window.addEventListener('popstate',f); return ()=>window.removeEventListener('popstate',f)};
+export const usePathname = () => useSyncExternalStore(subscribe,()=>window.location.pathname);
+const push = (url) => {window.fixture.pushes=(window.fixture.pushes||0)+1;window.history.pushState(null,'',url); window.dispatchEvent(new PopStateEvent('popstate'))};
+export const useRouter = () => ({push,replace:push,refresh:()=>{}});
+export default function Link({href,onNavigate,onClick,prefetch,children,...props}) {return <a {...props} href={href} onClick={e=>{onClick?.(e); if(!e.defaultPrevented && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && e.button===0){let stopped=false;onNavigate?.({preventDefault:()=>{stopped=true}});e.preventDefault();if(!stopped)push(href)}}}>{children}</a>}

@@ -220,8 +220,8 @@ for (const [query, entry] of [
   const result = await get(`/auth/callback?${query}`);
   const location = result.response.headers.get("location");
   assert.ok(
-    location === `/${entry}?authError=1` ||
-      result.body.includes(`/${entry}?authError=1`),
+    location === `/${entry}?authError=1#` ||
+      result.body.includes(`/${entry}?authError=1#`),
   );
 }
 const missing = await fetch(new URL("/api/profile", base));

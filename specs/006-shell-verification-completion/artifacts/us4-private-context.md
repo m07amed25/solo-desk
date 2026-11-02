@@ -1,0 +1,11 @@
+# US4 private lifecycle and proof
+
+2026-11-02; operator Codex. Final source/build/lock/runtime and synthetic fixture hashes: [identity](final-identity.json). Baseline and earlier red logs use the recorded baseline plus stated regression-test edits; they are historical failures, not final-build failures. Local Node checks have no locale/theme/viewport. Mounted checks use Chrome 155.0.8059.84, real product components/CSS with explicitly mocked navigation/auth/actions/transport/Realtime at loopback4316; they cannot establish Next Cache Components/history or live authority. Assertion code and declared fixture inputs are retained in [controlled fixture](controlled-fixture/README.md).
+
+PASS controlled mounted [lifecycle assertions](mounted-privateResult.log): stale member/manual and choice-page results ignored,20alternating A/B switches, unchanged expiry rearmed and denied on expiry/restore, returned/thrown sign-out failure conceals private content. [Late mutation](mounted-lateMutationAndProfile.log) remains targeted at original A after selection B and cannot show obsolete success. Own profile remains available with team-only outage; failed save retains input. Earlier controlled probe confirmed one selection write and no private old context during checking.
+
+PASS [proof assertions](mounted-proofFinal.log): malformed/oversized fragments scrubbed, disabled flow cannot accept, no autoaccept, explicit unknown-outcome retry reuses original operation/proof, hashchange cannot retarget, successful acceptance does not auto-select. Raw proof generated in browser is never returned/logged. A malformed-message precedence failure reproduced and was corrected before final replay.
+
+PASS local [selector action boundaries](actions-green.log) and [current-grant replay](replay-final.log); see service contract assessment. No browser state grants server authority.
+
+BLOCKED T024/T036/T037 full contract: real removed-session/member/grant effects, foreign recipient, cross-tab cookie ordering, actual Next Activity/cached Back/Forward/streamed redirects, complete initial read/actor replacement coverage and real profile subscription. Controlled router/pagehide/pageshow checks do not cover those boundaries. Personal save above is a mocked service. No exact session/database target was independently verified.

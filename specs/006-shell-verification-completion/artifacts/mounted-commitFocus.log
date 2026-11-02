@@ -1,0 +1,11 @@
+### Result
+{"focus":"MAIN","dialogs":0}
+### Ran Playwright code
+```js
+await (async(page)=>{await page.goto('http://127.0.0.1:4316/app');await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>window.runtime.accountState==='ready');await page.getByRole('button',{name:'Toggle navigation',exact:true}).click();await page.getByRole('dialog').getByRole('link',{name:'Personal account',exact:true}).click();await page.waitForFunction(()=>document.activeElement?.matches('#main-content, #main-content h1'));return{focus:await page.evaluate(()=>document.activeElement.tagName),dialogs:await page.getByRole('dialog').count()}})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4316/app/account
+### Events
+- New console entries: ../../../.playwright-cli/console-2026-11-02T16-21-37-349Z.log#L66
+

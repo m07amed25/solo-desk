@@ -1,0 +1,9 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const root = '/home/mohamed-s/Desktop/Projects/solor-desk';
+const fixture = '/tmp/solodesk006-fixture';
+const esbuild = require(root + '/node_modules/esbuild');
+const actionNames = [...new Set([...fs.readFileSync(root+'/app/workspace-actions.ts','utf8').matchAll(/export async function (\w+)/g)].map(m=>m[1]))];
+fs.writeFileSync(fixture+'/actions.js', actionNames.map(n=>`export const ${n} = async (...args) => window.fixture.actions[${JSON.stringify(n)}](...args);`).join('\n'));
+fs.writeFileSync(fixture+'/auth.js','export const authClient = {signOut: (...args) => window.fixture.signOut(...args)};');
+esbuild.build({entryPoints:[fixture+'/entry.tsx'],bundle:true,outfile:fixture+'/bundle.js',platform:'browser',format:'iife',jsx:'automatic',nodePaths:[root+'/node_modules'],alias:{'@/app/workspace-actions':fixture+'/actions.js','@/lib/auth/client':fixture+'/auth.js','@/app/actions':fixture+'/profile-actions.js','@neon/realtime/client':fixture+'/realtime.js','@neon/realtime-react':fixture+'/realtime.tsx','next/link':fixture+'/navigation.tsx','next/navigation':fixture+'/navigation.tsx','@':root},define:{'process.env.NODE_ENV':'"development"'},logLevel:'warning'}).catch(()=>process.exitCode=1);

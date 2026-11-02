@@ -41,7 +41,7 @@ export function SignIn({
       const result = await authClient.signIn.social({
         provider,
         callbackURL: `${window.location.origin}/auth/callback?entry=${entry}${returnParam}`,
-        errorCallbackURL: `${window.location.origin}${authFailure(entry)}`,
+        errorCallbackURL: `${window.location.origin}${authFailure(entry)}#`,
       });
       if (result.error) throw new Error("Provider unavailable");
       // Keep the guard closed until document navigation completes.

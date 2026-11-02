@@ -21,13 +21,16 @@ export interface EncryptionContext {
 }
 
 /**
- * Derives a 32-byte AES-256 key from environment or returns test key.
+ * Requires an independent server-only 32-byte hex key; no auth-secret fallback.
  */
-export function getInvitationKey(rawKey = process.env.SOLODESK_INVITATION_KEY || process.env.AUTH_SECRET || "solodesk-dev-invitation-key-32b"): {
+export function getInvitationKey(rawKey = process.env.SOLODESK_INVITATION_ENCRYPTION_KEY): {
   key: Buffer;
   keyId: string;
 } {
-  const key = createHash("sha256").update(rawKey).digest();
+  if (!rawKey || !/^[a-f0-9]{64}$/i.test(rawKey)) {
+    throw new Error("SOLODESK_INVITATION_ENCRYPTION_KEY must be a 32-byte hex key");
+  }
+  const key = Buffer.from(rawKey, "hex");
   const keyId = createHash("sha256").update(key).digest("hex").slice(0, 16);
   return { key, keyId };
 }

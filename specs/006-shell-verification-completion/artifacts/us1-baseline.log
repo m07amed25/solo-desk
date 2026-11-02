@@ -1,0 +1,36 @@
+
+> solo-desk@0.1.0 test:full
+> npm run lint && next typegen && tsc --noEmit && node scripts/check-translations.mjs && npm test && npm run build
+
+
+> solo-desk@0.1.0 lint
+> eslint
+
+Generating route types...
+✓ Types generated successfully
+✓ Translation key parity confirmed: 435 keys and structures match 100% between en and ar.
+
+> solo-desk@0.1.0 test
+> node --test scripts/*.test.mjs && npm run test:email
+
+✔ scripts/test-application.test.mjs (343.158302ms)
+✔ scripts/test-auth-contract.test.mjs (531.600802ms)
+✔ scripts/test-header-auth.test.mjs (421.473039ms)
+✖ scripts/test-migrations.test.mjs (185.073264ms)
+✔ scripts/test-profile.test.mjs (345.155378ms)
+✔ scripts/test-site.test.mjs (336.351304ms)
+✔ scripts/test-workspaces.test.mjs (711.587495ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 732.22534
+
+✖ failing tests:
+
+test at scripts/test-migrations.test.mjs:1:1
+✖ scripts/test-migrations.test.mjs (185.073264ms)
+  'test failed'

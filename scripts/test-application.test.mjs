@@ -1,5 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import * as React from "react";
+import * as jsxRuntime from "react/jsx-runtime";
+import { createRequire } from "node:module";
+import { createTranslator } from "next-intl";
+import {
+  authFailure,
+  callbackEntry,
+  callbackReturnTo,
+  parsePreferences,
+  preferenceLimit,
+} from "../lib/site.ts";
+const { NextResponse } = createRequire(import.meta.url)("next/server");
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
@@ -7,9 +19,11 @@ import ts from "typescript";
 function loadModule(path, adapters) {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
   const output = ts.transpileModule(source, {
+    fileName: path,
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
       target: ts.ScriptTarget.ES2022,
+      jsx: ts.JsxEmit.ReactJSX,
     },
   }).outputText;
   const exports = {};
@@ -19,6 +33,7 @@ function loadModule(path, adapters) {
       if (name === "server-only") return {};
       if (name === "react") {
         return {
+          ...React,
           cache: (fn) => fn, // in test, identity wrapper
         };
       }
@@ -26,7 +41,13 @@ function loadModule(path, adapters) {
       return adapters[name];
     },
     Date,
+    Buffer,
+    TextEncoder,
+    TextDecoder,
+    Uint8Array,
+    Response,
     URL,
+    URLSearchParams,
     Set,
     Math,
     process: {
@@ -70,7 +91,10 @@ test("application loader projects narrow account and truthful workspace states",
   const app = loadModule("../lib/application.ts", {
     "next/headers": {
       cookies: async () => ({
-        get: (name) => (name === "solodesk_workspace_id" && cookieVal ? { value: cookieVal } : undefined),
+        get: (name) =>
+          name === "solodesk_workspace_id" && cookieVal
+            ? { value: cookieVal }
+            : undefined,
       }),
     },
     "@/lib/auth/server": {
@@ -89,10 +113,19 @@ test("application loader projects narrow account and truthful workspace states",
           this.statusHttp = statusHttp;
         }
       },
+      validateUUID: (value) => value,
       listWorkspaces: async () => {
         listQueryCount++;
         return {
-          items: [{ id: wsId1, name: "Alpha Team", slug: "alpha", role: "owner", revision: "1" }],
+          items: [
+            {
+              id: wsId1,
+              name: "Alpha Team",
+              slug: "alpha",
+              role: "owner",
+              revision: "1",
+            },
+          ],
           nextCursor: null,
         };
       },
@@ -202,4 +235,378 @@ test("client generation counter only rejects old results and grants no access", 
   const forged = handleResponse(2, null);
   assert.equal(forged.accepted, true);
   assert.equal(forged.data, null);
+});
+
+test("current trusted session, bounded choices and safe failures at the imported loader", async () => {
+  let identity = mockSession();
+  let identityFailure = false;
+  let listFailure = false;
+  let selected = wsId1;
+  let empty = false;
+  let contextId = wsId1;
+  let listCalls = 0;
+  const app = loadModule("../lib/application.ts", {
+    "next/headers": {
+      cookies: async () => ({
+        get: () => (selected ? { value: selected } : undefined),
+      }),
+    },
+    "@/lib/auth/server": {
+      currentSession: async () => {
+        if (identityFailure) throw new Error("private provider detail");
+        return identity;
+      },
+    },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => false,
+      isOwnershipTransferEnabled: () => false,
+    },
+    "@/lib/workspaces": {
+      WorkspaceError: class extends Error {},
+      validateUUID: (value) => {
+        if (!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value))
+          throw new Error("invalid UUID");
+        return value;
+      },
+      listWorkspaces: async (_session, options) => {
+        listCalls++;
+        assert.equal(options.limit, 20, "One page, default 20/max 50.");
+        if (listFailure) throw new Error("private database detail");
+        return {
+          items: empty
+            ? []
+            : [
+                {
+                  id: wsId1,
+                  name: "A",
+                  slug: "a",
+                  role: "owner",
+                  revision: "1",
+                  secret: "private",
+                },
+              ],
+          nextCursor: null,
+        };
+      },
+      getWorkspaceContext: async () => ({
+        workspace: { id: contextId },
+        capabilities: ["workspace.read", "workspace.select"],
+      }),
+    },
+  });
+  const ready = await app.getApplicationContext();
+  assert.deepEqual(
+    Object.keys(ready.account).sort(),
+    ["avatar", "id", "name", "sessionExpiresAt"],
+    "Never project tokens/secrets.",
+  );
+  assert.equal(ready.workspaces.items[0].secret, undefined);
+  assert.equal(listCalls, 1);
+  contextId = "10000000-0000-0000-0000-000000000002";
+  assert.equal(
+    (await app.getApplicationContext()).selection.context,
+    null,
+    "Context is non-null only for a verified ready selection matching account/requested UUID.",
+  );
+  contextId = wsId1;
+  empty = true;
+  selected = null;
+  assert.equal((await app.getApplicationContext()).workspaces.state, "empty");
+  listFailure = true;
+  const unavailable = await app.getApplicationContext();
+  assert.equal(unavailable.workspaces.state, "unavailable");
+  assert.equal(
+    unavailable.workspaces.error,
+    "SERVICE_UNAVAILABLE",
+    "Error is a stable code mapped to localized copy, not exception text.",
+  );
+  for (const expiresAt of [
+    "invalid",
+    new Date(Date.now() - 1000).toISOString(),
+  ]) {
+    identity = mockSession(expiresAt);
+    await assert.rejects(
+      app.getApplicationContext(),
+      (e) => e.code === "UNAUTHORIZED" && e.statusHttp === 401,
+      "Current trusted session only; expiry finite and future.",
+    );
+  }
+  identityFailure = true;
+  await assert.rejects(
+    app.getApplicationContext(),
+    (e) => e.code === "SERVICE_UNAVAILABLE" && e.statusHttp === 503,
+  );
+});
+
+test("actual context GET uses private stable-code 200/400/401/503 responses", async () => {
+  class ApplicationError extends Error {
+    constructor(code, statusHttp) {
+      super("private provider detail");
+      this.code = code;
+      this.statusHttp = statusHttp;
+    }
+  }
+  let failure;
+  let calls = 0;
+  const route = loadModule("../app/api/app/context/route.ts", {
+    "next/server": { NextResponse: Response },
+    "@/lib/application": {
+      ApplicationError,
+      getApplicationContext: async () => {
+        calls++;
+        if (failure) throw failure;
+        return { workspaces: { state: "unavailable" } };
+      },
+    },
+  });
+  for (const [query, error, status, code] of [
+    ["", null, 200, undefined],
+    ["?unknown=1", null, 400, "VALIDATION"],
+    ["", new ApplicationError("UNAUTHORIZED", 401), 401, "UNAUTHORIZED"],
+    [
+      "",
+      new ApplicationError("SERVICE_UNAVAILABLE", 503),
+      503,
+      "SERVICE_UNAVAILABLE",
+    ],
+    ["", new Error("private provider detail"), 503, "SERVICE_UNAVAILABLE"],
+  ]) {
+    failure = error;
+    const before = calls;
+    const res = await route.GET({
+      url: `http://localhost/api/app/context${query}`,
+    });
+    assert.equal(res.status, status);
+    assert.match(res.headers.get("cache-control"), /private, no-store/);
+    assert.match(res.headers.get("vary"), /Cookie/);
+    const body = await res.json();
+    if (code) assert.deepEqual(body, { error: code });
+    if (query)
+      assert.equal(
+        calls,
+        before,
+        "unexpected fields must not reach account authority",
+      );
+  }
+});
+
+test("actual selection actions require current authority, canonical selectors and bounded compare-before-clear", async () => {
+  let session = mockSession();
+  let cookie = wsId1;
+  let deleted = 0;
+  let written;
+  let canSelect = true;
+  let contextCalls = 0;
+  class WorkspaceError extends Error {
+    constructor(code, message, statusHttp) {
+      super(message);
+      this.code = code;
+      this.statusHttp = statusHttp;
+    }
+  }
+  const actions = loadModule("../app/workspace-actions.ts", {
+    "next/headers": {
+      cookies: async () => ({
+        get: () => (cookie ? { value: cookie } : undefined),
+        delete: () => {
+          deleted++;
+          cookie = null;
+        },
+        set: (_name, value, options) => {
+          written = { value, options };
+        },
+      }),
+    },
+    "@/lib/auth/server": { currentSession: async () => session },
+    "@/lib/workspaces": {
+      WorkspaceError,
+      validateUUID: (value) => {
+        if (
+          typeof value !== "string" ||
+          !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value)
+        )
+          throw new WorkspaceError("VALIDATION", "Invalid UUID", 400);
+        return value.toLowerCase();
+      },
+      getWorkspaceContext: async () => {
+        contextCalls++;
+        return {
+          capabilities: canSelect
+            ? ["workspace.read", "workspace.select"]
+            : ["workspace.read"],
+        };
+      },
+    },
+  });
+  session = null;
+  assert.equal(
+    (await actions.clearWorkspaceSelectionAction(wsId1)).success,
+    false,
+    "a cookie mutation requires a fresh account",
+  );
+  assert.equal(deleted, 0);
+  session = mockSession();
+  for (const invalid of [undefined, "", "a".repeat(4097), "ع".repeat(2049)]) {
+    assert.equal(
+      (await actions.clearWorkspaceSelectionAction(invalid)).error,
+      "VALIDATION",
+    );
+    assert.equal(deleted, 0);
+  }
+  assert.equal(
+    (await actions.clearWorkspaceSelectionAction("other-stale-selector"))
+      .success,
+    true,
+  );
+  assert.equal(deleted, 0, "mismatched cookie is untouched");
+  cookie = "malformed-stale-selector";
+  assert.equal(
+    (await actions.clearWorkspaceSelectionAction(cookie)).success,
+    true,
+  );
+  assert.equal(deleted, 1, "bounded malformed stale selectors may be cleared");
+  assert.equal(
+    (await actions.clearWorkspaceSelectionAction(wsId1)).success,
+    true,
+  );
+  assert.equal(deleted, 1, "absent cookie is idempotent");
+  assert.equal(
+    (await actions.selectWorkspaceAction("-".repeat(36))).error,
+    "VALIDATION",
+  );
+  assert.equal(contextCalls, 0);
+  canSelect = false;
+  assert.equal((await actions.selectWorkspaceAction(wsId1)).success, false);
+  assert.equal(written, undefined);
+  canSelect = true;
+  assert.equal(
+    (await actions.selectWorkspaceAction(wsId1.toUpperCase())).success,
+    true,
+  );
+  assert.equal(written.value, wsId1);
+  assert.equal(written.options.httpOnly, true);
+  assert.equal(written.options.sameSite, "lax");
+  assert.equal(written.options.path, "/");
+});
+
+test("actual preference redirects explicitly clear fragments and retain origin/body bounds", async () => {
+  const route = loadModule("../app/api/preferences/route.ts", {
+    "next/server": { NextResponse },
+    "next-intl": { createTranslator },
+    "@/messages/en.json": {
+      default: JSON.parse(
+        readFileSync(new URL("../messages/en.json", import.meta.url)),
+      ),
+    },
+    "@/messages/ar.json": {
+      default: JSON.parse(
+        readFileSync(new URL("../messages/ar.json", import.meta.url)),
+      ),
+    },
+    "@/lib/site": { parsePreferences, preferenceLimit },
+  });
+  for (const destination of ["/app", "/app/workspace", "/app/account"]) {
+    const request = new Request("https://example.invalid/api/preferences", {
+      method: "POST",
+      headers: {
+        origin: "https://example.invalid",
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        locale: "ar",
+        theme: "system",
+        returnTo: destination,
+      }),
+    });
+    const res = await route.POST(request);
+    assert.equal(res.status, 303);
+    assert.equal(
+      res.headers.get("location"),
+      `https://example.invalid${destination}#`,
+    );
+    assert.match(res.headers.get("cache-control"), /private, no-store/);
+    assert.match(res.headers.get("set-cookie"), /HttpOnly/i);
+  }
+  for (const [origin, body, expected] of [
+    ["https://foreign.invalid", "locale=en&theme=dark&returnTo=/app", 403],
+    ["https://example.invalid", "x".repeat(2049), 413],
+    [
+      "https://example.invalid",
+      "locale=en&theme=dark&returnTo=/app&returnTo=/",
+      400,
+    ],
+  ]) {
+    const res = await route.POST(
+      new Request("https://example.invalid/api/preferences", {
+        method: "POST",
+        headers: {
+          origin,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body,
+      }),
+    );
+    assert.equal(res.status, expected);
+  }
+});
+
+test("actual callback render clears fragments on success, denial and bounded-query rejection", async () => {
+  let session = mockSession();
+  let reads = 0;
+  const callback = loadModule("../app/(utility)/auth/callback/page.tsx", {
+    "react/jsx-runtime": jsxRuntime,
+    "next/server": { connection: async () => {} },
+    "next/navigation": {
+      redirect: (location) => {
+        throw Object.assign(new Error("Redirect"), { location });
+      },
+    },
+    "@/lib/auth/server": {
+      currentSession: async () => {
+        reads++;
+        return session;
+      },
+    },
+    "@/lib/site": {
+      authFailure,
+      callbackEntry,
+      callbackReturnTo,
+      preferenceLimit,
+    },
+    "@/components/ui/skeleton": { Skeleton: () => null },
+  });
+  const complete = (query) => {
+    const element = callback.default({ searchParams: Promise.resolve(query) })
+      .props.children;
+    return element.type(element.props);
+  };
+  for (const returnTo of ["/app", "/app/workspace", "/app/account"]) {
+    await assert.rejects(
+      complete({ returnTo }),
+      (error) => error.location === `${returnTo}#`,
+    );
+  }
+  session = null;
+  await assert.rejects(
+    complete({ returnTo: "/app/account" }),
+    (error) => error.location === "/sign-in?authError=1#",
+  );
+  session = mockSession();
+  const before = reads;
+  for (const query of [
+    { returnTo: "/app/account", entry: "x".repeat(2049) },
+    { returnTo: ["/app", "/app/account"] },
+    { returnTo: "/app", unknown: "ignored" },
+  ]) {
+    await assert.rejects(
+      complete(query),
+      (error) => error.location === "/sign-in?authError=1#",
+    );
+  }
+  assert.equal(
+    reads,
+    before,
+    "invalid callback fields do not reach account authority",
+  );
 });

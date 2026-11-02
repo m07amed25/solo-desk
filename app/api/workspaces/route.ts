@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await listWorkspaces(null, {
+    const result = await listWorkspaces({
       limit: limit || 20,
       cursor: cursor || undefined,
     });

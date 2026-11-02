@@ -44,14 +44,52 @@ function loadWorkspacesService(adapters = {}) {
     String,
     process,
   });
-  return exports;
+  return {
+    ...exports,
+    // Keep synthetic identity and client injection at the test import boundary only.
+    as(actor, client) {
+      return loadWorkspacesService({
+        ...adapters,
+        "@/lib/auth/server": { currentSession: async () => actor },
+        "@/lib/db": { db: { connect: async () => ({
+          query: (sql, params) => /^(BEGIN|SET LOCAL|COMMIT|ROLLBACK)/.test(sql) ? Promise.resolve({ rows: [] }) : client.query(sql, params), release() {},
+        }) } },
+      });
+    },
+  };
+}
+
+function grantedWorkspaceActions(actorId) {
+  const role =
+    actorId === "user-member"
+      ? "member"
+      : actorId === "user-admin"
+        ? "admin"
+        : "owner";
+  return {
+    rows: [
+      "workspace.read",
+      "workspace.select",
+      "workspace.settings.update",
+      "workspace.members.read",
+      "workspace.invites.manage",
+      "workspace.members.remove",
+      "workspace.members.role.change",
+      "workspace.ownership.transfer",
+      "workspace.members.leave",
+    ].map((action) => ({ role, action })),
+  };
 }
 
 test("workspace validators enforce C01/C02 constraints and reserved slugs", () => {
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => null },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   // 1. Slug validation
@@ -59,7 +97,7 @@ test("workspace validators enforce C01/C02 constraints and reserved slugs", () =
   assert.equal(ws.validateSlug("team123"), "team123");
   assert.throws(() => ws.validateSlug("ab"), /between 3 and 63/);
   assert.throws(() => ws.validateSlug("a".repeat(64)), /between 3 and 63/);
-  assert.throws(() => ws.validateSlug("My-Team"), /lowercase alphanumeric/);
+  assert.equal(ws.validateSlug("My-Team"), "my-team");
   assert.throws(() => ws.validateSlug("-team"), /lowercase alphanumeric/);
   assert.throws(() => ws.validateSlug("team-"), /lowercase alphanumeric/);
   assert.throws(() => ws.validateSlug("app"), /Slug is reserved/);
@@ -120,7 +158,11 @@ test("canonical v1 intent digest is deterministic and sensitive to all payload m
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => null },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   const baseEnvelope = {
@@ -183,7 +225,7 @@ test("createWorkspace executes atomic creation, prevents conflicts, and supports
   // 1. When capability is disabled, throws CAPABILITY_DISABLED
   workspacesEnabled = false;
   await assert.rejects(
-    () => ws.createWorkspace(input, actor),
+    () => ws.as(actor, undefined).createWorkspace(input),
     (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
   workspacesEnabled = true;
@@ -195,6 +237,14 @@ test("createWorkspace executes atomic creation, prevents conflicts, and supports
 
   const mockClient = {
     async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       queries.push({ sql, params });
 
       // Check receipt
@@ -238,7 +288,7 @@ test("createWorkspace executes atomic creation, prevents conflicts, and supports
   };
 
   // 3. Initial create succeeds
-  const res1 = await ws.createWorkspace(input, actor, mockClient);
+  const res1 = await ws.as(actor, mockClient).createWorkspace(input);
   assert.equal(res1.status, "accepted");
   assert.equal(res1.code, "CREATED");
   assert.equal(res1.revision, "1");
@@ -252,7 +302,7 @@ test("createWorkspace executes atomic creation, prevents conflicts, and supports
   assert.equal(grantQueries.length, ws.ROLE_GRANTS.owner.length);
 
   // 4. Same operation replay returns accepted with replayed: true
-  const resReplay = await ws.createWorkspace(input, actor, mockClient);
+  const resReplay = await ws.as(actor, mockClient).createWorkspace(input);
   assert.equal(resReplay.status, "accepted");
   assert.equal(resReplay.replayed, true);
   assert.equal(resReplay.workspaceId, res1.workspaceId);
@@ -264,7 +314,7 @@ test("createWorkspace executes atomic creation, prevents conflicts, and supports
     name: "Different Name",
   };
   await assert.rejects(
-    () => ws.createWorkspace(conflictingInput, actor, mockClient),
+    () => ws.as(actor, mockClient).createWorkspace(conflictingInput),
     (err) => err.code === "OPERATION_CONFLICT" && err.statusCode === 409,
   );
 
@@ -274,7 +324,7 @@ test("createWorkspace executes atomic creation, prevents conflicts, and supports
     operationId: "30000000-0000-0000-0000-000000000002",
   };
   await assert.rejects(
-    () => ws.createWorkspace(duplicateSlugInput, actor, mockClient),
+    () => ws.as(actor, mockClient).createWorkspace(duplicateSlugInput),
     (err) => err.code === "SLUG_UNAVAILABLE" && err.statusCode === 409,
   );
 });
@@ -283,7 +333,11 @@ test("updateWorkspaceSettings checks revision, enforces member grants, and write
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => null },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   const actor = { user: { id: "10000000-0000-0000-0000-000000000001" } };
@@ -292,7 +346,16 @@ test("updateWorkspaceSettings checks revision, enforces member grants, and write
   let hasGrant = true;
 
   const mockClient = {
-    async query(sql) {
+    async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        if (!hasGrant) return { rows: [] };
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("FROM solodesk.command_receipts")) {
         return { rows: [] };
       }
@@ -345,24 +408,20 @@ test("updateWorkspaceSettings checks revision, enforces member grants, and write
   // 1. Revision conflict rejection
   await assert.rejects(
     () =>
-      ws.updateWorkspaceSettings(
-        { ...updateInput, expectedRevision: "99" },
-        actor,
-        mockClient,
-      ),
+      ws.as(actor, mockClient).updateWorkspaceSettings({ ...updateInput, expectedRevision: "99" }),
     (err) => err.code === "REVISION_CONFLICT" && err.statusCode === 409,
   );
 
   // 2. Forbidden if member lacks grant
   hasGrant = false;
   await assert.rejects(
-    () => ws.updateWorkspaceSettings(updateInput, actor, mockClient),
+    () => ws.as(actor, mockClient).updateWorkspaceSettings(updateInput),
     (err) => err.code === "FORBIDDEN" && err.statusCode === 403,
   );
   hasGrant = true;
 
   // 3. Successful update increments revision
-  const res = await ws.updateWorkspaceSettings(updateInput, actor, mockClient);
+  const res = await ws.as(actor, mockClient).updateWorkspaceSettings(updateInput);
   assert.equal(res.status, "accepted");
   assert.equal(res.revision, "2");
   assert.equal(res.code, "UPDATED");
@@ -378,6 +437,15 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
 
   const mockClient = {
     async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        if (isRevoked) return { rows: [] };
+        return grantedWorkspaceActions(params[1]);
+      }
+
       // List workspaces
       if (
         sql.includes("FROM solodesk.workspace_memberships m") &&
@@ -497,30 +565,30 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => actor },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   // 1. List workspaces returns own workspaces
-  const list = await ws.listWorkspaces(actor, { limit: 10 }, mockClient);
+  const list = await ws.as(actor, mockClient).listWorkspaces({ limit: 10 });
   assert.equal(list.items.length, 1);
   assert.equal(list.items[0].id, wsId1);
 
   // Foreign actor gets empty list, not foreign workspaces
-  const foreignList = await ws.listWorkspaces(
-    foreignActor,
-    { limit: 10 },
-    mockClient,
-  );
+  const foreignList = await ws.as(foreignActor, mockClient).listWorkspaces({ limit: 10 });
   assert.equal(foreignList.items.length, 0);
 
   // Cursor validation: malformed cursor rejected
   await assert.rejects(
-    () => ws.listWorkspaces(actor, { cursor: "invalid-uuid" }, mockClient),
+    () => ws.as(actor, mockClient).listWorkspaces({ cursor: "invalid-uuid" }),
     (err) => err.code === "VALIDATION" && err.statusCode === 400,
   );
 
   // 2. Context projection for own workspace
-  const ctx = await ws.getWorkspaceContext(wsId1, actor, mockClient);
+  const ctx = await ws.as(actor, mockClient).getWorkspaceContext(wsId1);
   assert.equal(ctx.workspace.id, wsId1);
   assert.equal(ctx.membership.role, "owner");
   assert.ok(ctx.capabilities.includes("workspace.read"));
@@ -528,14 +596,14 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
 
   // Foreign/unknown workspace returns RESOURCE_UNAVAILABLE (404)
   await assert.rejects(
-    () => ws.getWorkspaceContext(wsIdForeign, actor, mockClient),
+    () => ws.as(actor, mockClient).getWorkspaceContext(wsIdForeign),
     (err) => err.code === "RESOURCE_UNAVAILABLE" && err.statusCode === 404,
   );
 
   // Revocation of membership denies context projection
   isRevoked = true;
   await assert.rejects(
-    () => ws.getWorkspaceContext(wsId1, actor, mockClient),
+    () => ws.as(actor, mockClient).getWorkspaceContext(wsId1),
     (err) => err.code === "RESOURCE_UNAVAILABLE" && err.statusCode === 404,
   );
   isRevoked = false;
@@ -543,7 +611,16 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
   // 3. Receipt reconciliation
   const rMockClient = {
     ...mockClient,
-    async query(sql, params) {
+    async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        if (isRevoked) return { rows: [] };
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("FROM solodesk.command_receipts")) {
         return {
           rows: [
@@ -564,11 +641,7 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
     },
   };
 
-  const receiptRes = await ws.getReceiptStatus(
-    "10000000-0000-0000-0000-000000000001",
-    actor,
-    rMockClient,
-  );
+  const receiptRes = await ws.as(actor, rMockClient).getReceiptStatus("10000000-0000-0000-0000-000000000001");
   assert.equal(receiptRes.status, "accepted");
   assert.equal(receiptRes.code, "UPDATED");
   assert.equal(receiptRes.revision, "2");
@@ -579,11 +652,7 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
   // Foreign actor trying to view Alice's receipt returns RESOURCE_UNAVAILABLE
   await assert.rejects(
     () =>
-      ws.getReceiptStatus(
-        "10000000-0000-0000-0000-000000000001",
-        foreignActor,
-        mockClient,
-      ),
+      ws.as(foreignActor, mockClient).getReceiptStatus("10000000-0000-0000-0000-000000000001"),
     (err) => err.code === "RESOURCE_UNAVAILABLE" && err.statusCode === 404,
   );
 
@@ -591,11 +660,7 @@ test("list, context, and receipt access controls enforce tenant isolation and pr
   isRevoked = true;
   await assert.rejects(
     () =>
-      ws.getReceiptStatus(
-        "10000000-0000-0000-0000-000000000001",
-        actor,
-        rMockClient,
-      ),
+      ws.as(actor, rMockClient).getReceiptStatus("10000000-0000-0000-0000-000000000001"),
     (err) => err.code === "RESOURCE_UNAVAILABLE" && err.statusCode === 404,
   );
   isRevoked = false;
@@ -605,7 +670,11 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => null },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   // 1. Email validation
@@ -633,6 +702,14 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
 
   const mockClient = {
     async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("FROM solodesk.command_receipts")) {
         return { rows: [] };
       }
@@ -736,66 +813,50 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
   };
 
   // Owner can invite an Admin
-  const resAdminInvite = await ws.issueWorkspaceInvitation(
-    {
+  const resAdminInvite = await ws.as(ownerActor, mockClient).issueWorkspaceInvitation({
       operationId: "30000000-0000-0000-0000-000000000001",
       workspaceId: wsId,
       expectedRevision: "1",
       recipientEmail: "new-admin@example.com",
       role: "admin",
-    },
-    ownerActor,
-    mockClient,
-  );
+    });
   assert.equal(resAdminInvite.status, "accepted");
   assert.equal(resAdminInvite.code, "INVITATION_ISSUED");
 
   // Admin cannot invite an Admin (role ceiling)
   await assert.rejects(
     () =>
-      ws.issueWorkspaceInvitation(
-        {
+      ws.as(adminActor, mockClient).issueWorkspaceInvitation({
           operationId: "30000000-0000-0000-0000-000000000002",
           workspaceId: wsId,
           expectedRevision: "1",
           recipientEmail: "another-admin@example.com",
           role: "admin",
-        },
-        adminActor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "FORBIDDEN" && err.statusCode === 403,
   );
 
   // Admin can invite a Member
-  const resMemberInvite = await ws.issueWorkspaceInvitation(
-    {
+  const resMemberInvite = await ws.as(adminActor, mockClient).issueWorkspaceInvitation({
       operationId: "30000000-0000-0000-0000-000000000003",
       workspaceId: wsId,
       expectedRevision: "1",
       recipientEmail: "new-member@example.com",
       role: "member",
-    },
-    adminActor,
-    mockClient,
-  );
+    });
   assert.equal(resMemberInvite.status, "accepted");
   assert.equal(resMemberInvite.code, "INVITATION_ISSUED");
 
   // Member without invites grant is denied
   await assert.rejects(
     () =>
-      ws.issueWorkspaceInvitation(
-        {
+      ws.as(memberActor, mockClient).issueWorkspaceInvitation({
           operationId: "30000000-0000-0000-0000-000000000004",
           workspaceId: wsId,
           expectedRevision: "1",
           recipientEmail: "friend@example.com",
           role: "member",
-        },
-        memberActor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "FORBIDDEN" && err.statusCode === 403,
   );
 
@@ -818,7 +879,15 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
   const wrongActor = { user: { id: "user-wrong", email: "eve@example.com" } };
 
   const acceptMockClient = {
-    async query(sql) {
+    async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("INSERT INTO solodesk.rate_limit_buckets")) {
         return { rows: [{ count: 1 }] };
       }
@@ -863,14 +932,10 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
   };
 
   // Accepting with matching email succeeds
-  const acceptRes = await ws.acceptWorkspaceInvitation(
-    {
+  const acceptRes = await ws.as(inviteeActor, acceptMockClient).acceptWorkspaceInvitation({
       operationId: "40000000-0000-0000-0000-000000000001",
       token: "valid-invite-token-abc",
-    },
-    inviteeActor,
-    acceptMockClient,
-  );
+    });
   assert.equal(acceptRes.status, "accepted");
   assert.equal(acceptRes.role, "member");
   assert.equal(acceptRes.workspaceId, wsId);
@@ -878,21 +943,25 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
   // Accepting with mismatched recipient email fails generically
   await assert.rejects(
     () =>
-      ws.acceptWorkspaceInvitation(
-        {
+      ws.as(wrongActor, acceptMockClient).acceptWorkspaceInvitation({
           operationId: "40000000-0000-0000-0000-000000000002",
           token: "valid-invite-token-abc",
-        },
-        wrongActor,
-        acceptMockClient,
-      ),
+        }),
     (err) => err.code === "INVITATION_UNAVAILABLE" && err.statusCode === 400,
   );
 
   // Expired invitation fails
   const expiredMockClient = {
     ...acceptMockClient,
-    async query(sql, params) {
+    async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (
         sql.includes(
           "FROM solodesk.workspace_invitations WHERE token_digest = $1",
@@ -918,14 +987,10 @@ test("invitation issuance and acceptance enforce role ceilings, recipient matchi
 
   await assert.rejects(
     () =>
-      ws.acceptWorkspaceInvitation(
-        {
+      ws.as(inviteeActor, expiredMockClient).acceptWorkspaceInvitation({
           operationId: "40000000-0000-0000-0000-000000000003",
           token: "expired-token",
-        },
-        inviteeActor,
-        expiredMockClient,
-      ),
+        }),
     (err) => err.code === "INVITATION_UNAVAILABLE" && err.statusCode === 400,
   );
 });
@@ -934,7 +999,11 @@ test("invitation resend and revoke enforce role ceilings, generation rotation, a
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => null },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   const wsId = "50000000-0000-0000-0000-000000000001";
@@ -951,6 +1020,14 @@ test("invitation resend and revoke enforce role ceilings, generation rotation, a
 
   const mockClient = {
     async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("FROM solodesk.command_receipts")) {
         return { rows: [] };
       }
@@ -1042,30 +1119,22 @@ test("invitation resend and revoke enforce role ceilings, generation rotation, a
   // 1. Admin cannot resend an admin invitation (role ceiling)
   await assert.rejects(
     () =>
-      ws.resendWorkspaceInvitation(
-        {
+      ws.as(adminActor, mockClient).resendWorkspaceInvitation({
           operationId: "50000000-0000-0000-0000-000000000003",
           workspaceId: wsId,
           invitationId: invId,
           expectedInvitationRevision: "1",
-        },
-        adminActor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "FORBIDDEN" && err.statusCode === 403,
   );
 
   // 2. Owner can resend an admin invitation
-  const resendRes = await ws.resendWorkspaceInvitation(
-    {
+  const resendRes = await ws.as(ownerActor, mockClient).resendWorkspaceInvitation({
       operationId: "50000000-0000-0000-0000-000000000004",
       workspaceId: wsId,
       invitationId: invId,
       expectedInvitationRevision: "1",
-    },
-    ownerActor,
-    mockClient,
-  );
+    });
   assert.equal(resendRes.status, "accepted");
   assert.equal(resendRes.code, "INVITATION_RESENT");
   assert.equal(resendRes.revision, "2");
@@ -1075,30 +1144,22 @@ test("invitation resend and revoke enforce role ceilings, generation rotation, a
   // 3. Admin cannot revoke an admin invitation (role ceiling)
   await assert.rejects(
     () =>
-      ws.revokeWorkspaceInvitation(
-        {
+      ws.as(adminActor, mockClient).revokeWorkspaceInvitation({
           operationId: "50000000-0000-0000-0000-000000000005",
           workspaceId: wsId,
           invitationId: invId,
           expectedInvitationRevision: "1",
-        },
-        adminActor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "FORBIDDEN" && err.statusCode === 403,
   );
 
   // 4. Owner revoking succeeds
-  const revokeRes = await ws.revokeWorkspaceInvitation(
-    {
+  const revokeRes = await ws.as(ownerActor, mockClient).revokeWorkspaceInvitation({
       operationId: "50000000-0000-0000-0000-000000000006",
       workspaceId: wsId,
       invitationId: invId,
       expectedInvitationRevision: "1",
-    },
-    ownerActor,
-    mockClient,
-  );
+    });
   assert.equal(revokeRes.status, "accepted");
   assert.equal(revokeRes.code, "INVITATION_REVOKED");
 });
@@ -1107,7 +1168,11 @@ test("membership controls enforce active-owner invariant, role ceilings, leaving
   const ws = loadWorkspacesService({
     "@/lib/db": { db: {} },
     "@/lib/auth/server": { currentSession: async () => null },
-    "@/lib/auth/capabilities": { isWorkspacesEnabled: () => true },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
   });
 
   const wsId = "60000000-0000-0000-0000-000000000001";
@@ -1131,6 +1196,14 @@ test("membership controls enforce active-owner invariant, role ceilings, leaving
   let activeOwnerCount = 1;
   const mockClient = {
     async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("FROM solodesk.command_receipts")) {
         return { rows: [] };
       }
@@ -1296,144 +1369,102 @@ test("membership controls enforce active-owner invariant, role ceilings, leaving
   // 1. Owner promotion requires fresh step-up auth
   await assert.rejects(
     () =>
-      ws.changeWorkspaceMemberRole(
-        {
+      ws.as(staleOwnerActor, mockClient).changeWorkspaceMemberRole({
           operationId: "60000000-0000-0000-0000-000000000002",
           workspaceId: wsId,
           membershipId: "60000000-0000-0000-0000-000000000020",
           expectedMembershipRevision: "1",
           role: "owner",
-        },
-        staleOwnerActor,
-        mockClient,
-      ),
-    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+        }),
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
-  // 2. Owner promotion succeeds with fresh auth
-  const promoRes = await ws.changeWorkspaceMemberRole(
-    {
+  // 2. Owner can promote Member to Admin without unsupported ownership step-up
+  const promoRes = await ws.as(ownerActor, mockClient).changeWorkspaceMemberRole({
       operationId: "60000000-0000-0000-0000-000000000003",
       workspaceId: wsId,
       membershipId: "60000000-0000-0000-0000-000000000020",
       expectedMembershipRevision: "1",
-      role: "owner",
-    },
-    ownerActor,
-    mockClient,
-  );
+      role: "admin",
+    });
   assert.equal(promoRes.status, "accepted");
   assert.equal(promoRes.code, "MEMBER_ROLE_CHANGED");
 
   // 3. Demoting designated owner is rejected
   await assert.rejects(
     () =>
-      ws.changeWorkspaceMemberRole(
-        {
+      ws.as(ownerActor, mockClient).changeWorkspaceMemberRole({
           operationId: "60000000-0000-0000-0000-000000000004",
           workspaceId: wsId,
           membershipId: "60000000-0000-0000-0000-000000000010",
           expectedMembershipRevision: "1",
           role: "admin",
-        },
-        ownerActor,
-        mockClient,
-      ),
-    (err) => err.code === "LAST_OWNER" && err.statusCode === 409,
+        }),
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
   // 4. Admin cannot remove Admin
   await assert.rejects(
     () =>
-      ws.removeWorkspaceMember(
-        {
+      ws.as(adminActor, mockClient).removeWorkspaceMember({
           operationId: "60000000-0000-0000-0000-000000000005",
           workspaceId: wsId,
           membershipId: "60000000-0000-0000-0000-000000000021",
           expectedMembershipRevision: "1",
-        },
-        adminActor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "FORBIDDEN" && err.statusCode === 403,
   );
 
   // 5. Admin can remove Member
-  const removeRes = await ws.removeWorkspaceMember(
-    {
+  const removeRes = await ws.as(adminActor, mockClient).removeWorkspaceMember({
       operationId: "60000000-0000-0000-0000-000000000006",
       workspaceId: wsId,
       membershipId: "60000000-0000-0000-0000-000000000030",
       expectedMembershipRevision: "1",
-    },
-    adminActor,
-    mockClient,
-  );
+    });
   assert.equal(removeRes.status, "accepted");
   assert.equal(removeRes.code, "MEMBER_REMOVED");
 
   // 6. Designated owner cannot leave without transferring ownership
   await assert.rejects(
     () =>
-      ws.leaveWorkspace(
-        {
+      ws.as(ownerActor, mockClient).leaveWorkspace({
           operationId: "60000000-0000-0000-0000-000000000007",
           workspaceId: wsId,
           expectedMembershipRevision: "1",
-        },
-        ownerActor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "LAST_OWNER" && err.statusCode === 409,
   );
 
   // 7. Member can leave workspace
-  const leaveRes = await ws.leaveWorkspace(
-    {
+  const leaveRes = await ws.as(memberActor, mockClient).leaveWorkspace({
       operationId: "60000000-0000-0000-0000-000000000008",
       workspaceId: wsId,
       expectedMembershipRevision: "1",
-    },
-    memberActor,
-    mockClient,
-  );
+    });
   assert.equal(leaveRes.status, "accepted");
   assert.equal(leaveRes.code, "MEMBER_LEFT");
 
   // 8. Ownership transfer requires fresh reauth
   await assert.rejects(
     () =>
-      ws.transferWorkspaceOwnership(
-        {
+      ws.as(staleOwnerActor, mockClient).transferWorkspaceOwnership({
           operationId: "60000000-0000-0000-0000-000000000009",
           workspaceId: wsId,
           targetMembershipId: "60000000-0000-0000-0000-000000000020",
           expectedWorkspaceRevision: "1",
           expectedTargetRevision: "1",
           expectedInitiatorRevision: "1",
-        },
-        staleOwnerActor,
-        mockClient,
-      ),
-    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+        }),
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
-  // 9. Ownership transfer succeeds with fresh reauth
-  const transferRes = await ws.transferWorkspaceOwnership(
-    {
-      operationId: "60000000-0000-0000-0000-000000000010",
-      workspaceId: wsId,
-      targetMembershipId: "60000000-0000-0000-0000-000000000020",
-      expectedWorkspaceRevision: "1",
-      expectedTargetRevision: "1",
-      expectedInitiatorRevision: "1",
-    },
-    ownerActor,
-    mockClient,
-  );
-  assert.equal(transferRes.status, "accepted");
-  assert.equal(transferRes.code, "OWNERSHIP_TRANSFERRED");
-  assert.equal(transferRes.revision, "2");
+  // 9. Even a recent timestamp cannot substitute for provider-supported step-up.
+  await assert.rejects(() => ws.as(ownerActor, mockClient).transferWorkspaceOwnership({
+    operationId: "60000000-0000-0000-0000-000000000010", workspaceId: wsId,
+    targetMembershipId: "60000000-0000-0000-0000-000000000020",
+    expectedWorkspaceRevision: "1", expectedTargetRevision: "1", expectedInitiatorRevision: "1",
+  }), (err) => err.code === "CAPABILITY_DISABLED");
 });
 
 test("AP-02–05: persisted grant removal, capability gates, and reauth safeguards (local evidence)", async () => {
@@ -1443,7 +1474,15 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
   // 1. AP-02: Removing workspace.read grant without role change denies getWorkspaceContext
   let grants = [{ action: "workspace.select" }]; // workspace.read intentionally omitted
   const mockClient = {
-    async query(sql) {
+    async query(sql, params = []) {
+      if (
+        sql.startsWith(
+          "SELECT m.role, g.action FROM solodesk.workspace_memberships m",
+        )
+      ) {
+        return grantedWorkspaceActions(params[1]);
+      }
+
       if (sql.includes("FROM solodesk.workspaces w")) {
         return {
           rows: [
@@ -1481,13 +1520,13 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
 
   // Without workspace.read, getWorkspaceContext must throw RESOURCE_UNAVAILABLE
   await assert.rejects(
-    () => ws.getWorkspaceContext(wsId, actor, mockClient),
+    () => ws.as(actor, mockClient).getWorkspaceContext(wsId),
     (err) => err.code === "RESOURCE_UNAVAILABLE" && err.statusCode === 404,
   );
 
   // When workspace.read is restored, getWorkspaceContext succeeds and projects only effective grants
   grants = [{ action: "workspace.read" }];
-  const ctx = await ws.getWorkspaceContext(wsId, actor, mockClient);
+  const ctx = await ws.as(actor, mockClient).getWorkspaceContext(wsId);
   assert.equal(ctx.workspace.id, wsId);
   assert.deepEqual(ctx.capabilities, ["workspace.read"]);
   assert.equal(ctx.capabilities.includes("workspace.select"), false);
@@ -1505,22 +1544,18 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
 
   await assert.rejects(
     () =>
-      wsNoInvites.issueWorkspaceInvitation(
-        {
+      wsNoInvites.as(actor, mockClient).issueWorkspaceInvitation({
           operationId: "70000000-0000-0000-0000-000000000010",
           workspaceId: wsId,
           expectedRevision: "1",
           recipientEmail: "colleague@example.com",
           role: "member",
-        },
-        actor,
-        mockClient,
-      ),
+        }),
     (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
   await assert.rejects(
-    () => wsNoInvites.listWorkspaceInvitations(wsId, actor, mockClient),
+    () => wsNoInvites.as(actor, mockClient).listWorkspaceInvitations(wsId),
     (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
@@ -1536,7 +1571,7 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
   });
 
   await assert.rejects(
-    () => wsDisabled.listWorkspaces(actor, {}, mockClient),
+    () => wsDisabled.as(actor, mockClient).listWorkspaces({}),
     (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
@@ -1547,7 +1582,7 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
       ws.verifyFreshReauth({
         session: { createdAt: new Date().toISOString() },
       }),
-    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
   // Rejects future authAt timestamp
@@ -1556,7 +1591,7 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
       ws.verifyFreshReauth({
         session: { authAt: new Date(Date.now() + 60000).toISOString() },
       }),
-    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
   // Rejects authAt older than 5 minutes
@@ -1565,13 +1600,114 @@ test("AP-02–05: persisted grant removal, capability gates, and reauth safeguar
       ws.verifyFreshReauth({
         session: { authAt: new Date(Date.now() - 6 * 60 * 1000).toISOString() },
       }),
-    (err) => err.code === "REAUTH_REQUIRED" && err.statusCode === 403,
+    (err) => err.code === "CAPABILITY_DISABLED" && err.statusCode === 503,
   );
 
-  // Accepts fresh authAt within 5 minutes
-  assert.doesNotThrow(() =>
-    ws.verifyFreshReauth({
-      session: { authAt: new Date(Date.now() - 60000).toISOString() },
+  // Fresh authAt alone is unsupported proof.
+  assert.throws(() => ws.verifyFreshReauth({ session: { authAt: new Date() } }),
+    (err) => err.code === "CAPABILITY_DISABLED");
+});
+
+test("removed action grants deny direct private receipt replay before returning accepted fields", async () => {
+  const actor = { user: { id: "synthetic-owner" } };
+  const workspaceId = "70000000-0000-0000-0000-000000000001";
+  const operationId = "70000000-0000-0000-0000-000000000099";
+  const ws = loadWorkspacesService({
+    "@/lib/db": { db: {} },
+    "@/lib/auth/server": { currentSession: async () => actor },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
+  });
+  const input = {
+    operationId,
+    workspaceId,
+    expectedRevision: "1",
+    name: "Synthetic",
+    timezone: "UTC",
+    locale: "en",
+    currency: "USD",
+  };
+  const receipt = {
+    actor_id: actor.user.id,
+    operation_id: operationId,
+    workspace_id: workspaceId,
+    target_id: workspaceId,
+    kind: "workspace.settings.update",
+    result_code: "UPDATED",
+    result_revision: "2",
+    correlation_id: operationId,
+    intent_digest: ws.computeIntentDigest({
+      kind: "workspace.settings.update",
+      commandVersion: 1,
+      workspaceId,
+      expectedRevision: "1",
+      payload: {
+        name: input.name,
+        timezone: input.timezone,
+        locale: input.locale,
+        currency: input.currency,
+      },
     }),
+  };
+  const client = {
+    async query(sql) {
+      if (sql.includes("FROM solodesk.command_receipts"))
+        return { rows: [receipt] };
+      if (sql.includes("SELECT 1 FROM solodesk.workspace_memberships"))
+        return { rows: [{ active: 1 }] };
+      // Membership/role still exists; its persisted action grants were removed.
+      return { rows: [] };
+    },
+  };
+  await assert.rejects(
+    ws.as(actor, client).updateWorkspaceSettings(input),
+    (e) => e.code === "RESOURCE_UNAVAILABLE" || e.code === "FORBIDDEN",
+  );
+  await assert.rejects(
+    ws.as(actor, client).getReceiptStatus(operationId),
+    (e) => e.code === "RESOURCE_UNAVAILABLE" || e.code === "FORBIDDEN",
+  );
+});
+
+test("bounded choices and current scoped role ceilings reach the actual query boundary", async () => {
+  const actor = { user: { id: "synthetic-member" } };
+  const workspaceId = "70000000-0000-0000-0000-000000000001";
+  const ws = loadWorkspacesService({
+    "@/lib/db": { db: {} },
+    "@/lib/auth/server": { currentSession: async () => actor },
+    "@/lib/auth/capabilities": {
+      isWorkspacesEnabled: () => true,
+      isWorkspaceInvitesEnabled: () => true,
+      isOwnershipTransferEnabled: () => true,
+    },
+  });
+  let queries = 0;
+  const listClient = {
+    async query(sql, params) {
+      queries++;
+      assert.ok(sql.includes("g.action = 'workspace.read'"));
+      assert.ok(sql.includes("g.action = 'workspace.select'"));
+      assert.ok(sql.includes("g.scope_type = 'workspace'"));
+      assert.ok(sql.includes("g.scope_id = w.id"));
+      assert.equal(params.at(-1), 51, "One page, default 20/max 50.");
+      return { rows: [] };
+    },
+  };
+  await ws.as(actor, listClient).listWorkspaces({ limit: 500 });
+  assert.equal(queries, 1);
+  const foreignGrantClient = {
+    async query(sql, params) {
+      assert.ok(sql.includes("g.scope_id = $1"));
+      assert.equal(params[0], workspaceId);
+      return { rows: [{ role: "member", action: "workspace.members.read" }] };
+    },
+  };
+  await assert.rejects(
+    ws.as(actor, foreignGrantClient).listWorkspaceMembers(workspaceId),
+    (e) => e.code === "FORBIDDEN",
+    "persisted grants cannot exceed the member role ceiling",
   );
 });

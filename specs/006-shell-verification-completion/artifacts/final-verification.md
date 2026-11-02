@@ -1,0 +1,11 @@
+# Final local verification — partial acceptance
+
+2026-11-02; operator Codex. Final source/build/lock/runtime and synthetic fixture hashes: [identity](final-identity.json). Baseline and earlier red logs use the recorded baseline plus stated regression-test edits; they are historical failures, not final-build failures. Local Node checks have no locale/theme/viewport. Mounted checks use Chrome 155.0.8059.84, real product components/CSS with explicitly mocked navigation/auth/actions/transport/Realtime at loopback4316; they cannot establish Next Cache Components/history or live authority. Assertion code and declared fixture inputs are retained in [controlled fixture](controlled-fixture/README.md).
+
+PASS: `npm run test:full`: lint, Next route typegen, TypeScript, 464-key/structure/ICU translation checks, 44 Node tests, six synthetic email tests, production build with54 pages. [Complete output](final-full.log). Package/lock/config/schema/migrations remain unchanged. The supported approved execution passed; sandbox subprocess EPERM remains a failed execution boundary, recorded by US1, not a skipped assertion.
+
+PASS: imported action/context/service regressions and explicit empty-fragment auth/preference exits. Actual failing removed-grant replay and exit results are retained alongside passing results. No weakened assertions or real migration execution.
+
+PASS within controlled component scope: mounted drawer/focus,20 switches and delayed read/page/mutation rejection, dirty forms/preference cancellation/retry, explicit bounded invitation proof,36 language/theme/viewports, media/RTL and measured affected contrast. See the story artifacts. The driver's final media attempt was blocked by the prior dirty profile's beforeunload dialog; explicit dialog acceptance followed by [media retry](mounted-mediaFinal-retry.log) passed. [Committed focus](mounted-commitFocus.log) passed with condition-based waiting. No source fix was needed for these test sequencing observations.
+
+BLOCKED: running actual Next HTTP supplement, authenticated20-sample navigation timing, real PostgreSQL/hosted identity/recipient delivery, Next Activity/Back/Forward restoration, unavailable engines, actual browser200% zoom and required human reviews. No environment was inferred from existing credentials. T056 remains unchecked because its full contract includes these checks.

@@ -1,0 +1,10 @@
+### Result
+{"ratio":20.46890580796825,"color":"oklch(0 0 0)"}
+### Ran Playwright code
+```js
+await (async(page)=>{await page.setViewportSize({width:1280,height:800});await page.goto('http://127.0.0.1:4316/app/account?theme=light');await page.getByLabel('Display name').waitFor();const ratio=await page.getByRole('button',{name:'Sign out',exact:true}).last().evaluate(el=>{const ctx=document.createElement('canvas').getContext('2d',{willReadFrequently:true});function rgba(color){ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data]}function over(a,b){const alpha=a[3]/255;return a.slice(0,3).map((v,i)=>v*alpha+b[i]*(1-alpha))}const ancestors=[];for(let p=el;p;p=p.parentElement)ancestors.unshift(p);let bg=[255,255,255];for(const p of ancestors)bg=over(rgba(getComputedStyle(p).backgroundColor),bg);const fg=over(rgba(getComputedStyle(el).color),bg);const luminance=rgb=>rgb.map(v=>v/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);const a=luminance(fg),b=luminance(bg);return {ratio:(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05),color:getComputedStyle(el).color}});return ratio})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4316/app/account?theme=light
+### Events
+- New console entries: ../../../.playwright-cli/console-2026-11-02T16-21-37-349Z.log#L59

@@ -1,0 +1,33 @@
+✔ workspace validators enforce C01/C02 constraints and reserved slugs (135.440035ms)
+✔ canonical v1 intent digest is deterministic and sensitive to all payload mutations (40.084604ms)
+✔ createWorkspace executes atomic creation, prevents conflicts, and supports idempotent replay (30.961626ms)
+✔ updateWorkspaceSettings checks revision, enforces member grants, and writes receipt (28.498964ms)
+✔ list, context, and receipt access controls enforce tenant isolation and prevent authority leakage (28.030006ms)
+✔ invitation issuance and acceptance enforce role ceilings, recipient matching, and outbox encryption (25.253086ms)
+✔ invitation resend and revoke enforce role ceilings, generation rotation, and outbox cancellation (22.248442ms)
+✔ membership controls enforce active-owner invariant, role ceilings, leaving, and ownership transfer (24.783523ms)
+✔ AP-02–05: persisted grant removal, capability gates, and reauth safeguards (local evidence) (81.297078ms)
+✖ removed action grants deny direct private receipt replay before returning accepted fields (20.14669ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 703.444872
+
+✖ failing tests:
+
+test at scripts/test-workspaces.test.mjs:1579:1
+✖ removed action grants deny direct private receipt replay before returning accepted fields (20.14669ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-workspaces.test.mjs:1597:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }

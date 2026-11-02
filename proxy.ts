@@ -21,14 +21,14 @@ export default async function proxy(request: NextRequest) {
       const { auth } = await import("@/lib/auth/server");
       return privateResponse(
         await auth.middleware({
-          loginUrl: authFailure(callbackEntry(request.nextUrl.searchParams)),
+          loginUrl: `${authFailure(callbackEntry(request.nextUrl.searchParams))}#`,
         })(request),
       );
     } catch {
       return privateResponse(
         NextResponse.redirect(
           new URL(
-            authFailure(callbackEntry(request.nextUrl.searchParams)),
+            `${authFailure(callbackEntry(request.nextUrl.searchParams))}#`,
             request.url,
           ),
         ),

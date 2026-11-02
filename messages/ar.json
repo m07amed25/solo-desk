@@ -9,7 +9,6 @@
     "contact": "تواصل معنا",
     "heading": "هذه الصفحة ليست على المكتب."
   },
-
   "Common": {
     "brand": "SoloDesk",
     "getStarted": "ابدأ الآن",
@@ -56,7 +55,17 @@
     "workspacesUnavailable": "مساحات العمل غير متاحة",
     "loadMore": "تحميل المزيد",
     "loadingMore": "جارٍ التحميل…",
-    "breadcrumbsApp": "SoloDesk"
+    "breadcrumbsApp": "SoloDesk",
+    "drawerTitle": "التنقل في التطبيق",
+    "drawerDescription": "اختر وجهة في التطبيق.",
+    "closeNavigation": "إغلاق التنقل",
+    "toggleNavigation": "فتح أو طي التنقل",
+    "discardChanges": "لديك تغييرات غير محفوظة. هل تريد تجاهلها والمتابعة؟",
+    "checkingAccount": "جارٍ التحقق من حسابك…",
+    "contextUnavailable": "حسابك غير متاح مؤقتًا. حاول الاتصال مجددًا.",
+    "signingOut": "جارٍ تسجيل الخروج…",
+    "signOutFailed": "تعذّر تسجيل الخروج. حاول مجددًا أو أعد التحقق من حسابك.",
+    "currentLocation": "الموقع الحالي"
   },
   "Landing": {
     "title": "عملك. وقتك.\nكلّه في مكان واحد.",
@@ -495,7 +504,7 @@
     "subtitle": "إدارة مساحات عمل فريقك وإعداداتها",
     "currentWorkspace": "مساحة العمل الحالية",
     "noWorkspace": "لم يتم تحديد مساحة عمل",
-    "emptyState": "لست عضواً في أي مساحة عمل حتى الآن.",
+    "emptyState": "لا توجد مساحات عمل متاحة.",
     "createTitle": "إنشاء مساحة عمل جديدة",
     "createDescription": "أنشئ مساحة مشتركة لفريقك.",
     "nameLabel": "اسم مساحة العمل",
@@ -526,7 +535,7 @@
     "acceptInvitation": "قبول الدعوة",
     "accepting": "جاري القبول…",
     "dismiss": "تجاهل",
-    "invitationAccepted": "تم قبول الدعوة بنجاح. أهلاً بك في الفريق!",
+    "invitationAccepted": "تم قبول الدعوة. اختر مساحة العمل صراحةً للمتابعة.",
     "invitationUnavailable": "هذه الدعوة غير صالحة أو منتهية الصلاحية أو تم استخدامها بالفعل.",
     "inviteMemberTitle": "دعوة زميل",
     "inviteMemberDescription": "دعوة عضو للفريق عبر البريد الإلكتروني مع تحديد الدور.",
@@ -569,7 +578,24 @@
       "forbidden": "ليس لديك الصلاحية لتنفيذ هذا الإجراء.",
       "unauthorized": "يرجى تسجيل الدخول للمتابعة.",
       "generic": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
-    }
+    },
+    "selectionRestricted": "مساحة العمل هذه غير متاحة لك. امسح الاختيار أو اختر مساحة أخرى.",
+    "clearSelection": "مسح اختيار مساحة العمل",
+    "memory": "تبقى التغييرات غير المحفوظة في علامة التبويب هذه وتُفقد عند إغلاقها أو إعادة تحميلها.",
+    "invitationAwaitingAccount": "سجّل الدخول ثم افتح رابط الدعوة الأصلي مجددًا.",
+    "invitationDisabled": "قبول الدعوات غير متاح حاليًا. احتفظ بالرابط الأصلي وحاول عندما تتاح هذه الميزة.",
+    "invitationReopen": "تعذّرت قراءة الدعوة. سجّل الدخول وافتح الرابط الأصلي مجددًا.",
+    "invitationUncertain": "لم تتأكد النتيجة بعد. إعادة المحاولة تتحقق من عملية الدعوة الأصلية.",
+    "you": "أنت",
+    "statusActive": "نشط",
+    "statusRevoked": "ملغى",
+    "roleUnavailable": "الدور غير متاح",
+    "refreshMembers": "تحديث الأعضاء",
+    "refreshInvitations": "تحديث الدعوات",
+    "transferConfirmation": "هل تريد نقل الملكية إلى <user>{name}</user>؟ ستصبح مسؤولًا.",
+    "operationUncertain": "لم تتأكد النتيجة بعد. أبقِ علامة التبويب مفتوحة وتحقق من العملية الأصلية قبل إجراء تغيير آخر.",
+    "retryOriginalOperation": "إعادة محاولة العملية الأصلية",
+    "changeRoleFor": "تغيير دور {name}"
   },
   "Overview": {
     "title": "نظرة عامة",
@@ -580,10 +606,12 @@
     "accountCardTitle": "الملف الشخصي",
     "accountCardDesc": "تحديث اسمك وبيانات ملفك الشخصي وتفضيلات الحساب.",
     "noWorkspacesTitle": "لا توجد مساحات عمل متاحة",
-    "noWorkspacesDesc": "لست عضوًا في أي مساحة عمل بعد. يمكنك إنشاء مساحة عمل أو قبول دعوة.",
+    "noWorkspacesDesc": "اختر مساحة عمل متاحة أو أنشئ واحدة أو افتح رابط دعوة مجددًا.",
     "createWorkspace": "إنشاء مساحة عمل",
     "goToWorkspace": "فتح مساحة العمل",
     "goToAccount": "فتح الملف الشخصي",
-    "noAvailableWorkspaces": "لا توجد مساحات عمل متاحة"
+    "noAvailableWorkspaces": "لا توجد مساحات عمل متاحة",
+    "accountActive": "نشط",
+    "accountId": "معرّف الحساب"
   }
 }

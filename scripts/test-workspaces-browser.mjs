@@ -28,7 +28,7 @@ function validateManifest(filePath) {
 
 if (!isSelfCheck && !manifestPath) {
   console.log(
-    "BLOCKED: Target manifest is missing or not found: 'none specified'. Isolated browser journey testing requires a verified target manifest.",
+    "BLOCKED: Target manifest is missing or not found: 'none specified'. Anonymous HTTP/source supplements require a target manifest unless --self-check is used. A manifest does not establish isolation.",
   );
   process.exit(2);
 }
@@ -52,7 +52,9 @@ assert.ok(
   "Only loopback anonymous targets are allowed",
 );
 
-console.log(`Running browser journey verification against ${base.origin}...`);
+console.log(
+  `Running anonymous HTTP/source supplements against ${base.origin}...`,
+);
 
 async function get(path, cookie = "") {
   const response = await fetch(new URL(path, base), {
@@ -142,7 +144,7 @@ for (const locale of ["en", "ar"]) {
   }
 }
 console.log(
-  "✓ Verified EN and AR locales across Dark, Light, and System themes",
+  "✓ Anonymous HTML lang/dir/data-theme attributes checked; mounted presentation remains untested",
 );
 
 // 4. Verification of token fragment scrubbing pattern in workspace-invitation component
@@ -163,7 +165,7 @@ console.log(
     "workspace-invitation must scrub fragment immediately via window.history.replaceState",
   );
   console.log(
-    "✓ Verified fragment-to-memory extraction and URL scrubbing in components/workspace-invitation.tsx",
+    "✓ Source contains fragment extraction/scrubbing calls; timing, privacy and mounted behavior remain untested",
   );
 }
 
@@ -195,10 +197,10 @@ console.log(
     "workspace-panel must include revokeWorkspaceInvitationAction",
   );
   console.log(
-    "✓ Verified workspace-panel controls for invitation lifecycle and member role management",
+    "✓ Source contains workspace action references; authorization and interaction remain untested",
   );
 }
 
 console.log(
-  "PASS: Browser journeys and automated UI checks passed successfully.",
+  "PASS: Anonymous HTTP/source supplements only. No mounted browser, authenticated journey, authority isolation, accessibility or timing acceptance was executed.",
 );

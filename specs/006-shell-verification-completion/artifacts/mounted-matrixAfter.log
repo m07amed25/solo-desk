@@ -1,0 +1,10 @@
+### Result
+{"cases":36,"failures":[]}
+### Ran Playwright code
+```js
+await (async(page)=>{page.setDefaultTimeout(5000);const failures=[];let cases=0;for(const locale of ['en','ar'])for(const theme of ['light','dark','system']){await page.goto('http://127.0.0.1:4316/app?locale='+locale+'&theme='+theme);await page.evaluate(async()=>{window.fixture.context.account.name='A'.repeat(80)+' فريق';await window.runtime.refreshContext()});await page.waitForFunction(()=>window.runtime.accountState==='ready');for(const [width,height] of [[390,844],[768,1024],[1280,800],[1440,900],[1280,480],[320,568]]){await page.setViewportSize({width,height});const state=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,dir:document.documentElement.dir,toggle:document.querySelector('[data-sidebar=trigger]').getBoundingClientRect().width}));cases++;if(state.scroll>width||state.dir!==(locale==='ar'?'rtl':'ltr')||state.toggle<44)failures.push({locale,theme,width,height,...state})}}return{cases,failures}})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4316/app?locale=ar&theme=system
+### Events
+- New console entries: ../../../.playwright-cli/console-2026-11-02T16-21-37-349Z.log#L53-L58

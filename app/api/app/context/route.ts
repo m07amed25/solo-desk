@@ -11,10 +11,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     if (url.searchParams.size > 0) {
       return NextResponse.json(
-        {
-          error: "VALIDATION",
-          message: "Unexpected query parameters in context request",
-        },
+        { error: "VALIDATION" },
         { status: 400, headers: NO_STORE_HEADERS },
       );
     }
@@ -22,27 +19,15 @@ export async function GET(request: NextRequest) {
     const context = await getApplicationContext();
     return NextResponse.json(context, { headers: NO_STORE_HEADERS });
   } catch (err) {
-    if (err instanceof ApplicationError) {
+    if (err instanceof ApplicationError && err.statusHttp === 401) {
       return NextResponse.json(
-        {
-          error: err.code,
-          message: err.message,
-        },
-        { status: err.statusHttp, headers: NO_STORE_HEADERS },
+        { error: "UNAUTHORIZED" },
+        { status: 401, headers: NO_STORE_HEADERS },
       );
     }
-    const message =
-      err instanceof Error && err.message.includes("unavailable")
-        ? "Service unavailable"
-        : "An unexpected error occurred";
-    const status =
-      err instanceof Error && err.message.includes("unavailable") ? 503 : 500;
     return NextResponse.json(
-      {
-        error: "SERVICE_UNAVAILABLE",
-        message,
-      },
-      { status, headers: NO_STORE_HEADERS },
+      { error: "SERVICE_UNAVAILABLE" },
+      { status: 503, headers: NO_STORE_HEADERS },
     );
   }
 }

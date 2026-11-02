@@ -2,7 +2,12 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { currentSession } from "@/lib/auth/server";
-import { authFailure, callbackEntry, callbackReturnTo } from "@/lib/site";
+import {
+  authFailure,
+  callbackEntry,
+  callbackReturnTo,
+  preferenceLimit,
+} from "@/lib/site";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -46,11 +51,12 @@ async function Complete({ searchParams }: { searchParams: Search }) {
   const entry = callbackEntry(params);
   const returnTo = callbackReturnTo(params);
   if (
+    new TextEncoder().encode(params.toString()).byteLength > preferenceLimit ||
     [...params.keys()].some((key) => key !== "entry" && key !== "returnTo") ||
     params.getAll("entry").length > 1 ||
     params.getAll("returnTo").length > 1
   )
-    redirect(authFailure(entry));
+    redirect(`${authFailure(entry)}#`);
   let session;
   try {
     session = await currentSession();
@@ -58,7 +64,7 @@ async function Complete({ searchParams }: { searchParams: Search }) {
     /* Failed exchanges return only the generic retry marker. */
   }
   if (session?.user) redirect(`${returnTo}#`);
-  return redirect(authFailure(entry));
+  return redirect(`${authFailure(entry)}#`);
 }
 export default function AuthCallback({
   searchParams,

@@ -1,0 +1,5 @@
+# Human accessibility acceptance — BLOCKED
+
+2026-11-02; operator Codex. Final source/build/lock/runtime and synthetic fixture hashes: [identity](final-identity.json). Baseline and earlier red logs use the recorded baseline plus stated regression-test edits; they are historical failures, not final-build failures. Local Node checks have no locale/theme/viewport. Mounted checks use Chrome 155.0.8059.84, real product components/CSS with explicitly mocked navigation/auth/actions/transport/Realtime at loopback4316; they cannot establish Next Cache Components/history or live authority. Assertion code and declared fixture inputs are retained in [controlled fixture](controlled-fixture/README.md).
+
+T054/SC-010: no named human keyboard/screen-reader/zoom/contrast reviewer or assistive-technology/device evaluation obtained. Chrome focus/hit-target/contrast assertions are limited automated evidence, not WCAG2.2AA sign-off. Actual200%zoom and broader affected-state contrast remain open. Owner Design+Accessibility+QA; requires reviewed build, reviewer/device/AT and recorded observations. No fabricated approval.

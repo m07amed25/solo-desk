@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { currentSession } from "@/lib/auth/server";
 import {
   createWorkspace,
   updateWorkspaceSettings,
@@ -16,6 +17,7 @@ import {
   listWorkspaceInvitations,
   listWorkspaceMembers,
   WorkspaceError,
+  validateUUID,
   CreateWorkspaceInput,
   UpdateWorkspaceSettingsInput,
   IssueInvitationInput,
@@ -130,17 +132,10 @@ export async function selectWorkspaceAction(
   workspaceId: string,
 ): Promise<ActionResult<{ selected: string }>> {
   try {
-    if (
-      !workspaceId ||
-      typeof workspaceId !== "string" ||
-      !/^[0-9a-f-]{36}$/i.test(workspaceId)
-    ) {
-      return {
-        success: false,
-        error: "VALIDATION",
-        message: "Invalid workspace ID",
-        statusHttp: 400,
-      };
+    workspaceId = validateUUID(workspaceId, "workspaceId");
+    const session = await currentSession();
+    if (!session?.user?.id) {
+      throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
     }
 
     // Validate that the user is an active member with read + select access
@@ -187,25 +182,35 @@ export async function selectWorkspaceAction(
 }
 
 export async function clearWorkspaceSelectionAction(
-  expectedWorkspaceId?: string,
+  expectedWorkspaceId: string,
 ): Promise<ActionResult<{ cleared: true }>> {
-  const cookieStore = await cookies();
-  const currentCookie = cookieStore.get("solodesk_workspace_id")?.value;
-  if (
-    expectedWorkspaceId &&
-    currentCookie &&
-    currentCookie !== expectedWorkspaceId
-  ) {
+  try {
+    const session = await currentSession();
+    if (!session?.user?.id) {
+      throw new WorkspaceError("AUTH_REQUIRED", "Authentication required", 401);
+    }
+    if (
+      typeof expectedWorkspaceId !== "string" ||
+      !expectedWorkspaceId ||
+      Buffer.byteLength(expectedWorkspaceId, "utf8") > 4096
+    ) {
+      throw new WorkspaceError("VALIDATION", "Invalid expected selection", 400);
+    }
+    const cookieStore = await cookies();
+    if (
+      cookieStore.get("solodesk_workspace_id")?.value === expectedWorkspaceId
+    ) {
+      cookieStore.delete("solodesk_workspace_id");
+    }
+    return { success: true, data: { cleared: true } };
+  } catch (err) {
     return {
-      success: true,
-      data: { cleared: true },
+      success: false,
+      error: err instanceof WorkspaceError ? err.code : "SERVICE_UNAVAILABLE",
+      message: "Unable to clear selection",
+      statusHttp: err instanceof WorkspaceError ? err.statusHttp : 503,
     };
   }
-  cookieStore.delete("solodesk_workspace_id");
-  return {
-    success: true,
-    data: { cleared: true },
-  };
 }
 
 export async function issueWorkspaceInvitationAction(

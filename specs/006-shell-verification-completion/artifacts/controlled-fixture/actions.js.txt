@@ -1,0 +1,14 @@
+export const createWorkspaceAction = async (...args) => window.fixture.actions["createWorkspaceAction"](...args);
+export const updateWorkspaceSettingsAction = async (...args) => window.fixture.actions["updateWorkspaceSettingsAction"](...args);
+export const selectWorkspaceAction = async (...args) => window.fixture.actions["selectWorkspaceAction"](...args);
+export const clearWorkspaceSelectionAction = async (...args) => window.fixture.actions["clearWorkspaceSelectionAction"](...args);
+export const issueWorkspaceInvitationAction = async (...args) => window.fixture.actions["issueWorkspaceInvitationAction"](...args);
+export const acceptWorkspaceInvitationAction = async (...args) => window.fixture.actions["acceptWorkspaceInvitationAction"](...args);
+export const resendWorkspaceInvitationAction = async (...args) => window.fixture.actions["resendWorkspaceInvitationAction"](...args);
+export const revokeWorkspaceInvitationAction = async (...args) => window.fixture.actions["revokeWorkspaceInvitationAction"](...args);
+export const changeMemberRoleAction = async (...args) => window.fixture.actions["changeMemberRoleAction"](...args);
+export const removeMemberAction = async (...args) => window.fixture.actions["removeMemberAction"](...args);
+export const leaveWorkspaceAction = async (...args) => window.fixture.actions["leaveWorkspaceAction"](...args);
+export const transferOwnershipAction = async (...args) => window.fixture.actions["transferOwnershipAction"](...args);
+export const listWorkspaceInvitationsAction = async (...args) => window.fixture.actions["listWorkspaceInvitationsAction"](...args);
+export const listWorkspaceMembersAction = async (...args) => window.fixture.actions["listWorkspaceMembersAction"](...args);

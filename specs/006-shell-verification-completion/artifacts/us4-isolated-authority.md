@@ -1,0 +1,7 @@
+# US4 isolated service acceptance — BLOCKED
+
+2026-11-02; operator Codex. Final source/build/lock/runtime and synthetic fixture hashes: [identity](final-identity.json). Baseline and earlier red logs use the recorded baseline plus stated regression-test edits; they are historical failures, not final-build failures. Local Node checks have no locale/theme/viewport. Mounted checks use Chrome 155.0.8059.84, real product components/CSS with explicitly mocked navigation/auth/actions/transport/Realtime at loopback4316; they cannot establish Next Cache Components/history or live authority. Assertion code and declared fixture inputs are retained in [controlled fixture](controlled-fixture/README.md).
+
+No separately authorized app/auth/database/branch/runtime-role/synthetic-sink target was supplied or independently bound. Existing environment secrets were not inspected or treated as a test environment. No hosted sign-in, SQL/migration, real delivery, gate activation or production action attempted.
+
+T037/AP-01–05/G1–G6 remain open: exact revoked-session/grant/membership rejection, lower-role/foreign-ID/private replay denials, final-owner concurrency, real transaction/rollback/tenant-pool isolation and enabled recipient acceptance. Owners: Identity/Workspace/Database/Operations/QA/Security. Needed: independently identifiable separate test app/database with fake accounts and approved sink; credential-bearing manifest stays outside repository.

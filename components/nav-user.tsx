@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useApplicationRuntime } from "@/components/application-runtime";
+import { useLocale, useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -37,6 +38,8 @@ export function NavUser({
   onSignOut?: () => Promise<void> | void;
 }) {
   const { isMobile } = useSidebar();
+  const locale = useLocale();
+  const { navigate, accountState, teamEpoch } = useApplicationRuntime();
   const t = useTranslations("Navigation");
   const initials = (user.name || "U")
     .split(" ")
@@ -48,42 +51,46 @@ export function NavUser({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu key={`${accountState}:${teamEpoch}`}>
           <DropdownMenuTrigger
             render={
               <SidebarMenuButton
+                tooltip={user.name}
                 size="lg"
                 className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
                 aria-label={user.name}
               />
             }
           >
-            <Avatar className="h-8 w-8 rounded-lg">
+            <Avatar className="size-8 rounded-lg">
               {user.avatar ? (
                 <AvatarImage src={user.avatar} alt={user.name} />
               ) : null}
               <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{user.name}</span>
+            <div className="grid flex-1 text-start text-sm leading-tight">
+              <span className="truncate font-medium">
+                <bdi>{user.name}</bdi>
+              </span>
               {user.email ? (
                 <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
+                  <bdi>{user.email}</bdi>
                 </span>
               ) : null}
             </div>
-            <ChevronsUpDownIcon className="ml-auto size-4" />
+            <ChevronsUpDownIcon className="ms-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
+            data-app-private-overlay=""
             className="min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? "bottom" : locale === "ar" ? "left" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-lg">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                  <Avatar className="size-8 rounded-lg">
                     {user.avatar ? (
                       <AvatarImage src={user.avatar} alt={user.name} />
                     ) : null}
@@ -91,11 +98,13 @@ export function NavUser({
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
+                  <div className="grid flex-1 text-start text-sm leading-tight">
+                    <span className="truncate font-medium">
+                      <bdi>{user.name}</bdi>
+                    </span>
                     {user.email ? (
                       <span className="truncate text-xs text-muted-foreground">
-                        {user.email}
+                        <bdi>{user.email}</bdi>
                       </span>
                     ) : null}
                   </div>
@@ -104,11 +113,33 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem render={<Link href="/app/account" />}>
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href="/app/account"
+                    prefetch={false}
+                    onNavigate={(event) => {
+                      event.preventDefault();
+                      void navigate("/app/account");
+                    }}
+                  />
+                }
+              >
                 <UserIcon className="size-4" />
                 <span>{t("personalAccount")}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem render={<Link href="/" />}>
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href="/"
+                    prefetch={false}
+                    onNavigate={(event) => {
+                      event.preventDefault();
+                      void navigate("/");
+                    }}
+                  />
+                }
+              >
                 <GlobeIcon className="size-4" />
                 <span>{t("publicSite")}</span>
               </DropdownMenuItem>
@@ -121,7 +152,6 @@ export function NavUser({
                     onSignOut();
                   }
                 }}
-                className="text-destructive focus:text-destructive"
               >
                 <LogOutIcon className="size-4" />
                 <span>{t("signOut")}</span>

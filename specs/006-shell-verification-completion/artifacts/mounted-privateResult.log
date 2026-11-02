@@ -1,0 +1,24 @@
+### Result
+{"staleMemberIgnored":true,"switches":20,"stalePageIgnored":true,"unchangedExpiryDenied":true,"returnedSignOutConcealed":true,"thrownSignOutConcealed":true}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ page.setDefaultTimeout(5000);const result={};await page.setViewportSize({width:1280,height:800});await page.goto('http://127.0.0.1:4316/app/workspace');
+ await page.evaluate(()=>{const A=window.fixture.teams[0].workspace.id;window.fixture.actions.listWorkspaceMembersAction=id=>id===A?new Promise(resolve=>{window.finishOldMembers=()=>resolve({success:true,data:[{id:'old-member',userId:'old-user',name:'OBSOLETE_ALPHA_MEMBER',role:'member',status:'active',revision:'1'}]})}):Promise.resolve({success:true,data:[{id:'beta-member',userId:'beta-user',name:'CURRENT_BETA_MEMBER',role:'member',status:'active',revision:'1'}]})});
+ await page.getByRole('button',{name:'Refresh members',exact:true}).click();
+ await page.evaluate(()=>window.runtime.switchWorkspace(window.fixture.teams[1].workspace.id));await page.waitForFunction(()=>window.runtime.accountState==='ready'&&window.runtime.selection.context?.workspace.name==='Beta');await page.evaluate(()=>window.finishOldMembers());await page.getByText('CURRENT_BETA_MEMBER',{exact:true}).waitFor();
+ result.staleMemberIgnored=await page.getByText('OBSOLETE_ALPHA_MEMBER',{exact:true}).count()===0;
+ await page.goto('http://127.0.0.1:4316/app');result.switches=0;
+ for(let i=0;i<20;i++){const target=i%2?0:1;await page.evaluate(i=>window.runtime.switchWorkspace(window.fixture.teams[i].workspace.id),target);await page.waitForFunction(i=>window.runtime.accountState==='ready'&&window.runtime.selection.context?.workspace.id===window.fixture.teams[i].workspace.id,target);result.switches++}
+ await page.evaluate(async()=>{window.fixture.context.workspaces.nextCursor='90000000-0000-0000-0000-000000000001';await window.runtime.refreshContext()});await page.waitForFunction(()=>window.runtime.accountState==='ready');
+ await page.evaluate(()=>{const previous=window.fetch;window.fetch=(url,opts)=>String(url).startsWith('/api/workspaces')?new Promise(resolve=>{window.finishPage=()=>resolve(Response.json({items:[{id:'OBSOLETE_PAGE',name:'obsolete page'}],nextCursor:null}))}):previous(url,opts);window.pendingPage=window.runtime.loadNextWorkspacePage()});
+ await page.evaluate(()=>window.runtime.switchWorkspace(window.fixture.teams[1].workspace.id));await page.waitForFunction(()=>window.runtime.selection.context?.workspace.name==='Beta');await page.evaluate(async()=>{window.finishPage();await window.pendingPage});result.stalePageIgnored=await page.evaluate(()=>!window.runtime.workspaces.items.some(x=>x.id==='OBSOLETE_PAGE'));
+ await page.goto('http://127.0.0.1:4316/app');await page.evaluate(async()=>{window.fixture.context.account.sessionExpiresAt=new Date(Date.now()+1300).toISOString();await window.runtime.refreshContext()});await page.waitForFunction(()=>window.runtime.accountState==='ready');await page.evaluate(()=>{window.dispatchEvent(new PageTransitionEvent('pagehide'));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}))});await page.waitForURL(url=>url.pathname==='/sign-in',{timeout:4000});result.unchangedExpiryDenied=true;
+ for(const mode of ['returned','thrown']){await page.goto('http://127.0.0.1:4316/app');await page.evaluate(mode=>{window.fixture.signOut=async()=>{if(mode==='thrown')throw Error('Synthetic failure');return {error:{message:'Synthetic failure'}}}},mode);await page.evaluate(()=>window.runtime.signOut());await page.getByText('Could not sign out. Try again, or recheck your account.').waitFor();result[mode+'SignOutConcealed']=!await page.locator('[data-testid=application-runtime-root]').isVisible()&&new URL(page.url()).pathname==='/app'}
+ if(!result.staleMemberIgnored||!result.stalePageIgnored||result.switches!==20||!result.returnedSignOutConcealed||!result.thrownSignOutConcealed)throw Error(JSON.stringify(result));return result;
+})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4316/app
+### Events
+- New console entries: ../../../.playwright-cli/console-2026-11-02T16-21-37-349Z.log#L44-L49

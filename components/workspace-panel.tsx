@@ -1,7 +1,15 @@
 "use client";
 
-import { useState, useTransition, useId, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import {
+  useState,
+  useTransition,
+  useId,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Building2,
   Plus,
@@ -35,7 +43,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   createWorkspaceAction,
   updateWorkspaceSettingsAction,
-  selectWorkspaceAction,
   issueWorkspaceInvitationAction,
   resendWorkspaceInvitationAction,
   revokeWorkspaceInvitationAction,
@@ -46,11 +53,8 @@ import {
   listWorkspaceInvitationsAction,
   listWorkspaceMembersAction,
 } from "@/app/workspace-actions";
-import type {
-  WorkspaceContext,
-  WorkspaceListItem,
-  WorkspaceRole,
-} from "@/lib/workspaces";
+import type { WorkspaceRole } from "@/lib/workspaces";
+import { useApplicationRuntime } from "@/components/application-runtime";
 
 type WorkspacesTranslator = ReturnType<typeof useTranslations<"Workspaces">>;
 
@@ -63,7 +67,7 @@ function getRoleLabel(role: string, t: WorkspacesTranslator): string {
     case "member":
       return t("roleMember");
     default:
-      return role;
+      return t("roleUnavailable");
   }
 }
 
@@ -81,11 +85,7 @@ function getInitials(name?: string | null, email?: string | null): string {
   return "U";
 }
 
-function getErrorMessage(
-  errorKey: string,
-  t: WorkspacesTranslator,
-  fallback: string,
-): string {
+function getErrorMessage(errorKey: string, t: WorkspacesTranslator): string {
   switch (errorKey) {
     case "invalidName":
       return t("errors.invalidName");
@@ -98,28 +98,37 @@ function getErrorMessage(
     case "forbidden":
       return t("errors.forbidden");
     default:
-      return fallback || t("errors.generic");
+      return t("errors.generic");
   }
 }
 
-interface WorkspacePanelProps {
-  initialContext: WorkspaceContext | null;
-  initialWorkspaces: WorkspaceListItem[];
-  workspacesEnabled: boolean;
+export function WorkspacePanel() {
+  const runtime = useApplicationRuntime();
+  const t = useTranslations("Navigation");
+  if (!runtime.capabilities.workspacesEnabled)
+    return <p role="status">{t("workspacesDisabled")}</p>;
+  return (
+    <WorkspacePanelContent
+      key={`${runtime.account.id}:${runtime.selection.selectedId}:${runtime.teamEpoch}`}
+    />
+  );
 }
 
-export function WorkspacePanel({
-  initialContext,
-  initialWorkspaces,
-  workspacesEnabled,
-}: WorkspacePanelProps) {
+function WorkspacePanelContent() {
   const t = useTranslations("Workspaces");
-
-  const [currentWs, setCurrentWs] = useState<WorkspaceContext | null>(
-    initialContext,
-  );
-  const [workspaces, setWorkspaces] =
-    useState<WorkspaceListItem[]>(initialWorkspaces);
+  const locale = useLocale();
+  const runtime = useApplicationRuntime();
+  const { registerDirtyForm } = runtime;
+  const currentWs =
+    runtime.selection.state === "ready" ? runtime.selection.context : null;
+  const workspaces = runtime.workspaces.items;
+  const active = useRef(false);
+  useLayoutEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -188,7 +197,24 @@ export function WorkspacePanel({
     text: string;
   } | null>(null);
 
-  const [isPending, startTransition] = useTransition();
+  const [transitionPending, beginTransition] = useTransition();
+  const [retryCommand, setRetryCommand] = useState<
+    (() => Promise<void>) | null
+  >(null);
+  const isPending = transitionPending || retryCommand !== null;
+  const startTransition = (command: () => Promise<void>) => {
+    beginTransition(async () => {
+      try {
+        await command();
+        if (active.current) setRetryCommand(null);
+      } catch {
+        if (active.current) {
+          setRetryCommand(() => command);
+          setStatusMessage({ type: "error", text: t("operationUncertain") });
+        }
+      }
+    });
+  };
 
   const createNameId = useId();
   const createSlugId = useId();
@@ -207,7 +233,8 @@ export function WorkspacePanel({
   const canEditSettings =
     currentWs?.capabilities.includes("workspace.settings.update") ?? false;
   const canInvite =
-    currentWs?.capabilities.includes("workspace.invites.manage") ?? false;
+    runtime.capabilities.workspaceInvitesEnabled &&
+    (currentWs?.capabilities.includes("workspace.invites.manage") ?? false);
   const canReadMembers =
     currentWs?.capabilities.includes("workspace.members.read") ?? false;
   const canChangeRole =
@@ -215,62 +242,132 @@ export function WorkspacePanel({
   const canRemoveMember =
     currentWs?.capabilities.includes("workspace.members.remove") ?? false;
   const canTransferOwnership =
-    currentWs?.capabilities.includes("workspace.ownership.transfer") ?? false;
+    runtime.capabilities.ownershipTransferEnabled &&
+    (currentWs?.capabilities.includes("workspace.ownership.transfer") ?? false);
   const canLeave =
     currentWs?.capabilities.includes("workspace.members.leave") ?? false;
 
-  useEffect(() => {
-    let active = true;
-    const wsId = currentWs?.workspace.id;
-    if (workspacesEnabled && wsId) {
-      if (canInvite) {
-        listWorkspaceInvitationsAction(wsId).then((res) => {
-          if (active && res.success) {
-            setInvitations(res.data);
-          }
-        });
-      }
-      if (canReadMembers) {
-        listWorkspaceMembersAction(wsId).then((res) => {
-          if (active && res.success) {
-            setMembers(res.data);
-          }
-        });
-      }
-    }
-    return () => {
-      active = false;
+  const dirty = useRef({ create: false, settings: false, invite: false });
+  const settingsBase = useRef(currentWs?.workspace);
+  useLayoutEffect(() => {
+    dirty.current = {
+      create:
+        isCreating &&
+        !!(
+          createName ||
+          createSlug ||
+          createTz !== "UTC" ||
+          createLocale !== "en" ||
+          createCurrency !== "USD"
+        ),
+      settings:
+        isEditing &&
+        !!settingsBase.current &&
+        (settingsName !== settingsBase.current.name ||
+          settingsTz !== settingsBase.current.timezone ||
+          settingsLocale !== settingsBase.current.locale ||
+          settingsCurrency !== settingsBase.current.currency),
+      invite: !!inviteEmail || inviteRole !== "member",
     };
-  }, [workspacesEnabled, currentWs?.workspace.id, canInvite, canReadMembers]);
+  });
+  useEffect(() => {
+    const unregister = [
+      registerDirtyForm("workspace-create", {
+        isDirty: () => dirty.current.create,
+        discard: () => {
+          dirty.current.create = false;
+          setCreateName("");
+          setCreateSlug("");
+          setCreateTz("UTC");
+          setCreateLocale("en");
+          setCreateCurrency("USD");
+          setIsCreating(false);
+        },
+      }),
+      registerDirtyForm("workspace-settings", {
+        isDirty: () => dirty.current.settings,
+        discard: () => {
+          dirty.current.settings = false;
+          setIsEditing(false);
+        },
+      }),
+      registerDirtyForm("workspace-invite", {
+        isDirty: () => dirty.current.invite,
+        discard: () => {
+          dirty.current.invite = false;
+          setInviteEmail("");
+          setInviteRole("member");
+        },
+      }),
+    ];
+    return () => unregister.forEach((dispose) => dispose());
+  }, [registerDirtyForm]);
 
-  if (!workspacesEnabled) {
-    return null;
-  }
-
-  const loadInvitations = async (wsId: string) => {
-    setLoadingInvitations(true);
-    const res = await listWorkspaceInvitationsAction(wsId);
-    if (res.success) {
-      setInvitations(res.data);
-    }
-    setLoadingInvitations(false);
-  };
-
-  const loadMembers = async (wsId: string) => {
-    setLoadingMembers(true);
-    const res = await listWorkspaceMembersAction(wsId);
-    if (res.success) {
-      setMembers(res.data);
-    }
-    setLoadingMembers(false);
-  };
+  const invitationRequest = useRef(0);
+  const memberRequest = useRef(0);
+  const loadInvitations = useCallback(
+    async (wsId: string) => {
+      if (!active.current || !canInvite || wsId !== currentWs?.workspace.id)
+        return;
+      const request = ++invitationRequest.current;
+      setLoadingInvitations(true);
+      try {
+        const res = await listWorkspaceInvitationsAction(wsId);
+        if (!active.current || request !== invitationRequest.current) return;
+        if (res.success) setInvitations(res.data);
+        else setStatusMessage({ type: "error", text: t("unavailable") });
+      } catch {
+        if (active.current && request === invitationRequest.current)
+          setStatusMessage({ type: "error", text: t("unavailable") });
+      } finally {
+        if (active.current && request === invitationRequest.current)
+          setLoadingInvitations(false);
+      }
+    },
+    [canInvite, currentWs?.workspace.id, t],
+  );
+  const loadMembers = useCallback(
+    async (wsId: string) => {
+      if (
+        !active.current ||
+        !canReadMembers ||
+        wsId !== currentWs?.workspace.id
+      )
+        return;
+      const request = ++memberRequest.current;
+      setLoadingMembers(true);
+      try {
+        const res = await listWorkspaceMembersAction(wsId);
+        if (!active.current || request !== memberRequest.current) return;
+        if (res.success) setMembers(res.data);
+        else setStatusMessage({ type: "error", text: t("unavailable") });
+      } catch {
+        if (active.current && request === memberRequest.current)
+          setStatusMessage({ type: "error", text: t("unavailable") });
+      } finally {
+        if (active.current && request === memberRequest.current)
+          setLoadingMembers(false);
+      }
+    },
+    [canReadMembers, currentWs?.workspace.id, t],
+  );
+  useEffect(() => {
+    const wsId = currentWs?.workspace.id;
+    queueMicrotask(() => {
+      if (active.current && wsId) {
+        void loadInvitations(wsId);
+        void loadMembers(wsId);
+      }
+    });
+    // Team/permission changes remount this subtree; ordinary reads retain form input.
+  }, [currentWs?.workspace.id, loadInvitations, loadMembers]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await createWorkspaceAction({
         operationId,
         name: createName,
@@ -279,6 +376,9 @@ export function WorkspacePanel({
         locale: createLocale,
         currency: createCurrency,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorKey = res.fields?.name
@@ -290,7 +390,7 @@ export function WorkspacePanel({
               : "generic";
         setStatusMessage({
           type: "error",
-          text: getErrorMessage(errorKey, t, res.message),
+          text: getErrorMessage(errorKey, t),
         });
         return;
       }
@@ -300,17 +400,8 @@ export function WorkspacePanel({
       setCreateName("");
       setCreateSlug("");
 
-      const newWsItem: WorkspaceListItem = {
-        id: res.data.workspaceId,
-        name: createName.trim(),
-        slug: createSlug.trim(),
-        role: "owner",
-        revision: res.data.revision,
-      };
-      setWorkspaces((prev) => [newWsItem, ...prev]);
-
-      await selectWorkspaceAction(res.data.workspaceId);
-      window.location.reload();
+      dirty.current.create = false;
+      await runtime.switchWorkspace(res.data.workspaceId);
     });
   };
 
@@ -319,8 +410,8 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await updateWorkspaceSettingsAction({
         operationId,
         workspaceId: currentWs.workspace.id,
@@ -330,6 +421,9 @@ export function WorkspacePanel({
         locale: settingsLocale,
         currency: settingsCurrency,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorKey =
@@ -342,44 +436,21 @@ export function WorkspacePanel({
                 : "generic";
         setStatusMessage({
           type: "error",
-          text: getErrorMessage(errorKey, t, res.message),
+          text: getErrorMessage(errorKey, t),
         });
         return;
       }
 
       setStatusMessage({ type: "success", text: t("updatedSuccess") });
       setIsEditing(false);
-      setCurrentWs((prev) =>
-        prev
-          ? {
-              ...prev,
-              workspace: {
-                ...prev.workspace,
-                name: settingsName.trim(),
-                timezone: settingsTz,
-                locale: settingsLocale,
-                currency: settingsCurrency,
-                revision: res.data.revision,
-              },
-            }
-          : null,
-      );
+      dirty.current.settings = false;
+      await runtime.refreshContext();
     });
   };
 
   const handleSelect = (workspaceId: string) => {
-    setStatusMessage(null);
     startTransition(async () => {
-      const res = await selectWorkspaceAction(workspaceId);
-      if (!res.success) {
-        setStatusMessage({
-          type: "error",
-          text: t("errors.generic"),
-        });
-        return;
-      }
-      setStatusMessage({ type: "success", text: t("switchedSuccess") });
-      window.location.reload();
+      await runtime.switchWorkspace(workspaceId);
     });
   };
 
@@ -388,8 +459,8 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await issueWorkspaceInvitationAction({
         operationId,
         workspaceId: currentWs.workspace.id,
@@ -397,6 +468,9 @@ export function WorkspacePanel({
         recipientEmail: inviteEmail,
         role: inviteRole,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorKey =
@@ -407,26 +481,16 @@ export function WorkspacePanel({
               : "generic";
         setStatusMessage({
           type: "error",
-          text: getErrorMessage(errorKey, t, res.message),
+          text: getErrorMessage(errorKey, t),
         });
         return;
       }
 
       setStatusMessage({ type: "success", text: t("inviteSentSuccess") });
       setInviteEmail("");
-      if (res.data.revision) {
-        setCurrentWs((prev) =>
-          prev
-            ? {
-                ...prev,
-                workspace: {
-                  ...prev.workspace,
-                  revision: res.data.revision,
-                },
-              }
-            : null,
-        );
-      }
+      dirty.current.invite = false;
+      await runtime.refreshContext();
+      if (!active.current) return;
       loadInvitations(currentWs.workspace.id);
     });
   };
@@ -435,19 +499,22 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await resendWorkspaceInvitationAction({
         operationId,
         workspaceId: currentWs.workspace.id,
         invitationId,
         expectedInvitationRevision: revision,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         setStatusMessage({
           type: "error",
-          text: res.message || t("errors.generic"),
+          text: t("errors.generic"),
         });
         return;
       }
@@ -461,19 +528,22 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await revokeWorkspaceInvitationAction({
         operationId,
         workspaceId: currentWs.workspace.id,
         invitationId,
         expectedInvitationRevision: revision,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         setStatusMessage({
           type: "error",
-          text: res.message || t("errors.generic"),
+          text: t("errors.generic"),
         });
         return;
       }
@@ -491,8 +561,8 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await changeMemberRoleAction({
         operationId,
         workspaceId: currentWs.workspace.id,
@@ -500,6 +570,9 @@ export function WorkspacePanel({
         expectedMembershipRevision: revision,
         role: newRole,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorText =
@@ -507,7 +580,7 @@ export function WorkspacePanel({
             ? t("reauthRequired")
             : res.error === "LAST_OWNER"
               ? t("lastOwnerError")
-              : res.message || t("errors.generic");
+              : t("errors.generic");
         setStatusMessage({
           type: "error",
           text: errorText,
@@ -524,20 +597,23 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await removeMemberAction({
         operationId,
         workspaceId: currentWs.workspace.id,
         membershipId,
         expectedMembershipRevision: revision,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorText =
           res.error === "LAST_OWNER"
             ? t("lastOwnerError")
-            : res.message || t("errors.generic");
+            : t("errors.generic");
         setStatusMessage({
           type: "error",
           text: errorText,
@@ -554,19 +630,22 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await leaveWorkspaceAction({
         operationId,
         workspaceId: currentWs.workspace.id,
         expectedMembershipRevision: currentWs.membership.revision,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorText =
           res.error === "LAST_OWNER"
             ? t("lastOwnerError")
-            : res.message || t("errors.generic");
+            : t("errors.generic");
         setStatusMessage({
           type: "error",
           text: errorText,
@@ -575,7 +654,7 @@ export function WorkspacePanel({
       }
 
       setStatusMessage({ type: "success", text: t("leaveSuccess") });
-      window.location.reload();
+      await runtime.refreshContext();
     });
   };
 
@@ -587,8 +666,8 @@ export function WorkspacePanel({
     if (!currentWs) return;
     setStatusMessage(null);
 
+    const operationId = crypto.randomUUID();
     startTransition(async () => {
-      const operationId = crypto.randomUUID();
       const res = await transferOwnershipAction({
         operationId,
         workspaceId: currentWs.workspace.id,
@@ -597,12 +676,15 @@ export function WorkspacePanel({
         expectedTargetRevision: targetMem.revision,
         expectedInitiatorRevision: currentWs.membership.revision,
       });
+      if (!active.current) return;
+      if (!res.success && res.statusHttp >= 500)
+        throw new Error("Outcome unconfirmed");
 
       if (!res.success) {
         const errorText =
           res.error === "REAUTH_REQUIRED"
             ? t("reauthRequired")
-            : res.message || t("errors.generic");
+            : t("errors.generic");
         setStatusMessage({
           type: "error",
           text: errorText,
@@ -615,16 +697,24 @@ export function WorkspacePanel({
         type: "success",
         text: t("ownershipTransferredSuccess"),
       });
-      window.location.reload();
+      await runtime.refreshContext();
     });
   };
 
   return (
     <div className="flex flex-col gap-6">
-      {statusMessage && (
-        <Alert
-          variant={statusMessage.type === "error" ? "destructive" : "default"}
+      {retryCommand && (
+        <Button
+          size="lg"
+          variant="outline"
+          disabled={transitionPending}
+          onClick={() => startTransition(retryCommand)}
         >
+          {t("retryOriginalOperation")}
+        </Button>
+      )}
+      {statusMessage && (
+        <Alert variant="default">
           <div className="flex items-center gap-2">
             {statusMessage.type === "error" ? (
               <AlertCircle className="size-4 shrink-0" />
@@ -636,6 +726,17 @@ export function WorkspacePanel({
         </Alert>
       )}
 
+      {(runtime.selection.state === "restricted" ||
+        runtime.selection.state === "unavailable") && (
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={() => void runtime.clearSelection()}
+        >
+          {t("clearSelection")}
+        </Button>
+      )}
+      <p className="text-sm text-muted-foreground">{t("memory")}</p>
       {/* Workspace Context / Selection Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -656,7 +757,7 @@ export function WorkspacePanel({
               }}
               disabled={isPending}
             >
-              <Plus className="mr-1 size-4" />
+              <Plus className="me-1 size-4" />
               {t("createButton")}
             </Button>
           )}
@@ -687,6 +788,7 @@ export function WorkspacePanel({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        settingsBase.current = currentWs.workspace;
                         setSettingsName(currentWs.workspace.name);
                         setSettingsTz(currentWs.workspace.timezone);
                         setSettingsLocale(currentWs.workspace.locale);
@@ -704,7 +806,16 @@ export function WorkspacePanel({
             </div>
           ) : (
             <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-              {workspaces.length === 0 ? t("emptyState") : t("noWorkspace")}
+              {t(
+                runtime.selection.state === "checking"
+                  ? "switching"
+                  : runtime.selection.state === "restricted"
+                    ? "selectionRestricted"
+                    : runtime.selection.state === "unavailable" ||
+                        runtime.workspaces.state === "unavailable"
+                      ? "unavailable"
+                      : "noWorkspace",
+              )}
             </div>
           )}
 
@@ -765,9 +876,8 @@ export function WorkspacePanel({
               size="sm"
               onClick={handleLeave}
               disabled={isPending}
-              className="text-destructive hover:bg-destructive/10"
             >
-              <LogOut className="mr-1 size-4" />
+              <LogOut className="me-1 size-4" />
               {t("leaveWorkspaceButton")}
             </Button>
           </CardFooter>
@@ -858,13 +968,21 @@ export function WorkspacePanel({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreating(false)}
+                onClick={() => {
+                  dirty.current.create = false;
+                  setIsCreating(false);
+                  setCreateName("");
+                  setCreateSlug("");
+                  setCreateTz("UTC");
+                  setCreateLocale("en");
+                  setCreateCurrency("USD");
+                }}
                 disabled={isPending}
               >
                 {t("cancelButton")}
               </Button>
               <Button type="submit" disabled={isPending || !createName.trim()}>
-                {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {isPending && <Loader2 className="me-2 size-4 animate-spin" />}
                 {t("createButton")}
               </Button>
             </CardFooter>
@@ -953,7 +1071,7 @@ export function WorkspacePanel({
                 type="submit"
                 disabled={isPending || !settingsName.trim()}
               >
-                {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {isPending && <Loader2 className="me-2 size-4 animate-spin" />}
                 {t("updateButton")}
               </Button>
             </CardFooter>
@@ -1015,9 +1133,9 @@ export function WorkspacePanel({
                 className="w-full sm:w-auto"
               >
                 {isPending ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  <Loader2 className="me-2 size-4 animate-spin" />
                 ) : (
-                  <UserPlus className="mr-2 size-4" />
+                  <UserPlus className="me-2 size-4" />
                 )}
                 {t("sendInviteButton")}
               </Button>
@@ -1032,6 +1150,7 @@ export function WorkspacePanel({
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label={t("refreshInvitations")}
                   onClick={() => loadInvitations(currentWs.workspace.id)}
                   disabled={loadingInvitations || isPending}
                   className="h-8 px-2"
@@ -1055,19 +1174,17 @@ export function WorkspacePanel({
                     >
                       <div className="flex flex-col">
                         <span className="font-medium">
-                          {inv.recipientEmail}
+                          <bdi>{inv.recipientEmail}</bdi>
                         </span>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Badge
                             variant="secondary"
                             className="capitalize text-[10px] px-1.5 py-0"
                           >
-                            {inv.role}
+                            {getRoleLabel(inv.role, t)}
                           </Badge>
-                          <span>gen {inv.generation}</span>
-                          <span>·</span>
                           <span>
-                            {new Date(inv.expiresAt).toLocaleDateString()}
+                            {new Date(inv.expiresAt).toLocaleDateString(locale)}
                           </span>
                         </div>
                       </div>
@@ -1087,7 +1204,7 @@ export function WorkspacePanel({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 text-xs text-destructive hover:bg-destructive/10"
+                            className="h-7 text-xs"
                             onClick={() =>
                               handleRevokeInvite(inv.id, inv.revision)
                             }
@@ -1120,6 +1237,7 @@ export function WorkspacePanel({
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label={t("refreshMembers")}
                 onClick={() => loadMembers(currentWs.workspace.id)}
                 disabled={loadingMembers || isPending}
                 className="h-8 px-2"
@@ -1154,26 +1272,32 @@ export function WorkspacePanel({
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-sm truncate">
-                            {displayName}
+                            <bdi>{displayName}</bdi>
                           </span>
                           {isSelf && (
                             <Badge
                               variant="outline"
                               className="text-[10px] px-1.5 py-0 font-normal shrink-0"
                             >
-                              You
+                              {t("you")}
                             </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
                           {m.name && m.email && (
                             <>
-                              <span className="truncate">{m.email}</span>
+                              <span className="truncate">
+                                <bdi>{m.email}</bdi>
+                              </span>
                               <span>·</span>
                             </>
                           )}
                           <span className="shrink-0">
-                            rev {m.revision} · {m.status}
+                            {t(
+                              m.status === "active"
+                                ? "statusActive"
+                                : "statusRevoked",
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1181,7 +1305,11 @@ export function WorkspacePanel({
 
                     <div className="flex items-center gap-2 self-end sm:self-auto">
                       {/* Role selection for Owners */}
-                      {canChangeRole && !isSelf && m.status === "active" ? (
+                      {canChangeRole &&
+                      !isSelf &&
+                      m.status === "active" &&
+                      (m.role !== "owner" ||
+                        runtime.capabilities.ownershipTransferEnabled) ? (
                         <select
                           value={m.role}
                           onChange={(e) =>
@@ -1191,10 +1319,13 @@ export function WorkspacePanel({
                               e.target.value as WorkspaceRole,
                             )
                           }
+                          aria-label={t("changeRoleFor", { name: displayName })}
                           disabled={isPending}
                           className="flex h-7 rounded border bg-transparent px-2 text-xs"
                         >
-                          <option value="owner">{t("roleOwner")}</option>
+                          {runtime.capabilities.ownershipTransferEnabled && (
+                            <option value="owner">{t("roleOwner")}</option>
+                          )}
                           <option value="admin">{t("roleAdmin")}</option>
                           <option value="member">{t("roleMember")}</option>
                         </select>
@@ -1204,28 +1335,32 @@ export function WorkspacePanel({
                           className="capitalize text-xs"
                         >
                           {m.role === "owner" && (
-                            <Crown className="mr-1 size-3 text-amber-500" />
+                            <Crown className="me-1 size-3 text-amber-500" />
                           )}
                           {m.role === "admin" && (
-                            <Shield className="mr-1 size-3 text-blue-500" />
+                            <Shield className="me-1 size-3 text-blue-500" />
                           )}
                           {getRoleLabel(m.role, t)}
                         </Badge>
                       )}
 
                       {/* Remove member button */}
-                      {canRemoveMember && !isSelf && m.status === "active" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10"
-                          onClick={() => handleRemoveMember(m.id, m.revision)}
-                          disabled={isPending}
-                          title={t("removeMemberButton")}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      )}
+                      {canRemoveMember &&
+                        !isSelf &&
+                        m.status === "active" &&
+                        (m.role !== "owner" ||
+                          runtime.capabilities.ownershipTransferEnabled) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => handleRemoveMember(m.id, m.revision)}
+                            disabled={isPending}
+                            title={t("removeMemberButton")}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        )}
 
                       {/* Transfer Ownership button */}
                       {canTransferOwnership &&
@@ -1239,7 +1374,7 @@ export function WorkspacePanel({
                             disabled={isPending}
                             title={t("transferOwnershipTitle")}
                           >
-                            <ArrowRightLeft className="mr-1 size-3.5" />
+                            <ArrowRightLeft className="me-1 size-3.5" />
                             {t("transferOwnershipButton")}
                           </Button>
                         )}
@@ -1256,13 +1391,13 @@ export function WorkspacePanel({
                   {t("transferOwnershipTitle")}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Are you sure you want to transfer workspace ownership to user{" "}
-                  <code className="font-mono text-foreground font-semibold">
-                    {confirmTransferTarget.name ||
+                  {t.rich("transferConfirmation", {
+                    name:
+                      confirmTransferTarget.name ||
                       confirmTransferTarget.email ||
-                      `${confirmTransferTarget.userId.slice(0, 8)}…`}
-                  </code>
-                  ? You will be demoted to an Admin.
+                      confirmTransferTarget.userId,
+                    user: (name) => <bdi>{name}</bdi>,
+                  })}
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
@@ -1275,7 +1410,7 @@ export function WorkspacePanel({
                     {t("cancelButton")}
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     className="h-8 text-xs"
                     onClick={() =>
@@ -1284,7 +1419,7 @@ export function WorkspacePanel({
                     disabled={isPending}
                   >
                     {isPending && (
-                      <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                      <Loader2 className="me-1.5 size-3.5 animate-spin" />
                     )}
                     {t("transferOwnershipButton")}
                   </Button>

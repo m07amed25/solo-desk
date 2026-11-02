@@ -9,7 +9,6 @@
     "contact": "Get in touch",
     "heading": "This page is off the desk."
   },
-
   "Common": {
     "brand": "SoloDesk",
     "getStarted": "Get started",
@@ -56,7 +55,17 @@
     "workspacesUnavailable": "Workspaces unavailable",
     "loadMore": "Load more",
     "loadingMore": "Loading more…",
-    "breadcrumbsApp": "SoloDesk"
+    "breadcrumbsApp": "SoloDesk",
+    "drawerTitle": "Application navigation",
+    "drawerDescription": "Choose an application destination.",
+    "closeNavigation": "Close navigation",
+    "toggleNavigation": "Toggle navigation",
+    "discardChanges": "You have unsaved changes. Discard changes and continue?",
+    "checkingAccount": "Checking your account…",
+    "contextUnavailable": "Your account is temporarily unavailable. Try again to reconnect.",
+    "signingOut": "Signing out…",
+    "signOutFailed": "Could not sign out. Try again, or recheck your account.",
+    "currentLocation": "Current location"
   },
   "Landing": {
     "title": "Your work. Your time.\nAll in one place.",
@@ -495,7 +504,7 @@
     "subtitle": "Manage your team spaces and settings",
     "currentWorkspace": "Current workspace",
     "noWorkspace": "No workspace selected",
-    "emptyState": "You are not a member of any workspace yet.",
+    "emptyState": "No available workspaces.",
     "createTitle": "Create a new workspace",
     "createDescription": "Set up a shared space for your team.",
     "nameLabel": "Workspace name",
@@ -526,7 +535,7 @@
     "acceptInvitation": "Accept Invitation",
     "accepting": "Accepting…",
     "dismiss": "Dismiss",
-    "invitationAccepted": "Invitation accepted. Welcome to the team!",
+    "invitationAccepted": "Invitation accepted. Choose the workspace explicitly to continue.",
     "invitationUnavailable": "This invitation is invalid, expired, or has already been used.",
     "inviteMemberTitle": "Invite colleague",
     "inviteMemberDescription": "Invite a team member by email with an assigned role.",
@@ -569,7 +578,24 @@
       "forbidden": "You do not have permission to perform this action.",
       "unauthorized": "Please sign in to continue.",
       "generic": "An unexpected error occurred. Please try again."
-    }
+    },
+    "selectionRestricted": "This workspace is not available to you. Clear the selection or choose another workspace.",
+    "clearSelection": "Clear workspace selection",
+    "memory": "Unsaved changes stay in this tab and are lost when you close or reload it.",
+    "invitationAwaitingAccount": "Sign in, then reopen the original invitation link.",
+    "invitationDisabled": "Invitation acceptance is not available. Keep the original link and try again when it is enabled.",
+    "invitationReopen": "This invitation could not be read. Sign in and reopen the original link.",
+    "invitationUncertain": "The result is not confirmed. Retry checks the original invitation operation.",
+    "you": "You",
+    "statusActive": "Active",
+    "statusRevoked": "Revoked",
+    "roleUnavailable": "Role unavailable",
+    "refreshMembers": "Refresh members",
+    "refreshInvitations": "Refresh invitations",
+    "transferConfirmation": "Transfer ownership to <user>{name}</user>? You will become an Admin.",
+    "operationUncertain": "The result is not confirmed. Keep this tab open and check the original operation before making another change.",
+    "retryOriginalOperation": "Retry the original operation",
+    "changeRoleFor": "Change role for {name}"
   },
   "Overview": {
     "title": "Overview",
@@ -580,10 +606,12 @@
     "accountCardTitle": "Personal Profile",
     "accountCardDesc": "Update your name, profile details, and account preferences.",
     "noWorkspacesTitle": "No available workspaces",
-    "noWorkspacesDesc": "You are not a member of any workspace yet. You can create one or accept an invitation.",
+    "noWorkspacesDesc": "Choose an available workspace, create one, or reopen an invitation link.",
     "createWorkspace": "Create a workspace",
     "goToWorkspace": "Open workspace",
     "goToAccount": "Open personal profile",
-    "noAvailableWorkspaces": "No available workspaces"
+    "noAvailableWorkspaces": "No available workspaces",
+    "accountActive": "Active",
+    "accountId": "Account ID"
   }
 }

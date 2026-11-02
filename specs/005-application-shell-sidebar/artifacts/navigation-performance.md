@@ -1,3 +1,5 @@
+> **STALE — 2 November 2026:** The historical timing summary below lacks attributable mounted visible-content traces and cannot establish SC-010. [Feature006 timing assessment](../../006-shell-verification-completion/artifacts/navigation-performance.md) is BLOCKED pending verified authenticated target. Do not reuse these numbers as current acceptance.
+
 # Navigation Performance Measurement: SC-010
 
 This document records the destination transition performance verification for Feature 005 (Application Shell and Sidebar Navigation) in accordance with Success Criterion **SC-010**:

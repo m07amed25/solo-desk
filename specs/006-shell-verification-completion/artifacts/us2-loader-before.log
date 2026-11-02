@@ -1,0 +1,62 @@
+✔ application loader projects narrow account and truthful workspace states (55.505873ms)
+✔ client generation counter only rejects old results and grants no access (0.136126ms)
+✖ current trusted session, bounded choices and safe failures at the imported loader (10.812152ms)
+✖ actual context GET uses private stable-code 200/400/401/503 responses (17.140814ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 2
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 299.665908
+
+✖ failing tests:
+
+test at scripts/test-application.test.mjs:207:1
+✖ current trusted session, bounded choices and safe failures at the imported loader (10.812152ms)
+  AssertionError [ERR_ASSERTION]: Context is non-null only for a verified ready selection matching account/requested UUID.
+  + actual - expected
+  
+  + {
+  +   capabilities: [
+  +     'workspace.read',
+  +     'workspace.select'
+  +   ],
+  +   workspace: {
+  +     id: '10000000-0000-0000-0000-000000000002'
+  +   }
+  + }
+  - null
+  
+      at TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:243:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { workspace: { id: '10000000-0000-0000-0000-000000000002' }, capabilities: [ 'workspace.read', 'workspace.select' ] },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/test-application.test.mjs:260:1
+✖ actual context GET uses private stable-code 200/400/401/503 responses (17.140814ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      error: 'VALIDATION',
+  +   message: 'Unexpected query parameters in context request'
+    }
+  
+      at TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-application.test.mjs:287:22)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { error: 'VALIDATION', message: 'Unexpected query parameters in context request' },
+    expected: { error: 'VALIDATION' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

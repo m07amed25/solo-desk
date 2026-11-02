@@ -1,0 +1,23 @@
+### Result
+{"twoFormCancel":{"path":"/app/workspace","settings":"Dirty settings","invite":"synthetic@example.invalid","prompts":2},"cancelledPreferencePosts":0,"confirmedPreferencePosts":1,"confirmedPushes":1,"retry":{"calls":2,"sameId":true,"sameIntent":true},"preservedAfterFailure":"Original create"}
+### Ran Playwright code
+```js
+await (async(page)=>{
+ page.setDefaultTimeout(5000);await page.setViewportSize({width:1280,height:800});await page.goto('http://127.0.0.1:4316/app/workspace');
+ await page.evaluate(async()=>{window.fixture.context.capabilities.workspaceInvitesEnabled=true;await window.runtime.refreshContext()});await page.waitForFunction(()=>window.runtime.accountState==='ready');await page.getByRole('button',{name:'Workspace settings',exact:true}).click();await page.getByLabel('Workspace name',{exact:true}).fill('Dirty settings');await page.getByLabel('Colleague email',{exact:true}).fill('synthetic@example.invalid');
+ await page.evaluate(()=>{window.prompts=0;window.confirm=()=>++window.prompts===1});
+ await page.getByRole('link',{name:'Overview',exact:true}).first().click();
+ const twoFormCancel={path:new URL(page.url()).pathname,settings:await page.getByLabel('Workspace name',{exact:true}).inputValue(),invite:await page.getByLabel('Colleague email',{exact:true}).inputValue(),prompts:await page.evaluate(()=>window.prompts)};
+ let posts=0;await page.route('**/api/preferences',async route=>{posts++;await route.fulfill({status:200,contentType:'text/html',body:'<html><body>Confirmed synthetic preference submission</body></html>'})});
+ await page.evaluate(()=>window.confirm=()=>false);await page.getByRole('button',{name:'Switch to العربية',exact:true}).click();await page.waitForTimeout(50);const cancelledPreferencePosts=posts;const retained=await page.getByLabel('Workspace name',{exact:true}).inputValue();
+ await page.evaluate(()=>window.confirm=()=>true);await page.getByRole('link',{name:'Overview',exact:true}).first().click();await page.waitForFunction(()=>location.pathname==='/app'&&window.runtime.accountState==='ready');const confirmedPushes=await page.evaluate(()=>window.fixture.pushes);
+ await page.getByRole('button',{name:'Switch to العربية',exact:true}).click();await page.waitForURL(url=>url.pathname==='/api/preferences');const confirmedPreferencePosts=posts;await page.unroute('**/api/preferences');
+ await page.goto('http://127.0.0.1:4316/app/workspace');await page.evaluate(()=>{window.fixture.commandCalls=[];window.fixture.actions.createWorkspaceAction=async input=>{window.fixture.commandCalls.push(input);if(window.fixture.commandCalls.length===1)throw Error('Lost response');return {success:true,data:{workspaceId:window.fixture.teams[0].workspace.id,revision:'1'}}}});
+ await page.getByRole('button',{name:'Create workspace',exact:true}).click();await page.getByLabel('Workspace name',{exact:true}).fill('Original create');await page.getByLabel('Workspace URL slug',{exact:true}).fill('original-create');await page.getByRole('button',{name:'Create workspace',exact:true}).click();await page.getByRole('button',{name:'Retry the original operation',exact:true}).waitFor();const preservedAfterFailure=await page.getByLabel('Workspace name',{exact:true}).inputValue();await page.getByRole('button',{name:'Retry the original operation',exact:true}).click();await page.getByRole('button',{name:'Retry the original operation',exact:true}).waitFor({state:'detached'});const retry=await page.evaluate(()=>({calls:window.fixture.commandCalls.length,sameId:window.fixture.commandCalls[0].operationId===window.fixture.commandCalls[1].operationId,sameIntent:JSON.stringify(window.fixture.commandCalls[0])===JSON.stringify(window.fixture.commandCalls[1])}));
+ if(twoFormCancel.path!=='/app/workspace'||twoFormCancel.settings!=='Dirty settings'||twoFormCancel.invite!=='synthetic@example.invalid'||twoFormCancel.prompts!==2||cancelledPreferencePosts!==0||retained!=='Dirty settings'||confirmedPushes!==1||confirmedPreferencePosts!==1||!retry.sameId||!retry.sameIntent||preservedAfterFailure!=='Original create')throw Error('navigation or recovery regression');return{twoFormCancel,cancelledPreferencePosts,confirmedPreferencePosts,confirmedPushes,retry,preservedAfterFailure};
+})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4316/app/workspace
+### Events
+- New console entries: ../../../.playwright-cli/console-2026-11-02T16-21-37-349Z.log#L50-L51

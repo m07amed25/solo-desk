@@ -291,7 +291,7 @@ export function AuthEmailForm({
 
       // Successful sign in: navigate to destination to pick up fresh server authority
       setPassword("");
-      router.push(returnTo || "/app");
+      router.push(`${returnTo || "/app"}#`);
     } catch (err: unknown) {
       await processSignInError(err);
     }
@@ -329,7 +329,7 @@ export function AuthEmailForm({
 
       // Fresh verified session confirmed: navigate to protected app
       setCode("");
-      router.push(returnTo || "/app");
+      router.push(`${returnTo || "/app"}#`);
     } catch {
       setStatus("failed");
       setErrorMessage(t("verificationFailed"));

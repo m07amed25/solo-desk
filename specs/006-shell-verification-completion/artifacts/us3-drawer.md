@@ -1,0 +1,9 @@
+# US3 mounted drawer scope
+
+2026-11-02; operator Codex. Final source/build/lock/runtime and synthetic fixture hashes: [identity](final-identity.json). Baseline and earlier red logs use the recorded baseline plus stated regression-test edits; they are historical failures, not final-build failures. Local Node checks have no locale/theme/viewport. Mounted checks use Chrome 155.0.8059.84, real product components/CSS with explicitly mocked navigation/auth/actions/transport/Realtime at loopback4316; they cannot establish Next Cache Components/history or live authority. Assertion code and declared fixture inputs are retained in [controlled fixture](controlled-fixture/README.md).
+
+PASS controlled mounted [assertions](mounted-drawerFinal.log):18settled Tab/Shift+Tab containment checks, background hit blocking and scroll lock,44×44visible close, dismissal focus restoration, committed route closure and767/768/769resize cleanup to visible toggle. EN390×844 and tablet breakpoint; Arabic side/media separately in presentation results. [Condition-based committed-focus check](mounted-commitFocus.log) confirms MAIN focus after scheduled frame. Earlier immediate snapshot saw BODY; it was not evidence of committed focus. An earlier focus-guard sentinel snapshot was also replaced with settled active-element checks.
+
+Source correction reused existing Base UI finalFocus/modal behavior, localized safe defaults, visible dismissal, layout cleanup and committed-path focus. No replacement modal framework or persistence.
+
+BLOCKED full acceptance: actual production Next navigation/Activity/history, all cancellation/authority/engine/human combinations. Pre-correction mounted baseline was not captured for every primitive correction; T017 remains unchecked. T022 remains unchecked for full integrated acceptance.

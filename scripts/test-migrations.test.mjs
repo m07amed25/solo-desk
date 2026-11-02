@@ -81,15 +81,60 @@ test("SQL, receipt and deferred-commit failures roll back without reporting acce
 
 test("CLI help and invalid selections need no database and expose no credentials", () => {
   const script = new URL("./migrate.mjs", import.meta.url);
-  const env = { ...process.env, DATABASE_URL_UNPOOLED: "https://user:synthetic-secret@example.invalid/db" };
+  const env = {
+    ...process.env,
+    DATABASE_URL_UNPOOLED: "https://user:synthetic-secret@example.invalid/db",
+  };
   delete env.NODE_TEST_CONTEXT;
-  const help = spawnSync(process.execPath, [script.pathname, "--help"], { encoding: "utf8", env });
+  const help = spawnSync(process.execPath, [script.pathname, "--help"], {
+    encoding: "utf8",
+    env,
+    timeout: 10_000,
+  });
+  assert.equal(
+    help.error,
+    undefined,
+    `help process error: ${help.error?.code}; signal=${help.signal}; status=${help.status}`,
+  );
+  assert.equal(help.signal, null, "help terminated by unexpected signal");
   assert.equal(help.status, 0);
   assert.match(help.stdout, /Apply all pending/);
-  const invalid = spawnSync(process.execPath, [script.pathname, "../unknown.sql"], { encoding: "utf8", env });
+  const invalid = spawnSync(
+    process.execPath,
+    [script.pathname, "../unknown.sql"],
+    { encoding: "utf8", env, timeout: 10_000 },
+  );
+  assert.equal(
+    invalid.error,
+    undefined,
+    `invalid selector process error: ${invalid.error?.code}; signal=${invalid.signal}; status=${invalid.status}`,
+  );
+  assert.equal(
+    invalid.signal,
+    null,
+    "invalid selector terminated by unexpected signal",
+  );
   assert.equal(invalid.status, 1);
-  const connection = spawnSync(process.execPath, [script.pathname], { encoding: "utf8", env });
+  const connection = spawnSync(process.execPath, [script.pathname], {
+    encoding: "utf8",
+    env,
+    timeout: 10_000,
+  });
+  assert.equal(
+    connection.error,
+    undefined,
+    `connection process error: ${connection.error?.code}; signal=${connection.signal}; status=${connection.status}`,
+  );
+  assert.equal(
+    connection.signal,
+    null,
+    "connection terminated by unexpected signal",
+  );
   assert.equal(connection.status, 1);
   assert.match(connection.stderr, /DATABASE_URL_UNPOOLED/);
-  assert.ok(!`${help.stdout}${invalid.stderr}${connection.stderr}`.includes("synthetic-secret"));
+  for (const result of [help, invalid, connection]) {
+    for (const stream of [result.stdout, result.stderr]) {
+      assert.ok(!stream.includes("synthetic-secret"));
+    }
+  }
 });

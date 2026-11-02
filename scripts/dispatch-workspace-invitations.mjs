@@ -105,6 +105,6 @@ if (process.argv[1] && process.argv[1].endsWith("dispatch-workspace-invitations.
     process.exit(2);
   }
 
-  console.log("PASS: Dispatch worker completed batch run.");
-  process.exit(0);
+  console.error("BLOCKED: Operational invitation delivery is unavailable: authorized sender, current-authority checks and unknown-send reconciliation are not implemented. No batch was dispatched.");
+  process.exit(2);
 }

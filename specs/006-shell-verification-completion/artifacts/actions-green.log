@@ -1,0 +1,13 @@
+✔ application loader projects narrow account and truthful workspace states (58.640858ms)
+✔ client generation counter only rejects old results and grants no access (0.169868ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (13.625611ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (27.334847ms)
+✔ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (28.783715ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 466.969496

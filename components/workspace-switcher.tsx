@@ -38,6 +38,10 @@ export function WorkspaceSwitcher() {
     capabilities,
     switchWorkspace,
     loadNextWorkspacePage,
+    refreshContext,
+    navigate,
+    accountState,
+    teamEpoch,
   } = useApplicationRuntime();
 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -54,24 +58,28 @@ export function WorkspaceSwitcher() {
 
   if (workspaces.state === "unavailable") {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 text-xs text-destructive">
+      <div className="flex items-center gap-2 px-3 py-2 text-xs text-foreground">
         <AlertCircle className="size-4 shrink-0" />
-        <span className="truncate">{tNav("workspacesUnavailable")}</span>
+        <Button size="lg" variant="ghost" onClick={() => void refreshContext()}>
+          {tNav("workspacesUnavailable")}
+        </Button>
       </div>
     );
   }
 
   const activeWorkspace =
-    workspaces.items.find((w) => w.id === selection.selectedId) ||
-    (selection.context
-      ? {
-          id: selection.context.workspace.id,
-          name: selection.context.workspace.name,
-          role: selection.context.membership.role,
-          slug: selection.context.workspace.slug,
-          revision: selection.context.workspace.revision,
-        }
-      : null);
+    selection.state === "ready"
+      ? workspaces.items.find((w) => w.id === selection.selectedId) ||
+        (selection.context
+          ? {
+              id: selection.context.workspace.id,
+              name: selection.context.workspace.name,
+              role: selection.context.membership.role,
+              slug: selection.context.workspace.slug,
+              revision: selection.context.workspace.revision,
+            }
+          : null)
+      : null;
 
   const displayName = activeWorkspace
     ? activeWorkspace.name
@@ -102,10 +110,11 @@ export function WorkspaceSwitcher() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu key={`${accountState}:${teamEpoch}`}>
           <DropdownMenuTrigger
             render={
               <SidebarMenuButton
+                tooltip={tNav("workspaceSwitcher")}
                 size="lg"
                 className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
                 aria-label={tNav("workspaceSwitcher")}
@@ -115,18 +124,27 @@ export function WorkspaceSwitcher() {
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-semibold text-xs">
               {displayName.slice(0, 2).toUpperCase()}
             </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{displayName}</span>
+            <div className="grid flex-1 text-start text-sm leading-tight">
+              <span className="truncate font-semibold">
+                <bdi>{displayName}</bdi>
+              </span>
               {activeWorkspace?.role && (
                 <span className="truncate text-xs text-muted-foreground capitalize">
-                  {activeWorkspace.role}
+                  {t(
+                    activeWorkspace.role === "owner"
+                      ? "roleOwner"
+                      : activeWorkspace.role === "admin"
+                        ? "roleAdmin"
+                        : "roleMember",
+                  )}
                 </span>
               )}
             </div>
-            <ChevronsUpDown className="ml-auto size-4" />
+            <ChevronsUpDown className="ms-auto size-4" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
+            data-app-private-overlay=""
             className="w-64 rounded-lg"
             align="start"
             side="bottom"
@@ -158,7 +176,7 @@ export function WorkspaceSwitcher() {
                           {workspace.name.slice(0, 2).toUpperCase()}
                         </div>
                         <span className="truncate font-medium">
-                          {workspace.name}
+                          <bdi>{workspace.name}</bdi>
                         </span>
                       </div>
 
@@ -167,7 +185,13 @@ export function WorkspaceSwitcher() {
                           variant="outline"
                           className="text-[10px] px-1.5 py-0 capitalize"
                         >
-                          {workspace.role}
+                          {t(
+                            workspace.role === "owner"
+                              ? "roleOwner"
+                              : workspace.role === "admin"
+                                ? "roleAdmin"
+                                : "roleMember",
+                          )}
                         </Badge>
                         {isCurrentSwitching ? (
                           <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
@@ -181,6 +205,11 @@ export function WorkspaceSwitcher() {
               )}
             </DropdownMenuGroup>
 
+            {workspaces.error && (
+              <p role="status" className="p-2 text-sm">
+                {tNav("workspacesUnavailable")}
+              </p>
+            )}
             {workspaces.nextCursor && (
               <>
                 <DropdownMenuSeparator />
@@ -203,7 +232,18 @@ export function WorkspaceSwitcher() {
 
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem render={<Link href="/app/workspace" />}>
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href="/app/workspace"
+                    prefetch={false}
+                    onNavigate={(event) => {
+                      event.preventDefault();
+                      void navigate("/app/workspace");
+                    }}
+                  />
+                }
+              >
                 <Plus className="size-4" />
                 <span>{t("createTitle")}</span>
               </DropdownMenuItem>

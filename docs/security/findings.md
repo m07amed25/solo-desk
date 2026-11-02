@@ -1,3 +1,5 @@
+> **Current correction — 2 November 2026:** The November tooling-only/reachability/risk-accepted statements below are unsupported and superseded by [Feature006 security review](../../specs/006-shell-verification-completion/artifacts/security-review.md). Current lock SHA-256 is `537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b`; installed Better Auth1.7.14 and pg8.23.1 are present. Approved npm audit returned27affected entries(8low/19moderate), with deepmerge/glob/minimatch roots. Reachability and remediation remain Engineering/Security-owned findings; no authorized exception is recorded. Sandbox DNS failure is separate. Managed/deployed scope and full AP/G1–G6/human/release proof remain open. Earlier dated snapshots are retained as history.
+
 # Security findings and assessment register
 
 Checked 29 October 2026. This is a limited documentation/dependency inspection, **not a full application audit or a clean security report**. Register verified results, uncertainty and evidence gaps separately. No vulnerability is confirmed merely because it appears in the prevention catalogue or historical CVE examples.
