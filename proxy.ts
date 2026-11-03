@@ -4,6 +4,7 @@ import {
   callbackEntry,
   isReturnPath,
   presentation,
+  isLocale,
 } from "@/lib/site";
 
 function privateResponse(response: NextResponse) {
@@ -17,21 +18,18 @@ export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   if (path === "/design-system") return NextResponse.next();
   if (path === "/auth/callback") {
+    const entry = callbackEntry(request.nextUrl.searchParams);
+    const failureUrl = `${authFailure(entry)}#`;
     try {
       const { auth } = await import("@/lib/auth/server");
       return privateResponse(
         await auth.middleware({
-          loginUrl: `${authFailure(callbackEntry(request.nextUrl.searchParams))}#`,
+          loginUrl: failureUrl,
         })(request),
       );
     } catch {
       return privateResponse(
-        NextResponse.redirect(
-          new URL(
-            `${authFailure(callbackEntry(request.nextUrl.searchParams))}#`,
-            request.url,
-          ),
-        ),
+        NextResponse.redirect(new URL(failureUrl, request.url)),
       );
     }
   }
@@ -41,21 +39,64 @@ export default async function proxy(request: NextRequest) {
     url.search = "";
     return privateResponse(NextResponse.rewrite(url, { status: 404 }));
   }
-  const { locale, theme } = presentation(
-    request.cookies.get("solodesk-locale")?.value,
-    request.cookies.get("solodesk-theme")?.value,
-  );
+
+  const browserLocale = request.cookies.get("solodesk-locale")?.value;
+  const browserTheme = request.cookies.get("solodesk-theme")?.value;
+
+  const cookiesToSet: Array<{ name: string; value: string; options: any }> = [];
+  let resolvedLocale: "en" | "ar" = "en";
+
+  // Precedence rule: Browser choice wins; if absent, resolve account preference; otherwise English
+  if (isLocale(browserLocale)) {
+    resolvedLocale = browserLocale;
+  } else {
+    try {
+      const { createAuthServer } = await import("@neondatabase/auth/server");
+      const authServer = createAuthServer({
+        baseUrl:
+          process.env.NEON_AUTH_BASE_URL || "https://auth.solodesk.invalid",
+        cookieSecret: process.env.NEON_AUTH_COOKIE_SECRET || "0".repeat(32),
+        sessionDataTtl: 1,
+        context: async () => ({
+          getCookies: async () => request.headers.get("cookie") || "",
+          getHeader: (name: string) => request.headers.get(name),
+          getOrigin: async () => request.nextUrl.origin,
+          getFramework: () => "nextjs-proxy",
+          setCookie: async (name: string, value: string, options: any) => {
+            cookiesToSet.push({ name, value, options });
+          },
+        }),
+      });
+
+      const sessionResult = await authServer.getSession();
+      const userId = sessionResult?.data?.user?.id;
+      const { resolvePresentationLocale } =
+        await import("@/lib/account-locale");
+      resolvedLocale = await resolvePresentationLocale(null, userId);
+    } catch {
+      resolvedLocale = "en";
+    }
+  }
+
+  const { locale, theme } = presentation(resolvedLocale, browserTheme);
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}/${theme}${path === "/" ? "" : path}`;
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", path);
-  return privateResponse(
+  const response = privateResponse(
     NextResponse.rewrite(url, {
       request: {
         headers: requestHeaders,
       },
     }),
   );
+
+  // Preserve renewal/deletion cookies from request-context auth server
+  for (const c of cookiesToSet) {
+    response.cookies.set(c.name, c.value, c.options);
+  }
+
+  return response;
 }
 
 export const config = {

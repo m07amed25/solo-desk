@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ApplicationShell } from "@/components/application-shell";
 import { LiveProfile } from "@/components/live-profile";
+import { AccountReauthentication } from "@/components/account-reauthentication";
 import { loadProfile } from "@/lib/profile";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -18,7 +19,12 @@ export default async function AccountPage() {
   await connection();
   const navigation = await getTranslations("Navigation");
   let envelope;
+  let realtimeUrl: string;
   try {
+    const url = new URL(process.env.NEON_REALTIME_URL || "");
+    if (!["ws:", "wss:"].includes(url.protocol) || url.username || url.password)
+      throw new Error("Realtime unavailable");
+    realtimeUrl = url.href;
     envelope = await loadProfile();
   } catch {
     const c = await getTranslations("Common");
@@ -51,10 +57,10 @@ export default async function AccountPage() {
         <h1 className="mb-6 text-2xl font-semibold">
           {navigation("personalAccount")}
         </h1>
-        <LiveProfile
-          {...envelope}
-          realtimeUrl={process.env.NEXT_PUBLIC_NEON_REALTIME_URL!}
-        />
+        <LiveProfile {...envelope} realtimeUrl={realtimeUrl} />
+        <div className="mt-8 border-t pt-8">
+          <AccountReauthentication action="revoke_other_sessions" />
+        </div>
       </div>
     </ApplicationShell>
   );

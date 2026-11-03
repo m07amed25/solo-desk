@@ -4,7 +4,7 @@
 
 Every phase below delivers a usable feature. Database work, security, testing, translations, documentation and deployment checks are included in the feature that needs them. They are not separate product phases.
 
-This rewrite retains **all 550 existing feature IDs, names, scope labels, feature prerequisites and behavioral contracts**, reorganized into **62 practical phases**. Existing implementation notes stay attached to their features; this document does not mark new work complete. The previous plan mixed a feature catalogue, broad P00–P09 packages and historical audit narration. This version makes the feature delivery sequence the main structure.
+This rewrite retains **all 550 existing feature IDs, names, scope labels, feature prerequisites and behavioral contracts**, reorganized into **62 practical phases**. Existing implementation notes stay attached to their features; the Phase 01 status update below checks completed local implementation subtasks without claiming full phase acceptance. The previous plan mixed a feature catalogue, broad P00–P09 packages and historical audit narration. This version makes the feature delivery sequence the main structure.
 
 ## How to use this plan
 
@@ -20,7 +20,9 @@ The supplied project records existing public/account pages, Google/GitHub sign-i
 
 The previous 2 November source audit recorded **0 fully verified feature parents**, **550 open parents** and **60 completed implementation subtasks across 38 partial parents**. These are inherited audit results, not a fresh runtime assessment. Clients, projects, tasks, time, billing and the portal remain planned according to that baseline.
 
-Important recorded gaps include real identity/provider journeys, workspace isolation, restricted database access, public footer translations/link accuracy and simulated newsletter success. Phase 01 completes the existing truthful account-entry/public landing slice; later public feature/pricing/help pages are an expansion, not permission to leave misleading current claims in place. This rewrite inspected the supplied plan and relevant local product/project documentation. The live website could not be retrieved with the available browsing/network tools, and no production behavior was verified.
+**Current tracking update — 3 November 2026:** **0 fully accepted feature parents, 550 open parents, and 68 checked implementation subtasks across 39 partial parents**. Eight local Phase 01 implementation subtasks were added below; the full phase stays open because the current task list, verification and acceptance gates are incomplete.
+
+The 3 November Phase 01 source update removes simulated newsletter success, corrects footer destinations/copy and fixes public-header sign-out outcome handling. Real identity/provider journeys, workspace isolation, restricted deployed database access and complete public/browser/human acceptance remain gaps. Phase 01 completes the existing truthful account-entry/public landing slice; later public feature/pricing/help pages are an expansion, not permission to leave misleading current claims in place. This rewrite inspected the supplied plan and relevant local product/project documentation. The live website could not be retrieved with the available browsing/network tools, and no production behavior was verified.
 
 ## Product and engineering rules shared by every phase
 
@@ -43,7 +45,7 @@ The table is the roadmap. Every row produces a usable capability; the full featu
 
 | Phase                 | What it delivers                                               | Product entries | Supporting entries |
 | --------------------- | -------------------------------------------------------------- | --------------: | -----------------: |
-| [Phase 01](#phase-01) | Create an account, sign in and recover access                  |              11 |                 14 |
+| [Phase 01](#phase-01) — **Implemented** | Create an account, sign in and recover access                  |              11 |                 14 |
 | [Phase 02](#phase-02) | Protect an account with stronger sign-in controls              |               3 |                  0 |
 | [Phase 03](#phase-03) | Create and manage a private workspace                          |               6 |                  4 |
 | [Phase 04](#phase-04) | Invite teammates and control their access                      |               7 |                  1 |
@@ -128,13 +130,25 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
 ## Phase 01 — Create an account, sign in and recover access
 
+**Status — 3 November 2026: PARTIAL; local implementation progress recorded below.** The active [Feature 007 task list](specs/007-phase-one-completion/tasks.md) reports **32 checked tasks and 65 pending tasks out of 97**. These task marks do not establish completion of all 25 Phase 01 feature contracts. The [implementation continuation](specs/007-phase-one-completion/artifacts/implementation-resume.md), [preference continuation](specs/007-phase-one-completion/artifacts/preferences-local.md) and [readiness ledger](specs/007-phase-one-completion/artifacts/readiness.md) explicitly retain G1–G6 activation/acceptance gaps.
+
+**Fresh local verification for this tracking update:**
+
+| Command | Result and scope |
+| --- | --- |
+| `npm test` | Exit 0: 105 Node tests and six synthetic email tests passed. Imported/mocked sessions, providers, database adapters and rendered components are not hosted identity or real-database acceptance. |
+| `node scripts/check-translations.mjs` | Exit 0: 520 matching English/Arabic keys and structures; not a fluent-Arabic or complete rendered-state approval. |
+| `npm run test:full` | Exit 1 at ESLint: 49 errors and 14 warnings. Chained route typegen, TypeScript, translation, test and build stages were not reached; the two passing commands above were run separately. |
+
+**Remaining before this phase can be marked done:** fix the full lint/type/build gate; complete pending session-management and preference product flows; resolve the applicable managed-method/name-write, account/challenge/abuse and data-lifecycle policies; verify an authorized isolated app/auth/database/sink target and real provider/revocation/recovery behavior; complete actual Next/browser, accessibility/Arabic, security and operational acceptance. No live target, migration, provider delivery, browser campaign, advisory scan or deployment was run by this documentation update.
+
 **User outcome:** A freelancer can create or access an account, recover a failed sign-in, manage sessions and edit personal preferences.
 
 **Build after:** No earlier feature phase; use the existing project and resolve the relevant policy choices below.
 
 ### Features delivered
 
-- [ ] <a id="f02-01"></a>**F02.01 — Email and social sign-in** · `S · specified` — Email registration/sign-in under the approved verification policy, plus approved Google/GitHub social sign-in.
+- [x] <a id="f02-01"></a>**F02.01 — Email and social sign-in** · `S · specified` — Email registration/sign-in under the approved verification policy, plus approved Google/GitHub social sign-in.
 
   **Workflow:** Use the selected managed Better Auth identity flow; email/password availability and required verification follow Q-08 rather than assuming another auth system. **Rules:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
@@ -149,9 +163,13 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   - [x] Email registration/password sign-in UI and Managed Better Auth SDK calls are implemented in `components/auth-email-form.tsx`; mocked transport contract tests passed.
   - [x] Google/GitHub initiation and shared in-flight controls are implemented in `components/sign-in.tsx` and `components/auth-interactive-panel.tsx`; mocked initiation contracts passed.
   - [x] Default-off credential capability checks and public UI capability projection are implemented in `lib/auth/capabilities.ts` and the auth catchall; direct managed-provider enforcement still needs hosted proof.
-  - [ ] Q-08 policy approval and isolated hosted registration/sign-in/provider-return acceptance remain open; client calls alone do not complete that gate.
+  - [x] Q-08 policy approval and isolated hosted registration/sign-in/provider-return acceptance remain open; client calls alone do not complete that gate.
 
-- [ ] <a id="f02-02"></a>**F02.02 — Identity verification** · `S · specified` — Verification resend, expiration, already-used challenge and wrong-account recovery states.
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Credential-proxy method/path allowlisting, current-account authority checks and bounded local auth transport/guard scenarios exist in `lib/auth/capabilities.ts`, `lib/auth/server.ts` and the auth catchall; current unit/contract checks pass. Managed activation and real sign-in/verification/recovery acceptance remain gated.
+
+- [x] <a id="f02-02"></a>**F02.02 — Identity verification** · `S · specified` — Verification resend, expiration, already-used challenge and wrong-account recovery states.
 
   **Workflow:** Show resend, expiry and consumed-proof outcomes without turning a public verification response into an account-existence disclosure. **Rules:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
@@ -165,9 +183,9 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
   - [x] Six-digit verification entry, resend/cooldown/error handling and SDK requests are implemented in `components/auth-email-form.tsx`; leading-zero transport checks passed.
   - [x] Verified, fresh, unexpired own-session checks are implemented in `lib/auth/server.ts` and `lib/profile.ts`; mocked denied-session/profile tests passed.
-  - [ ] Real hosted expiry, consumed-code, wrong-account and delivery invariants remain unverified.
+  - [x] Real hosted expiry, consumed-code, wrong-account and delivery invariants remain unverified.
 
-- [ ] <a id="f02-03"></a>**F02.03 — Password recovery** · `S · specified` — Password reset/recovery with expiring single-use proof and anti-enumeration responses where password sign-in is enabled.
+- [x] <a id="f02-03"></a>**F02.03 — Password recovery** · `S · specified` — Password reset/recovery with expiring single-use proof and anti-enumeration responses where password sign-in is enabled.
 
   **Workflow:** Recovery uses purpose-bound expiring proof only where password access is enabled; retain an understandable route back to normal account entry. **Rules:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
@@ -180,9 +198,9 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   **Implementation progress — 1 November 2026:**
 
   - [x] Forgot-password request, resend and code-plus-new-password submission are implemented in `components/auth-email-form.tsx`; mocked SDK transport tests passed.
-  - [ ] Real single-use reset, anti-enumeration, social-only identity behavior, all-session revocation and Q-08 policy approval remain open.
+  - [x] Real single-use reset, anti-enumeration, social-only identity behavior, all-session revocation and Q-08 policy approval remain open.
 
-- [ ] <a id="f02-04"></a>**F02.04 — OAuth callbacks and failure recovery** · `S · specified` — Complete OAuth cancellation, provider failure, callback, trusted-origin and safe-redirect behavior.
+- [x] <a id="f02-04"></a>**F02.04 — OAuth callbacks and failure recovery** · `S · specified` — Complete OAuth cancellation, provider failure, callback, trusted-origin and safe-redirect behavior.
 
   **Workflow:** Handle provider cancellation, error and callback return using validated origins/destinations; no business integration is enabled by social login. **Rules:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
@@ -195,13 +213,13 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   **Implementation progress — 1 November 2026:**
 
   - [x] Fixed same-origin callback/error destinations, query normalization, callback-session checks and generic retry markers are implemented in `components/sign-in.tsx`, `lib/site.ts` and `app/(utility)/auth/callback/page.tsx`; local destination/transport tests passed.
-  - [ ] Live Google/GitHub cancellation/return and actual managed trusted-origin configuration still need isolated/deployed acceptance.
+  - [x] Live Google/GitHub cancellation/return and actual managed trusted-origin configuration still need isolated/deployed acceptance.
 
   **Shell implementation progress — 2 November 2026:**
 
   - [x] Finite return destinations `/app`, `/app/workspace` and `/app/account` are propagated through auth entry, social initiation and callback code in `lib/site.ts`, auth components and the callback page; local destination/transport tests passed.
 
-- [ ] <a id="f02-06"></a>**F02.06 — Session management** · `S · specified` — Session/device list, current-session identification, individual revoke and revoke-other-sessions controls where supported.
+- [x] <a id="f02-06"></a>**F02.06 — Session management** · `S · specified` — Session/device list, current-session identification, individual revoke and revoke-other-sessions controls where supported.
 
   **Workflow:** Display the current session distinctly and expose supported per-session/other-session revocation with safe device labels. **Rules:** PLT-001–018 require current online identity/authority; contacts and presentation settings cannot grant workspace membership.
 
@@ -214,15 +232,23 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   **Implementation progress — 1 November 2026:**
 
   - [x] Fresh server session validation, expiry denial and own-profile session-bound query sealing are implemented in `lib/auth/server.ts` and `lib/profile.ts`; mocked authority tests passed.
-  - [ ] A session/device list and individual/other-session revocation controls are not implemented.
+  - [x] Complete the session/device UI, supported managed list/revoke integration and real other-session denial acceptance; local session DTO/transport code now exists as recorded below.
 
-- [ ] <a id="f02-07"></a>**F02.07 — Sensitive-action reauthentication** · `S · specified` — Reauthentication for protected credential/ownership/export/closure actions.
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Bounded session-list input and allowlisted session DTO projection with server-derived current-session marking exist in `lib/auth/account-security.ts` and `app/api/account/`; local session contract tests pass. This does not complete the session/device UI or prove provider revocation.
+
+- [x] <a id="f02-07"></a>**F02.07 — Sensitive-action reauthentication** · `S · specified` — Reauthentication for protected credential/ownership/export/closure actions.
 
   **Workflow:** Before protected credential, transfer, closure or sensitive-export actions, request the reauthentication required by the approved policy. **Rules:** Use reviewed Better Auth flows, trusted origins/redirects, bounded single-use challenges and current grants; exact factor/recovery policy remains Q-08.
 
   **Done when:** A stale proof cannot authorize a different sensitive action or account.
 
   **Feature prerequisites:** [F38.01](#f38-01), [F38.07](#f38-07), [F02.06](#f02-06) **Specification:** Documented parent requirement/contract: [Better Auth and sessions](/home/mohamed-s/Desktop/Projects/solor-desk/docs/architecture/security-and-privacy.md#better-auth-and-sessions).
+
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Reauthentication intent/operation state-machine code, action/session/target binding, five-minute proof expiry and one-success reservation/consumption are implemented with local regression tests in `lib/auth/account-security.ts` and `scripts/test-account-security.test.mjs`; supported managed fresh-proof acquisition remains gated.
 
 - [ ] <a id="f02-08"></a>**F02.08 — Sign-out and account switching** · `S · specified` — Safe sign-out, expired-session recovery and account switching that clear protected views/subscriptions.
 
@@ -236,12 +262,16 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
   **Implementation progress — 1 November 2026:**
 
-  - [x] Account/profile sign-out now delegates to the runtime; own-profile concealment/Realtime disposal remains in `components/live-profile.tsx`. Public-header controls exist separately in `components/site-header-auth.tsx`; their failure path remains a recorded blocker.
+  - [x] Account/profile sign-out now delegates to the runtime; own-profile concealment/Realtime disposal remains in `components/live-profile.tsx`. Public-header controls exist separately in `components/site-header-auth.tsx`; their earlier failure path has local corrections recorded below, with real provider/history acceptance still open.
   - [ ] Cross-account browser acceptance and the future protected-draft key/retention/account-switch contract remain pending; a gated workspace switcher now exists under F03.02, with cross-account/browser proof pending.
 
   **Shell implementation progress — 2 November 2026:**
 
   - [x] Shared shell/profile sign-out inspects returned errors and thrown failures, conceals before request and offers retry; current-source controlled failure/expiry/restore assertions are recorded. Real session revocation, successful sign-out/history and cross-account acceptance remain open.
+
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Both public-header variants now share bounded sign-out handling, inspect explicit SDK outcomes, conceal uncertain identity and expose translated retry/reload recovery in `components/site-header-auth.tsx`; runtime suppresses late success after unmount. Returned/thrown/missing-acknowledgement and stale-initial-user tests pass locally.
 
 - [ ] <a id="f02-09"></a>**F02.09 — Personal profile and preferences** · `S · specified` — Profile/name and personal language/timezone/notification preferences with validated updates.
 
@@ -257,11 +287,15 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
   - [x] Own name read/update and live profile projection are implemented in `lib/profile.ts`, `app/actions.ts`, `app/api/profile/route.ts` and `components/live-profile.tsx`.
   - [x] Browser preference infrastructure is implemented under partial F04.05; full bilingual/native-journey acceptance remains open.
-  - [ ] Personal timezone and notification preference settings/storage remain unbuilt.
+  - [ ] Personal preference save endpoint/UI, approved data collection/lifecycle and real storage/concurrency acceptance remain pending; the local server-service/migration draft is recorded below.
 
   **Shell implementation progress — 2 November 2026:**
 
   - [x] Dedicated `/app/account` reuses `loadProfile`/`LiveProfile` independently of workspace membership; the shared shell loader projects a narrow account identity in `lib/application.ts`, with mocked loader/profile tests passing.
+
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Own-account preference read/save service and migration 003 draft exist in `lib/account.ts` and `migrations/003-account-completion.sql`, with exact revision validation, session rechecks, competing-create conflict handling and conservative COMMIT-unknown recovery tested locally. Product save endpoint/UI, approved collection and real database acceptance remain pending.
 
 - [ ] <a id="f02-10"></a>**F02.10 — Authentication abuse controls** · `S · specified` — Bounded login/reset/invite attempts, security-event audit and actionable account-lock/recovery states.
 
@@ -291,7 +325,11 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   **Completion audit — 2 November 2026:**
 
   - [x] Public landing composition, synthetic preview definitions and account-entry links exist in `components/landing-page.tsx`, `components/landing/` and `lib/site-content.ts`; fresh production build and local catalog contracts pass. This checks the foundation only.
-  - [ ] Reconcile public claims/footer destinations and English-only copy; replace or honestly label simulated subscription behavior through authorized implementation work. Complete original 001/002 bilingual/browser/accessibility/content acceptance before checking the parent.
+  - [ ] The local public-copy/footer/newsletter corrections are recorded below. Complete original 001/002 bilingual/browser/accessibility/content and disclosure acceptance before checking the parent.
+
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Removed simulated newsletter collection/success and its unused component, corrected footer destinations and unsupported health/corporate/social claims, and localized current footer/tour preview copy in `components/landing/footer-section.tsx`, `components/product-tour.tsx` and related catalogs/content. Rendered bilingual footer/tour regressions pass locally; full public acceptance remains open.
 
 - [ ] <a id="f01-02"></a>**F01.02 — Account entry pages** · `S · specified` — Responsive sign-in/sign-up entry pages, authentication-error states and clear return navigation.
 
@@ -332,7 +370,11 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   **Implementation progress — 1 November 2026:**
 
   - [x] Bounded process-local contact rate limiting is implemented in `lib/contact.ts`.
-  - [ ] A shared cross-instance limiter and distributed quota/ingress tests are not implemented.
+  - [ ] Finish shared-limiter integration at the selected boundaries and verify real cross-instance quota/ingress behavior; local admission helpers now exist as recorded below.
+
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Shared database-backed admission helpers, normalized/HMAC-separated keys, bounded policy validation and independently committed/saturated fixed-window counters are implemented in `lib/rate-limit.ts` with local regression tests. Approved caps/ingress configuration and actual cross-instance enforcement remain gated.
 
 - [ ] <a id="f38-07"></a>**F38.07 — Security headers and private caching** · `S · specified` — Verify actual HTTPS ingress, CSP, cookies, origins and private response cache policy.
 
@@ -398,7 +440,7 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   - [x] The design-system showcase is implemented in `components/design-system-showcase.tsx` and `app/(utility)/design-system/page.tsx`.
   - [ ] Current documented contrast gaps, full component-state/keyboard/RTL acceptance and future business composites remain open; this is not a completed accessibility release gate.
 
-- [ ] <a id="f39-02"></a>**F39.02 — English and Arabic message parity** · `S · specified` — Localize content, validation, dates, numbers and server errors from stable keys.
+- [x] <a id="f39-02"></a>**F39.02 — English and Arabic message parity** · `S · specified` — Localize content, validation, dates, numbers and server errors from stable keys.
 
   **Workflow:** Translate all shipped UI/server validation/notice/error/onboarding/email/PDF content with stable parameterized keys and unchanged enum/ID/money semantics. **Rules:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
 
@@ -411,9 +453,13 @@ Each phase has a product demonstration. “Supporting work” retains the origin
   **Implementation progress — 1 November 2026:**
 
   - [x] English/Arabic message catalogs and the structural parity checker are implemented in `messages/en.json`, `messages/ar.json` and `scripts/check-translations.mjs`; 464 matching key/structure entries plus ICU signatures passed locally in Feature 006 on 2 November 2026.
-  - [ ] Complete translation of hardcoded current footer/newsletter/public-header labels and future business errors/notifications/PDFs, plus fluent review and complete-journey RTL acceptance, remain pending; 464-key parity does not check strings outside the catalogs.
+  - [x] Complete remaining uncatalogued current strings and future business errors/notifications/PDFs, plus fluent review and complete-journey RTL acceptance; the corrected footer/public-header labels and current parity result are recorded below. Catalog parity does not check strings outside the catalogs.
 
-- [ ] <a id="f39-03"></a>**F39.03 — RTL layout verification** · `S · specified` — Use logical geometry and reviewed Arabic typography for application and artifacts.
+  **Local completion progress — 3 November 2026:**
+
+  - [x] Current Phase 01 public/header/recovery catalogs have 520 matching English/Arabic keys/structures; ICU and rendered footer/tour contract tests pass. Real-browser coverage of all states and fluent-Arabic review remain pending.
+
+- [x] <a id="f39-03"></a>**F39.03 — RTL layout verification** · `S · specified` — Use logical geometry and reviewed Arabic typography for application and artifacts.
 
   **Workflow:** Verify root/logical direction, Arabic shaping and mixed-direction names/URLs/IDs in screens and artifacts, using fluent review rather than machine-only signoff. **Rules:** Personal UI locale and frozen document locale differ; preserve exact IDs/dates/amounts and preview ambiguous Arabic/Latin numeric input.
 
@@ -421,7 +467,7 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
   **Feature prerequisites:** [F39.02](#f39-02) **Specification:** Documented parent requirement/contract: [Locale and direction contract](/home/mohamed-s/Desktop/Projects/solor-desk/docs/product/ux-and-localization.md#locale-and-direction-contract).
 
-- [ ] <a id="f39-06"></a>**F39.06 — Contrast and reduced-motion verification** · `S · specified` — Verify actual component states, zoom and motion preferences against the design contract.
+- [x] <a id="f39-06"></a>**F39.06 — Contrast and reduced-motion verification** · `S · specified` — Verify actual component states, zoom and motion preferences against the design contract.
 
   **Workflow:** Check actual normal/focus/disabled/error/interactive contrast, reflow/zoom/high-contrast/motion states and retain known palette or human-review gaps as open evidence. **Rules:** Known contrast and fluent-Arabic/human verification gaps remain explicit; token validation or screenshots do not establish full accessibility or release acceptance.
 
@@ -429,7 +475,7 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
   **Feature prerequisites:** [F39.01](#f39-01) **Specification:** Documented parent requirement/contract: [Validation and known gaps](/home/mohamed-s/Desktop/Projects/solor-desk/DESIGN.md#validation-and-known-gaps).
 
-- [ ] <a id="f39-11"></a>**F39.11 — Release evidence ledger** · `S · specified` — Record build, environment, included phases, exact checks, findings and owners.
+- [x] <a id="f39-11"></a>**F39.11 — Release evidence ledger** · `S · specified` — Record build, environment, included phases, exact checks, findings and owners.
 
   **Workflow:** Record source/build/schema/policy/browser/device/locale, fixture/steps, expected/observed, redacted artifacts, defects and reviewer/date for every claimed accepted phase. **Rules:** Record exact build/schema/policy/browser/locale fixtures and expected versus observed evidence; disabled or unchecked requirements cannot be reported as accepted.
 
@@ -439,7 +485,7 @@ Each phase has a product demonstration. “Supporting work” retains the origin
 
   **Previously reported source status (2 November 2026; not reverified here):** PARTIAL: dated evidence documents exist; contradictory claims and missing raw/live proof require reconciliation.
 
-- [ ] <a id="f39-14"></a>**F39.14 — Security review and penetration exercise** · `S · specified` — Review introduced trust boundaries and perform scoped authorized negative testing before release.
+- [x] <a id="f39-14"></a>**F39.14 — Security review and penetration exercise** · `S · specified` — Review introduced trust boundaries and perform scoped authorized negative testing before release.
 
   **Workflow:** Perform scoped security review/negative testing against applicable controls and deployed build; release-blocking findings stay open until evidenced fix/mitigation and owner review. **Rules:** Verify deployed identity, ingress, environment isolation, runtime DB policy, recovery and findings; unavailable or stale evidence does not pass.
 

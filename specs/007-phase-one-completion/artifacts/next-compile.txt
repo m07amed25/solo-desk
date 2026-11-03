@@ -1,0 +1,48 @@
+
+> solo-desk@0.1.0 build
+> next build --webpack --experimental-build-mode compile
+
+▲ Next.js 16.4.3 (webpack)
+- Environments: .env.local
+✓ Running next.config.ts took 156ms
+- Cache Components enabled
+- Partial Prefetching enabled
+- Experiments (use with caution):
+  ✓ agentFeedback
+  ✓ globalNotFound
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 8.3s
+  Collecting page data using 19 workers ...
+  Finalizing page optimization ...
+  Collecting build traces ...
+  Build ran with "compile" mode, to finalize the build run either "generate" or "generate-env" mode as well
+
+Route (app)
+┌ ƒ /_not-found
+├ ƒ /[locale]/[theme]
+├ ƒ /[locale]/[theme]/app
+├ ƒ /[locale]/[theme]/app/account
+├ ƒ /[locale]/[theme]/app/workspace
+├ ƒ /[locale]/[theme]/sign-in
+├ ƒ /[locale]/[theme]/sign-up
+├ ƒ /api/account/reauthentication
+├ ƒ /api/account/session-revocations
+├ ƒ /api/account/session-revocations/[operationId]
+├ ƒ /api/app/context
+├ ƒ /api/auth/[...path]
+├ ƒ /api/contact
+├ ƒ /api/preferences
+├ ƒ /api/profile
+├ ƒ /api/webhooks/neon-auth
+├ ƒ /api/workspaces
+├ ƒ /api/workspaces/receipts
+├ ƒ /auth/callback
+├ ƒ /design-system
+└ ƒ /icon.png
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+

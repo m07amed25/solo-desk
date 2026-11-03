@@ -27,6 +27,8 @@ If an existing branch's Realtime origin settings differ from `neon.ts`, review t
 
 Required server variables: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_JWKS_URL`, `NEON_REALTIME_URL`, `NEON_REALTIME_SECRET`. The CLI also writes `NEON_BRANCH`. Generate the application-owned `NEON_AUTH_COOKIE_SECRET` once with at least 32 random characters; deploy does not provide it. Existing `BETTER_AUTH_SECRET`/`BETTER_AUTH_URL` belong to the earlier self-managed proposal and are not read by this integration. Never paste real values into documentation or commit env files.
 
+The account Server Component reads `NEON_REALTIME_URL` at request time, validates its WebSocket scheme and absence of embedded credentials, then passes only that public endpoint to `LiveProfile`. No `NEXT_PUBLIC_NEON_REALTIME_URL` alias is required. Missing or invalid configuration uses the existing unavailable/retry state before creating a browser client; sealing and database secrets stay server-only.
+
 The SDK currently pins vulnerable transitive versions, so `package.json` overrides Better Auth packages to patched 1.7.7+ and Zod 4.x to 4.6.6+. `.npmrc` uses legacy peer resolution because the SDK's bundled UI declares Auth 0.6 while the SDK is 0.7. Revisit these workarounds when Neon publishes compatible updated dependencies. The bundled Auth UI is not used by the app.
 
 ## Verification evidence

@@ -5,7 +5,11 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
-import { applyMigrations, migrationConnection, readMigrations } from "./migrate.mjs";
+import {
+  applyMigrations,
+  migrationConnection,
+  readMigrations,
+} from "./migrate.mjs";
 
 test("selection is ordered, deduplicated and limited to existing migration files", (t) => {
   const path = mkdtempSync(join(tmpdir(), "solodesk-migrations-"));
@@ -15,24 +19,53 @@ test("selection is ordered, deduplicated and limited to existing migration files
   writeFileSync(join(path, "notes.md"), "Not executable");
   const directory = pathToFileURL(`${path}/`);
   const all = readMigrations([], directory);
-  assert.deepEqual(all.map((entry) => entry.name), ["001-first.sql", "002-next.sql", "010-last.sql"]);
-  assert.ok(all.every((entry) => entry.selected && /^[a-f0-9]{64}$/.test(entry.checksum)));
+  assert.deepEqual(
+    all.map((entry) => entry.name),
+    ["001-first.sql", "002-next.sql", "010-last.sql"],
+  );
+  assert.ok(
+    all.every(
+      (entry) => entry.selected && /^[a-f0-9]{64}$/.test(entry.checksum),
+    ),
+  );
   const selected = readMigrations(["010", "001-first.sql", "001"], directory);
-  assert.deepEqual(selected.filter((entry) => entry.selected).map((entry) => entry.name), ["001-first.sql", "010-last.sql"]);
+  assert.deepEqual(
+    selected.filter((entry) => entry.selected).map((entry) => entry.name),
+    ["001-first.sql", "010-last.sql"],
+  );
   for (const invalid of ["999", "../001-first.sql", "--force"])
-    assert.throws(() => readMigrations([invalid], directory), /Unknown or ambiguous/);
+    assert.throws(
+      () => readMigrations([invalid], directory),
+      /Unknown or ambiguous/,
+    );
   writeFileSync(join(path, "001-conflict.sql"), "SELECT 2;");
   assert.throws(() => readMigrations(["001"], directory), /ambiguous/);
 });
 
 test("migration connections require a direct URL and retain certificate verification", () => {
-  for (const invalid of [undefined, "", "https://example.com", "postgres://user:secret@ep-test-pooler.neon.tech/db", "postgres://user:secret@example.com/db?host=ep-test-pooler.neon.tech"])
+  for (const invalid of [
+    undefined,
+    "",
+    "https://example.com",
+    "postgres://user:secret@ep-test-pooler.neon.tech/db",
+    "postgres://user:secret@example.com/db?host=ep-test-pooler.neon.tech",
+  ])
     assert.throws(() => migrationConnection(invalid), /DATABASE_URL_UNPOOLED/);
-  const config = migrationConnection("postgres://user:synthetic@example.com/db?sslmode=require");
-  assert.equal(new URL(config.connectionString).searchParams.get("sslmode"), "verify-full");
+  const config = migrationConnection(
+    "postgres://user:synthetic@example.com/db?sslmode=require",
+  );
+  assert.equal(
+    new URL(config.connectionString).searchParams.get("sslmode"),
+    "verify-full",
+  );
 });
 
-const migration = { name: "001-test.sql", sql: "CREATE TABLE example (id int)", checksum: "a".repeat(64), selected: true };
+const migration = {
+  name: "001-test.sql",
+  sql: "CREATE TABLE example (id int)",
+  checksum: "a".repeat(64),
+  selected: true,
+};
 function database(rows = [], failOn) {
   const calls = [];
   return {
@@ -51,7 +84,15 @@ test("migration SQL and checksum commit together after acquiring the runner lock
   await applyMigrations(client, [migration], (message) => logs.push(message));
   const calls = client.calls;
   assert.match(calls[1].sql, /pg_advisory_lock/);
-  assert.deepEqual(calls.slice(-4).map((call) => call.sql), ["BEGIN", migration.sql, "INSERT INTO public.solodesk_schema_migrations (name, checksum) VALUES ($1, $2)", "COMMIT"]);
+  assert.deepEqual(
+    calls.slice(-4).map((call) => call.sql),
+    [
+      "BEGIN",
+      migration.sql,
+      "INSERT INTO public.solodesk_schema_migrations (name, checksum) VALUES ($1, $2)",
+      "COMMIT",
+    ],
+  );
   assert.deepEqual(calls.at(-2).params, [migration.name, migration.checksum]);
   assert.equal(logs.at(-1), `Applied ${migration.name}`);
 });
@@ -64,16 +105,26 @@ test("applied files are skipped and changed or missing history stops before new 
   assert.match(logs[0], /^Skipped/);
   for (const entries of [[], [{ ...migration, checksum: "b".repeat(64) }]]) {
     const changed = database([migration]);
-    await assert.rejects(applyMigrations(changed, entries, () => {}), /missing or changed/);
+    await assert.rejects(
+      applyMigrations(changed, entries, () => {}),
+      /missing or changed/,
+    );
     assert.ok(!changed.calls.some((call) => call.sql === "BEGIN"));
   }
 });
 
 test("SQL, receipt and deferred-commit failures roll back without reporting acceptance", async () => {
-  for (const failure of [migration.sql, "INSERT INTO public.solodesk_schema_migrations (name, checksum) VALUES ($1, $2)", "COMMIT"]) {
+  for (const failure of [
+    migration.sql,
+    "INSERT INTO public.solodesk_schema_migrations (name, checksum) VALUES ($1, $2)",
+    "COMMIT",
+  ]) {
     const client = database([], failure);
     const logs = [];
-    await assert.rejects(applyMigrations(client, [migration], (message) => logs.push(message)), /Synthetic database failure/);
+    await assert.rejects(
+      applyMigrations(client, [migration], (message) => logs.push(message)),
+      /Synthetic database failure/,
+    );
     assert.equal(client.calls.at(-1).sql, "ROLLBACK");
     assert.ok(!logs.some((message) => message.startsWith("Applied ")));
   }
@@ -137,4 +188,91 @@ test("CLI help and invalid selections need no database and expose no credentials
       assert.ok(!stream.includes("synthetic-secret"));
     }
   }
+});
+
+test("003-account-completion migration satisfies immutability, least privilege, and transaction rules", () => {
+  const migrationsDir = new URL("../migrations/", import.meta.url);
+  const migrations = readMigrations([], migrationsDir);
+  const m003 = migrations.find((m) => m.name.startsWith("003-"));
+
+  assert.ok(
+    m003,
+    "003-account-completion.sql must exist in migrations directory",
+  );
+  assert.equal(m003.name, "003-account-completion.sql");
+  assert.match(m003.checksum, /^[a-f0-9]{64}$/);
+
+  // Migration SQL rule checks
+  assert.ok(
+    !/\b(BEGIN|COMMIT|ROLLBACK)\b/i.test(m003.sql),
+    "Must not include transaction control commands",
+  );
+  assert.ok(
+    !/CONCURRENTLY/i.test(m003.sql),
+    "Must not use CONCURRENTLY inside runner transaction",
+  );
+  assert.ok(!/\\\w+/.test(m003.sql), "Must not include psql slash commands");
+
+  // Least-privilege and security checks
+  assert.ok(
+    m003.sql.includes(
+      "REVOKE ALL ON solodesk.account_preferences FROM PUBLIC;",
+    ),
+    "Must revoke PUBLIC privileges from account_preferences",
+  );
+  assert.ok(
+    m003.sql.includes(
+      "REVOKE ALL ON solodesk.account_security_events FROM PUBLIC;",
+    ),
+    "Must revoke PUBLIC privileges from account_security_events",
+  );
+  assert.ok(
+    m003.sql.includes("solodesk.account_preferences"),
+    "Must declare account_preferences in solodesk schema",
+  );
+  assert.ok(
+    m003.sql.includes("solodesk.account_security_events"),
+    "Must declare account_security_events in solodesk schema",
+  );
+  assert.ok(
+    m003.sql.includes("idx_rate_limit_buckets_expires"),
+    "Must declare idx_rate_limit_buckets_expires index",
+  );
+});
+
+test("004-account-security migration satisfies immutability, least privilege, and transaction rules", () => {
+  const migrations = readMigrations();
+  const m004 = migrations.find((m) => m.name === "004-account-security.sql");
+  assert.ok(m004, "004-account-security.sql must exist");
+  assert.equal(m004.name, "004-account-security.sql");
+  assert.match(m004.checksum, /^[a-f0-9]{64}$/);
+
+  assert.ok(
+    m004.sql.includes("REVOKE ALL ON solodesk.reauth_intents FROM PUBLIC;"),
+    "Must revoke PUBLIC privileges from reauth_intents",
+  );
+  assert.ok(
+    m004.sql.includes(
+      "REVOKE ALL ON solodesk.revocation_operations FROM PUBLIC;",
+    ),
+    "Must revoke PUBLIC privileges from revocation_operations",
+  );
+  assert.ok(
+    m004.sql.includes("solodesk.reauth_intents"),
+    "Must declare reauth_intents in solodesk schema",
+  );
+  assert.ok(
+    m004.sql.includes("solodesk.revocation_operations"),
+    "Must declare revocation_operations in solodesk schema",
+  );
+  assert.ok(
+    m004.sql.includes(
+      "PRIMARY KEY (user_id, original_session_id, operation_id)",
+    ),
+    "Must enforce composite primary key on revocation_operations",
+  );
+  assert.ok(
+    m004.sql.includes("expires_at = verified_at + INTERVAL '5 minutes'"),
+    "Must enforce exactly 5-minute proof window constraint",
+  );
 });

@@ -1,0 +1,32 @@
+
+> solo-desk@0.1.0 build
+> next build --webpack --experimental-build-mode generate
+
+▲ Next.js 16.4.3 (webpack)
+- Environments: .env.local
+✓ Running next.config.ts took 120ms
+- Cache Components enabled
+- Partial Prefetching enabled
+- Experiments (use with caution):
+  ✓ agentFeedback
+  ✓ globalNotFound
+
+  Creating an optimized production build ...
+  Collecting page data using 19 workers ...
+  Inlining static env ...
+  Generating static pages using 19 workers (0/56) ...
+  Generating static pages using 19 workers (14/56) 
+  Generating static pages using 19 workers (28/56) 
+  Generating static pages using 19 workers (42/56) 
+✓ Generating static pages using 19 workers (56/56) in 1141ms
+  Finalizing page optimization ...
+
+> Build error occurred
+Error: ENOENT: no such file or directory, rename '/home/mohamed-s/Desktop/Projects/solor-desk/.next/server/proxy.js' -> '/home/mohamed-s/Desktop/Projects/solor-desk/.next/server/middleware.js'
+    at ignore-listed frames {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'rename',
+  path: '/home/mohamed-s/Desktop/Projects/solor-desk/.next/server/proxy.js',
+  dest: '/home/mohamed-s/Desktop/Projects/solor-desk/.next/server/middleware.js'
+}

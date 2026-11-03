@@ -16,7 +16,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 
-function loadModule(path, adapters) {
+function loadModule(path, adapters, globals = {}) {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
   const output = ts.transpileModule(source, {
     fileName: path,
@@ -31,6 +31,7 @@ function loadModule(path, adapters) {
     exports,
     require(name) {
       if (name === "server-only") return {};
+      if (name in adapters) return adapters[name];
       if (name === "react") {
         return {
           ...React,
@@ -56,9 +57,242 @@ function loadModule(path, adapters) {
         SOLODESK_WORKSPACES_ENABLED: "true",
       },
     },
+    ...globals,
   });
   return exports;
 }
+
+test("runtime refresh stays quiet; history and sign-out still conceal private content", async () => {
+  const hooks = [];
+  const effects = [];
+  const passiveEffects = [];
+  const listeners = new Map();
+  const intervals = [];
+  const microtasks = [];
+  let contextRequests = 0;
+  let index = 0;
+  const navigation = [];
+  let discardCount = 0;
+  let signOutResponse = async () => ({});
+  let signOutOptions;
+  const root = { style: {}, inert: false };
+  const overlay = { style: {} };
+  let finishContext;
+  const initialContext = {
+    account: {
+      id: userId,
+      sessionExpiresAt: new Date(Date.now() + 60000).toISOString(),
+    },
+    workspaces: { items: [] },
+    selection: { state: "disabled" },
+  };
+  const runtimeModule = loadModule(
+    "../components/application-runtime.tsx",
+    {
+      react: {
+        ...React,
+        useState(initial) {
+          const i = index++;
+          if (!(i in hooks)) hooks[i] = initial;
+          return [
+            hooks[i],
+            (value) => {
+              hooks[i] = typeof value === "function" ? value(hooks[i]) : value;
+            },
+          ];
+        },
+        useRef(initial) {
+          const i = index++;
+          if (!(i in hooks)) hooks[i] = { current: initial };
+          return hooks[i];
+        },
+        useCallback: (fn) => fn,
+        useLayoutEffect: (fn) => effects.push(fn),
+        useEffect: (fn) => passiveEffects.push(fn),
+      },
+      "react/jsx-runtime": jsxRuntime,
+      "next/navigation": {
+        useRouter: () => ({}),
+        usePathname: () => "/app/account",
+      },
+      "next-intl": { useTranslations: () => (key) => key },
+      "@/lib/auth/client": {
+        authClient: {
+          signOut: (options) => {
+            signOutOptions = options;
+            return signOutResponse();
+          },
+        },
+      },
+      "@/app/workspace-actions": {},
+      "@/lib/site": { isAppDestination: (path) => path === "/app/account" },
+      "@/components/ui/alert": { Alert: "div", AlertDescription: "p" },
+      "@/components/ui/button": { Button: "button" },
+      "@/components/workspace-invitation": {
+        useInvitationEntry: () => ({ clear() {} }),
+      },
+    },
+    {
+      window: {
+        addEventListener: (name, fn) => listeners.set(name, fn),
+        removeEventListener() {},
+        location: {
+          pathname: "/app/account",
+          replace: (path) => navigation.push(path),
+        },
+      },
+      document: {
+        visibilityState: "visible",
+        querySelectorAll: () => [overlay],
+        addEventListener() {},
+        removeEventListener() {},
+      },
+      AbortController,
+      AbortSignal,
+      fetch: () => {
+        contextRequests++;
+        return new Promise((resolve) => {
+          finishContext = resolve;
+        });
+      },
+      setTimeout: () => 1,
+      setInterval: (fn) => {
+        intervals.push(fn);
+        return 1;
+      },
+      clearInterval() {},
+      queueMicrotask: (fn) => microtasks.push(fn),
+      clearTimeout() {},
+    },
+  );
+  const render = () => {
+    index = 0;
+    return runtimeModule.ApplicationRuntime({ initialContext, children: null });
+  };
+  const tree = render();
+  tree.props.children[1].props.ref.current = root;
+  let cleanup = effects.map((effect) => effect()).filter(Boolean);
+  const initialEffects = effects.slice();
+  microtasks.splice(0).forEach((fn) => fn());
+  passiveEffects.forEach((effect) => effect());
+  for (const dispose of cleanup) dispose();
+  cleanup = initialEffects.map((effect) => effect()).filter(Boolean);
+  microtasks.splice(0).forEach((fn) => fn());
+  assert.equal(
+    contextRequests,
+    0,
+    "Strict Mode must reuse the request-validated initial context without another blocking fetch",
+  );
+  assert.equal(render().props.value.accountState, "ready");
+  assert.equal(root.style.display, "flex");
+  assert.equal(
+    listeners.has("blur"),
+    false,
+    "Losing window focus must not blank the app",
+  );
+  listeners.get("pageshow")({ persisted: false });
+  assert.equal(
+    contextRequests,
+    0,
+    "Ordinary initial pageshow must not repeat server validation",
+  );
+  for (const refresh of [listeners.get("focus"), intervals[0]]) {
+    refresh();
+    assert.equal(
+      root.style.display,
+      "flex",
+      "Routine refresh must leave the active app visible",
+    );
+    assert.equal(root.inert, false);
+    assert.equal(render().props.value.accountState, "ready");
+    finishContext(Response.json(initialContext));
+    await new Promise(setImmediate);
+  }
+  listeners.get("focus")();
+  finishContext(new Response(null, { status: 503 }));
+  await new Promise(setImmediate);
+  assert.equal(
+    root.style.display,
+    "none",
+    "A failed background check must conceal private content",
+  );
+  assert.equal(render().props.value.accountState, "unavailable");
+  listeners.get("focus")();
+  assert.equal(
+    root.style.display,
+    "none",
+    "A failed check must stay concealed until fresh validation succeeds",
+  );
+  finishContext(Response.json(initialContext));
+  await new Promise(setImmediate);
+  listeners.get("pagehide")();
+  assert.equal(
+    root.style.display,
+    "none",
+    "History snapshots must conceal private content",
+  );
+  const checking = render();
+  assert.equal(checking.props.value.accountState, "checking");
+  assert.equal(
+    checking.props.children[0].props.className,
+    "sr-only",
+    "Checking must have no visible loading screen",
+  );
+  const beforeRestore = contextRequests;
+  listeners.get("pageshow")({ persisted: true });
+  assert.equal(contextRequests, beforeRestore + 1);
+  assert.equal(root.style.display, "none");
+  finishContext(Response.json(initialContext));
+  await new Promise(setImmediate);
+  tree.props.value.registerDirtyForm("draft", {
+    isDirty: () => true,
+    discard: () => {
+      discardCount++;
+    },
+  });
+  await tree.props.value.signOut();
+  assert.ok(
+    signOutOptions?.fetchOptions?.timeout > 0 &&
+      signOutOptions.fetchOptions.timeout <= 15000,
+  );
+  assert.equal(root.style.display, "none");
+  assert.equal(root.inert, true);
+  assert.equal(overlay.style.display, "none");
+  assert.equal(discardCount, 1);
+  assert.deepEqual(navigation, []);
+  const after = render().props.value;
+  assert.equal(after.accountState, "unavailable");
+  assert.equal(after.errorMessage, "signOutFailed");
+  let finish;
+  signOutResponse = () =>
+    new Promise((resolve) => {
+      finish = resolve;
+    });
+  const late = after.signOut();
+  for (const dispose of cleanup) dispose();
+  finish({ data: { success: true }, error: null });
+  await late;
+  assert.deepEqual(
+    navigation,
+    [],
+    "An unmounted account owner must ignore a late sign-out response",
+  );
+  const beforeRemount = contextRequests;
+  hooks.length = 0;
+  effects.length = 0;
+  passiveEffects.length = 0;
+  const freshTree = render();
+  freshTree.props.children[1].props.ref.current = root;
+  const disposeFresh = effects.map((effect) => effect()).filter(Boolean);
+  microtasks.splice(0).forEach((fn) => fn());
+  assert.equal(
+    contextRequests,
+    beforeRemount,
+    "A new server-validated runtime must not inherit another runtime's history state",
+  );
+  assert.equal(render().props.value.accountState, "ready");
+  for (const dispose of disposeFresh) dispose();
+});
 
 const userId = "00000000-0000-0000-0000-000000000001";
 const sessionId = "00000000-0000-0000-0000-000000000002";
@@ -269,8 +503,9 @@ test("current trusted session, bounded choices and safe failures at the imported
           throw new Error("invalid UUID");
         return value;
       },
-      listWorkspaces: async (_session, options) => {
+      listWorkspaces: async (optionsOrSession, maybeOptions) => {
         listCalls++;
+        const options = maybeOptions || optionsOrSession || {};
         assert.equal(options.limit, 20, "One page, default 20/max 50.");
         if (listFailure) throw new Error("private database detail");
         return {

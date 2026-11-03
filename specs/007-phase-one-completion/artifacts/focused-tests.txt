@@ -1,0 +1,61 @@
+a [Error]: ENVIRONMENT_FALLBACK
+    at file:///home/mohamed-s/Desktop/Projects/solor-desk/node_modules/use-intl/dist/esm/production/react.js:1:1063
+    at v (file:///home/mohamed-s/Desktop/Projects/solor-desk/node_modules/use-intl/dist/esm/production/react.js:1:1241)
+    at file:///home/mohamed-s/Desktop/Projects/solor-desk/node_modules/next-intl/dist/esm/production/react-client/index.js:1:104
+    at ProductTour (evalmachine.<anonymous>:26:47)
+    at Object.react_stack_bottom_frame (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:10371:18)
+    at renderWithHooks (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5361:19)
+    at renderElement (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5796:23)
+    at retryNode (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6772:31)
+    at renderNodeDestructive (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6717:11)
+    at renderElement (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6390:15) {
+  code: 'ENVIRONMENT_FALLBACK'
+}
+✔ runtime sign-out conceals private content and treats missing acknowledgement as unknown (72.508053ms)
+✔ application loader projects narrow account and truthful workspace states (14.292346ms)
+✔ client generation counter only rejects old results and grants no access (0.123522ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (10.860218ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (7.47684ms)
+✔ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (14.521179ms)
+✔ actual preference redirects explicitly clear fragments and retain origin/body bounds (10.571331ms)
+✔ actual callback render clears fragments on success, denial and bounded-query rejection (6.736652ms)
+▶ HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication state
+  ✔ A definitive anonymous session overrides stale server identity (4.998271ms)
+  ✔ Pending session: shows skeleton placeholder while loading auth state (1.05305ms)
+  ✔ Unauthenticated: shows Sign in and Sign up buttons, hides avatar and workspace (0.533376ms)
+  ✔ Authenticated via Email (no avatar): shows Workspace button to /app, hides Sign buttons and avatar (3.178816ms)
+  ✔ Authenticated via Social login (has avatar image): shows avatar and Workspace button, hides Sign buttons (2.545432ms)
+✔ HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication state (64.451522ms)
+✔ HeaderDesktopAuth: bounds a lost sign-out reply with the SDK request timeout (10.405168ms)
+✔ HeaderDesktopAuth: returned error conceals identity, permits retry and never navigates (11.668364ms)
+✔ HeaderDesktopAuth: thrown failure conceals identity, permits retry and never navigates (8.987923ms)
+✔ HeaderDesktopAuth: missing acknowledgement conceals identity, permits retry and never navigates (8.165345ms)
+✔ HeaderDesktopAuth: concurrent clicks dispatch once and navigate on confirmed success (7.982127ms)
+✔ HeaderMobileAuth: bounds a lost sign-out reply with the SDK request timeout (13.231566ms)
+✔ HeaderMobileAuth: returned error conceals identity, permits retry and never navigates (6.612483ms)
+✔ HeaderMobileAuth: thrown failure conceals identity, permits retry and never navigates (6.029993ms)
+✔ HeaderMobileAuth: missing acknowledgement conceals identity, permits retry and never navigates (5.842954ms)
+✔ HeaderMobileAuth: concurrent clicks dispatch once and navigate on confirmed success (6.871049ms)
+✔ fresh session helper rejects unverified, expired, revoked, malformed and unavailable authority (6.780701ms)
+✔ profile service denies unverified, mismatched, expired or revoked users and seals only current verified own rows (4.28353ms)
+✔ saveProfile action preserves parameter contracts, error codes, and own-user authorization (2.409634ms)
+✔ AP-01: generic shell identity reads require neither workspace membership nor Realtime envelope (3.909878ms)
+✔ rendered bilingual footer has truthful labels, verified destinations and no subscription or health claims (10.706192ms)
+✔ rendered tour localizes all preview panels and labels synthetic totals (42.395949ms)
+✔ finite presentation defaults and destination denials (0.231705ms)
+✔ preferences accept precisely three bounded, unique fields (0.1656ms)
+✔ auth errors discard arbitrary/duplicate fields and retain bounded entry (0.316279ms)
+✔ English/Arabic catalogs match keys and ICU arguments; all messages format (140.482631ms)
+✔ shell recovery, modal and discard messages exist and format in both catalogs (1.205427ms)
+(node:38) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 773.011669

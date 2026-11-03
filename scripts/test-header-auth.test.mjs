@@ -40,6 +40,13 @@ function loadModule(path, mockedDeps = {}) {
           }),
         };
       }
+      if (name === "next-intl")
+        return {
+          useTranslations: () => (key) =>
+            key === "signOut" ? "Sign out" : key,
+        };
+      if (name === "@/components/ui/alert")
+        return { Alert: "div", AlertDescription: "p" };
       throw new Error(`Unexpected import: ${name}`);
     },
   });
@@ -160,13 +167,49 @@ test("HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication
         signOut: async () => ({}),
       },
     },
-    "@/components/ui/button": buttonModule,
+    "@/components/ui/button": { ...buttonModule, Button: "button" },
     "@/components/ui/avatar": avatarModule,
     "@/components/ui/dropdown-menu": dropdownMenuModule,
     "@/components/ui/skeleton": skeletonModule,
   });
 
-  const { HeaderDesktopAuth, HeaderMobileAuth } = authNav;
+  const withOwner = (Component) =>
+    function OwnedHeader(props) {
+      return authNav.HeaderAuthProvider
+        ? React.createElement(
+            authNav.HeaderAuthProvider,
+            null,
+            React.createElement(Component, props),
+          )
+        : React.createElement(Component, props);
+    };
+  const HeaderDesktopAuth = withOwner(authNav.HeaderDesktopAuth);
+  const HeaderMobileAuth = withOwner(authNav.HeaderMobileAuth);
+
+  await t.test(
+    "A definitive anonymous session overrides stale server identity",
+    () => {
+      sessionState = { data: null, isPending: false };
+      for (const Component of [HeaderDesktopAuth, HeaderMobileAuth]) {
+        const html = ReactDOMServer.renderToString(
+          React.createElement(Component, {
+            signInLabel: "Sign in",
+            signUpLabel: "Sign up",
+            workspaceLabel: "Workspace",
+            initialUser: {
+              name: "Previous account",
+              email: "previous@example.com",
+            },
+          }),
+        );
+        assert.ok(
+          !html.includes("Previous account") &&
+            !html.includes("previous@example.com"),
+        );
+        assert.ok(html.includes("Sign in"));
+      }
+    },
+  );
 
   await t.test(
     "Pending session: shows skeleton placeholder while loading auth state",
@@ -412,3 +455,159 @@ test("HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication
     },
   );
 });
+
+function interactionHeader(signOutResult) {
+  const state = [];
+  let index = 0;
+  let context;
+  const navigation = [];
+  const hooks = {
+    ...React,
+    useState(initial) {
+      const i = index++;
+      if (!(i in state)) state[i] = initial;
+      return [
+        state[i],
+        (value) => {
+          state[i] = value;
+        },
+      ];
+    },
+    useRef(initial) {
+      const i = index++;
+      if (!(i in state)) state[i] = { current: initial };
+      return state[i];
+    },
+    useEffect() {},
+    useContext: () => context,
+  };
+  const headerModule = loadModule("../components/site-header-auth.tsx", {
+    react: hooks,
+    "next/navigation": {
+      useRouter: () => ({ push: (url) => navigation.push(url), refresh() {} }),
+    },
+    "@/lib/auth/client": {
+      authClient: {
+        useSession: () => ({
+          data: { user: { name: "Private account" } },
+          isPending: false,
+        }),
+        signOut: signOutResult,
+      },
+    },
+    "@/components/ui/button": {
+      Button: "button",
+      buttonVariants: () => "button",
+    },
+    "@/components/ui/avatar": {
+      Avatar: "div",
+      AvatarImage: "img",
+      AvatarFallback: "span",
+    },
+    "@/components/ui/skeleton": { Skeleton: "div" },
+    "@/components/ui/dropdown-menu": Object.fromEntries(
+      [
+        "DropdownMenu",
+        "DropdownMenuTrigger",
+        "DropdownMenuContent",
+        "DropdownMenuGroup",
+        "DropdownMenuItem",
+        "DropdownMenuSeparator",
+      ].map((key) => [key, key]),
+    ),
+  });
+  function render(variant) {
+    index = 0;
+    if (headerModule.HeaderAuthProvider)
+      context = headerModule.HeaderAuthProvider({ children: null }).props.value;
+    return headerModule[variant]({
+      signInLabel: "Sign in",
+      signUpLabel: "Sign up",
+      workspaceLabel: "Workspace",
+      signOutLabel: "Sign out",
+    });
+  }
+  function elements(node) {
+    if (!React.isValidElement(node)) return [];
+    if (typeof node.type === "function") return elements(node.type(node.props));
+    return [
+      node,
+      ...React.Children.toArray(node.props.children).flatMap(elements),
+    ];
+  }
+  return { render, elements, navigation };
+}
+
+for (const variant of ["HeaderDesktopAuth", "HeaderMobileAuth"]) {
+  test(`${variant}: bounds a lost sign-out reply with the SDK request timeout`, async () => {
+    let options;
+    const h = interactionHeader(async (input) => {
+      options = input;
+      return { error: { message: "Unconfirmed" } };
+    });
+    await h
+      .elements(h.render(variant))
+      .find((el) => el.props.onClick)
+      .props.onClick();
+    assert.ok(
+      options?.fetchOptions?.timeout > 0 &&
+        options.fetchOptions.timeout <= 15000,
+    );
+    assert.deepEqual(h.navigation, []);
+  });
+  for (const [outcome, response] of [
+    ["returned error", async () => ({ error: { message: "Provider detail" } })],
+    [
+      "thrown failure",
+      async () => {
+        throw new Error("Provider detail");
+      },
+    ],
+    ["missing acknowledgement", async () => undefined],
+  ]) {
+    test(`${variant}: ${outcome} conceals identity, permits retry and never navigates`, async () => {
+      const h = interactionHeader(response);
+      const signOut = h
+        .elements(h.render(variant))
+        .find((el) => el.props.onClick);
+      await signOut.props.onClick();
+      assert.deepEqual(h.navigation, []);
+      const after = h.elements(h.render(variant));
+      assert.ok(!after.some((el) => el.props.children === "Private account"));
+      assert.ok(
+        after.some((el) => el.props.onClick),
+        "Uncertain sign-out must offer retry",
+      );
+      const other = h.elements(
+        h.render(
+          variant === "HeaderDesktopAuth"
+            ? "HeaderMobileAuth"
+            : "HeaderDesktopAuth",
+        ),
+      );
+      assert.ok(
+        !other.some((el) => el.props.children === "Private account"),
+        "Resizing must not restore uncertain identity",
+      );
+    });
+  }
+  test(`${variant}: concurrent clicks dispatch once and navigate on confirmed success`, async () => {
+    let finish;
+    let calls = 0;
+    const h = interactionHeader(() => {
+      calls++;
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+    const click = h.elements(h.render(variant)).find((el) => el.props.onClick)
+      .props.onClick;
+    const first = click();
+    const second = click();
+    assert.equal(calls, 1);
+    assert.deepEqual(h.navigation, []);
+    finish({ data: { success: true }, error: null });
+    await Promise.all([first, second]);
+    assert.deepEqual(h.navigation, ["/"]);
+  });
+}

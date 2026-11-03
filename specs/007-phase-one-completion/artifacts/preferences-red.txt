@@ -1,0 +1,73 @@
+✔ account authority guard requires fresh, verified, unbanned, unexpired identity (67.492505ms)
+✔ account preferences require no workspace membership and return explicit defaults on missing row without insert (16.67533ms)
+✔ input validation enforces strict allowlisting, recognized IANA zones, and bounds (19.67031ms)
+✔ compare-and-set prevents stale updates and isolates foreign targets (12.004527ms)
+✖ preference revisions are canonical PostgreSQL bigint values and fields are exact (10.376754ms)
+✖ preference services recheck original identity and current database authority before exposing or changing data (10.871896ms)
+✖ losing first save returns only accepted own preferences without an event or duplicate effect (8.885371ms)
+✔ security events enforce redaction, closed types, and omit sensitive fields (9.962186ms)
+✔ request body parsing enforces origin, 4 KiB limits, Content-Type, and Cache-Control: private, no-store (11.87083ms)
+✔ account locale resolver enforces browser -> account -> English precedence without mutating DB (6.911674ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 7
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 338.020722
+
+✖ failing tests:
+
+test at scripts/test-account.test.mjs:350:1
+✖ preference revisions are canonical PostgreSQL bigint values and fields are exact (10.376754ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account.test.mjs:357:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /VALIDATION/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at scripts/test-account.test.mjs:370:1
+✖ preference services recheck original identity and current database authority before exposing or changing data (10.871896ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account.test.mjs:389:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [Function (anonymous)],
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at scripts/test-account.test.mjs:406:1
+✖ losing first save returns only accepted own preferences without an event or duplicate effect (8.885371ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 409
+  
+      at Object.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account.test.mjs:431:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account.test.mjs:430:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

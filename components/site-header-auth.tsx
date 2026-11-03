@@ -1,8 +1,11 @@
 "use client";
 
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth/client";
-import { buttonVariants } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -43,28 +46,115 @@ function getInitials(name?: string | null, email?: string | null): string {
   return "U";
 }
 
+type HeaderAuthState = {
+  user: AuthUser | null;
+  pending: boolean;
+  unavailable: boolean;
+  signOut: () => Promise<void>;
+};
+const HeaderAuthContext = createContext<HeaderAuthState | null>(null);
+
+export function HeaderAuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const { data: session, isPending, error } = authClient.useSession();
+  const [state, setState] = useState<"idle" | "pending" | "unknown">("idle");
+  const busy = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  async function signOut() {
+    if (busy.current) return;
+    busy.current = true;
+    setState("pending");
+    try {
+      const result = await authClient.signOut({
+        fetchOptions: { timeout: 15000 },
+      });
+      if (result?.error || result?.data?.success !== true)
+        throw new Error("Unconfirmed");
+      if (!mounted.current) return;
+      router.push("/");
+      router.refresh();
+    } catch {
+      if (mounted.current) setState("unknown");
+    } finally {
+      busy.current = false;
+    }
+  }
+  return (
+    <HeaderAuthContext.Provider
+      value={{
+        user:
+          !isPending && !error && state === "idle"
+            ? (session?.user ?? null)
+            : null,
+        pending: Boolean(isPending) || state === "pending",
+        unavailable: Boolean(error) || state === "unknown",
+        signOut,
+      }}
+    >
+      {children}
+    </HeaderAuthContext.Provider>
+  );
+}
+
+function HeaderAuthStatus() {
+  const t = useTranslations("Navigation");
+  const auth = useContext(HeaderAuthContext)!;
+  if (auth.unavailable)
+    return (
+      <Alert className="max-w-sm text-start">
+        <AlertDescription>{t("signOutUncertain")}</AlertDescription>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button size="lg" onClick={() => void auth.signOut()}>
+            {t("retrySignOut")}
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => window.location.reload()}
+          >
+            {t("checkAccount")}
+          </Button>
+        </div>
+      </Alert>
+    );
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label={t("loadingAuth")}
+      className="flex items-center gap-3"
+    >
+      <Skeleton className="h-9 w-28 rounded-md" />
+      <Skeleton className="size-8 rounded-full" />
+    </div>
+  );
+}
+
 export function HeaderDesktopAuth({
   signInLabel,
   signUpLabel,
   workspaceLabel,
-  signOutLabel = "Sign out",
-  initialUser = null,
+  signOutLabel,
 }: HeaderAuthProps) {
-  const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
-  const user = session?.user ?? initialUser;
+  const t = useTranslations("Navigation");
+  const { user, pending, unavailable, signOut } =
+    useContext(HeaderAuthContext)!;
   const isAuthenticated = Boolean(user);
 
-  if (isPending && !user) {
+  if (pending || unavailable) {
     return (
-      <div
-        role="status"
-        aria-busy="true"
-        aria-label="Loading authentication state"
-        className="hidden items-center gap-3 lg:flex"
-      >
-        <Skeleton className="h-9 w-28 rounded-md" />
-        <Skeleton className="size-8 rounded-full" />
+      <div className="hidden lg:flex">
+        <HeaderAuthStatus />
       </div>
     );
   }
@@ -77,14 +167,14 @@ export function HeaderDesktopAuth({
         </a>
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label={user.name || "User menu"}
+            aria-label={t("userMenu")}
             className="cursor-pointer rounded-full outline-hidden ring-offset-background transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Avatar>
               {user.image && (
                 <AvatarImage
                   src={user.image}
-                  alt={user.name || "User avatar"}
+                  alt={t("userAvatar")}
                   referrerPolicy="no-referrer"
                 />
               )}
@@ -99,7 +189,7 @@ export function HeaderDesktopAuth({
                 {user.image && (
                   <AvatarImage
                     src={user.image}
-                    alt={user.name || "User avatar"}
+                    alt={t("userAvatar")}
                     referrerPolicy="no-referrer"
                   />
                 )}
@@ -114,9 +204,9 @@ export function HeaderDesktopAuth({
                   </span>
                 )}
                 {user.email && (
-                  <span className="truncate text-xs text-muted-foreground">
+                  <bdi className="truncate text-xs text-muted-foreground">
                     {user.email}
-                  </span>
+                  </bdi>
                 )}
               </div>
             </div>
@@ -134,17 +224,10 @@ export function HeaderDesktopAuth({
               <DropdownMenuItem
                 variant="destructive"
                 className="cursor-pointer"
-                onClick={async () => {
-                  try {
-                    await authClient.signOut();
-                  } finally {
-                    router.push("/");
-                    router.refresh();
-                  }
-                }}
+                onClick={signOut}
               >
                 <LogOut data-icon="inline-start" />
-                <span>{signOutLabel}</span>
+                <span>{signOutLabel ?? t("signOut")}</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
@@ -172,27 +255,17 @@ export function HeaderMobileAuth({
   signInLabel,
   signUpLabel,
   workspaceLabel,
-  signOutLabel = "Sign out",
-  initialUser = null,
+  signOutLabel,
 }: HeaderAuthProps) {
-  const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
-  const user = session?.user ?? initialUser;
+  const t = useTranslations("Navigation");
+  const { user, pending, unavailable, signOut } =
+    useContext(HeaderAuthContext)!;
   const isAuthenticated = Boolean(user);
 
-  if (isPending && !user) {
+  if (pending || unavailable) {
     return (
-      <div
-        role="status"
-        aria-busy="true"
-        aria-label="Loading authentication state"
-        className="my-2 border-t border-border pt-2 flex flex-col gap-2"
-      >
-        <div className="flex items-center gap-2.5 h-11 px-3 rounded-lg border border-border/50">
-          <Skeleton className="size-6 rounded-full" />
-          <Skeleton className="h-4 w-24 rounded" />
-        </div>
-        <Skeleton className="h-11 w-full rounded-md" />
+      <div className="my-2 flex flex-col gap-2">
+        <HeaderAuthStatus />
       </div>
     );
   }
@@ -208,7 +281,7 @@ export function HeaderMobileAuth({
             {user.image && (
               <AvatarImage
                 src={user.image}
-                alt={user.name || "User avatar"}
+                alt={t("userAvatar")}
                 referrerPolicy="no-referrer"
               />
             )}
@@ -220,14 +293,7 @@ export function HeaderMobileAuth({
         </a>
         <button
           type="button"
-          onClick={async () => {
-            try {
-              await authClient.signOut();
-            } finally {
-              router.push("/");
-              router.refresh();
-            }
-          }}
+          onClick={signOut}
           className={buttonVariants({
             variant: "ghost",
             size: "lg",
@@ -235,7 +301,7 @@ export function HeaderMobileAuth({
           })}
         >
           <LogOut data-icon="inline-start" />
-          {signOutLabel}
+          {signOutLabel ?? t("signOut")}
         </button>
       </div>
     );

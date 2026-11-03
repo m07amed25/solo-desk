@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-03",
+  "scope": "planning source snapshot, not build/deployed/hosted acceptance",
+  "actual_git_branch": "main",
+  "git_head": "d2129ec1d6dd5ec8c8ed7552ff471063185d6995",
+  "resolved_feature": "007-phase-one-completion",
+  "node": "v24.21.0",
+  "versions": {
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "typescript": "5.9.3",
+    "next-intl": "4.14.9",
+    "@neondatabase/auth": "0.7.0-beta",
+    "better-auth": "1.7.14",
+    "@base-ui/react": "1.9.0",
+    "shadcn": "4.23.0",
+    "pg": "8.23.1",
+    "nodemailer": "10.3.1",
+    "tailwindcss": "4.3.3"
+  },
+  "hashes": {
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b",
+    "specs/007-phase-one-completion/spec.md": "ae50a2f8350cf7c6a136b1693b398952d28b0b365908ae64f6606d8af7edf08e",
+    "lib/auth/capabilities.ts": "9ad05762a268281217bb2c9c1fac037fbbc3d6955df2121b3e38ac65f0981167",
+    "lib/auth/server.ts": "0251db392621e2534ff75c5991d4e05292e78930ce724051ccfcb604de4b0663",
+    "app/actions.ts": "5f3b9e94c1000e683ac690af89a92df6e0a98823980ceac8b0a1cce152e9bc5b",
+    "lib/profile.ts": "0379c3fbbe6d61bfc82dc2573d7cbc6cd1f82d1f3152179ba7a078c3bb9593d8",
+    "proxy.ts": "e02d9f47edbe42c5a0a97d51435d9a2545eb4cad974dc493af19cf415a437249",
+    "app/api/preferences/route.ts": "bc6ec4550d92855a0142484d8cc26663214edafe8ebc6b4f35b0a0168e0d45e6",
+    "lib/contact.ts": "fff31e8321aa2b40b651a0d71cdce86b4a94d8465efe860c9b0b69f51320cd55",
+    "lib/workspaces.ts": "6330170b10eb4817afc6c24265ac781404ac5e1ba40a33800eca3c690b349fdc",
+    "components/site-header-auth.tsx": "583df601cf25a56c86099eb706109cff44ac4fc5d201b042680aa098ea6a86eb",
+    "components/landing/footer-section.tsx": "ec71d88bff3bcd9f6e4617464f20ec189ce7a17b3452e6f3f7d4d3a40436e8e2",
+    "components/footer-newsletter-form.tsx": "684aca3076965567cb3ccce4830e8934b5e524f0ccd0a4c238cbc3e7c7bf9a3c"
+  },
+  "live_auth": "not queried",
+  "database": "not connected",
+  "snapshot_helper_note": "Initial Node child-process Git probe hit sandbox EPERM; snapshot uses read-only Git metadata without spawning. Direct Git CLI separately succeeded."
+}

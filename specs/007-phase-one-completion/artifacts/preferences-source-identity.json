@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-03",
+  "timezone": "Africa/Cairo",
+  "gitHead": "d2129ec1d6dd5ec8c8ed7552ff471063185d6995",
+  "node": "v24.21.0",
+  "files": {
+    "lib/account.ts": "b5135c2f333707372227b190c48b042dfc93c7de1bc1d4ce31c3d6a3e91c149b",
+    "scripts/test-account.test.mjs": "602b9836d69561149bea1cb755889ddebce803341fdef8d7f2d238ed0e85b082",
+    "scripts/test-account-postgres.mjs": "567ba164ca79de339db2e3a6ea3b9707d1dca5937c56bd3c6534f414141f736a",
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b"
+  },
+  "evidenceClass": "local imported synthetic service tests; SQL source self-check; no live provider/database acceptance"
+}

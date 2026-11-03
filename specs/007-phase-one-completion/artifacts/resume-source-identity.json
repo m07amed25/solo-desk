@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-03",
+  "head": "d2129ec1d6dd5ec8c8ed7552ff471063185d6995",
+  "node": "v24.21.0",
+  "files": {
+    "package.json": "e9d755ee487ec29a34bbe5e136394d85dac82d62c0152129fef4f535b8cf95a8",
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b",
+    "components/site-header-auth.tsx": "9c3a3cc2fe98caff3c5eb3296ef649bf6cccb3cd565b4c89f8723be4c32e3ccb",
+    "components/site-header.tsx": "d00deb375c8d8d42a8fb94f5b9be8f8d65e5c54392b837774044ffa1ea916533",
+    "components/application-runtime.tsx": "515cd9c3b5d1dfc20ebaca361bf19cc190de9fc4aee924905c82df1f2c0ac1bb",
+    "components/landing/footer-section.tsx": "edf7545447b10d25c83b59571601ccca434869c8333f74960b2c70101f8e88b1",
+    "components/landing/tour-section.tsx": "143a60f48a3bd30bba88c08dc54f6171e36d3f2af6718fa3ac5eb8caf3efc3a4",
+    "components/product-tour.tsx": "cb20bfe468246e69f15afbe10e8f843fb5e7858ba91322650af8a1b16d61aeb3",
+    "lib/site-content.ts": "02525d2add66624b86f5ebb37fd027a8d3e01db9185831bf4e08ec8558a15000",
+    "messages/en.json": "91642aadeced6d305190d7d0aaf1463283ea36a0cd312b0f6a1bf8f51c44c82c",
+    "messages/ar.json": "d4cd3db2fcfe4dfbf0dd219a8392491179bdc818df83f45ec43d75a4f978afca",
+    "scripts/test-header-auth.test.mjs": "c504811a4fce4806f4e2b2931e4da11ddc45552cf5c1965caed30c5a365b8d3c",
+    "scripts/test-application.test.mjs": "13173a5d0767eb695cc7e854fef8c490a5e7e3a708faf11540d86ac385db9023",
+    "scripts/test-site.test.mjs": "8e961b8bf038d2e9feda25530edcea2b93a3e098e42bcde785ed5017c6e72f30",
+    "scripts/test-site-http.mjs": "0897aff4435a6f74609d565168bd178a9b4bb1e61f0f2ec222ddd852a97eccc9",
+    "scripts/test-account-browser.md": "117e37583cd89ea0e401bde93a63f52dadf32f6515dff509112f7ed97a3458a9"
+  },
+  "deleted": [
+    "components/footer-newsletter-form.tsx"
+  ],
+  "no_dependency_or_lock_change": true,
+  "checklist_sha256": "1ca096628ddb15a1442b905b585f0430c3a391800ddd08634e2e7f198b55abdf"
+}

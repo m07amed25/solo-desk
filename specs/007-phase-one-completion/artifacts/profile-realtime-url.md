@@ -1,0 +1,9 @@
+# Account Realtime URL correction — 3 November 2026
+
+The account Server Component read `NEXT_PUBLIC_NEON_REALTIME_URL`, while current setup and the Neon environment use `NEON_REALTIME_URL`. A restricted local check confirmed only that the configured variable exists and uses `wss`; no endpoint, credential or secret was printed or changed.
+
+The page now reads the configured server variable at request time, validates its WebSocket scheme and lack of embedded credentials, and passes only that endpoint to `LiveProfile`. Missing/malformed/HTTP/database/credential-bearing URLs return the existing translated unavailable/retry state before loading a profile or creating the browser client. Existing own-profile authorization, sealed-query renewal, dirty-input handling and subscription ownership were preserved. Applicable boundaries: SEC-024/027/032/044/047/064.
+
+The imported actual-page regression reproduced the exact installed SDK error, “Realtime requires a WebSocket URL,” before correction. It now passes using the real `createRealtimeClient` constructor, without subscribing or opening a network connection. It covers valid server-only configuration, six unavailable/unsafe values, no endpoint disclosure in error HTML and unchanged anonymous redirect behavior. An intermediate assertion was corrected to expect URL normalization's trailing slash.
+
+Verification: five focused profile tests passed; changed-file ESLint and `git diff --check` passed; `npm test` passed 105 Node tests plus six email tests (`realtime-url-tests.txt`). TypeScript still reports the previously recorded errors only in unchanged `lib/workspaces.ts`; no changed-page diagnostics appeared. No dependency, environment or secret was changed. Full Next build, actual provider WebSocket connection and live profile delivery were not verified; G5/G6 acceptance stays open.

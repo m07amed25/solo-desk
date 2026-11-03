@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
  * Shared safety guards for SoloDesk auth integration tests.
  * Prevents running against production or unidentified environments.
  */
-export function validateTargetEnv(env = process.env) {
+export function validateTargetEnv(env = process.env, manifest = null) {
   assert.equal(
     env.SOLODESK_TEST_ENV,
     "isolated",
@@ -27,14 +27,75 @@ export function validateTargetEnv(env = process.env) {
       "DATABASE_URL appears to point to a production database",
     );
   }
+
+  // Cross-check environment against manifest to prevent mismatched identity or inherited leakage
+  if (manifest) {
+    if (env.NEON_BRANCH && manifest.neonBranch) {
+      assert.equal(
+        env.NEON_BRANCH,
+        manifest.neonBranch,
+        "Environment NEON_BRANCH must match target manifest neonBranch",
+      );
+    }
+    if (env.DATABASE_URL && manifest.databaseUrl) {
+      let envDb, manifestDb;
+      try {
+        envDb = new URL(env.DATABASE_URL);
+        manifestDb = new URL(manifest.databaseUrl);
+      } catch {
+        // Fall back to exact string comparison if URL parsing fails
+      }
+      if (envDb && manifestDb) {
+        assert.equal(
+          envDb.host,
+          manifestDb.host,
+          "Environment DATABASE_URL host must match target manifest databaseUrl host",
+        );
+        assert.equal(
+          envDb.pathname,
+          manifestDb.pathname,
+          "Environment DATABASE_URL database path must match target manifest databaseUrl",
+        );
+      } else {
+        assert.equal(
+          env.DATABASE_URL,
+          manifest.databaseUrl,
+          "DATABASE_URL must match manifest databaseUrl exactly",
+        );
+      }
+    }
+    if (env.BETTER_AUTH_URL && manifest.authBaseUrl) {
+      let envAuth, manifestAuth;
+      try {
+        envAuth = new URL(env.BETTER_AUTH_URL);
+        manifestAuth = new URL(manifest.authBaseUrl);
+      } catch {
+        // Fall back to exact string comparison if URL parsing fails
+      }
+      if (envAuth && manifestAuth) {
+        assert.equal(
+          envAuth.origin,
+          manifestAuth.origin,
+          "Environment BETTER_AUTH_URL origin must match target manifest authBaseUrl origin",
+        );
+      } else {
+        assert.equal(
+          env.BETTER_AUTH_URL,
+          manifest.authBaseUrl,
+          "BETTER_AUTH_URL must match manifest authBaseUrl exactly",
+        );
+      }
+    }
+  }
+
   return true;
 }
 
 /**
  * Validates an isolated target manifest binding app, auth, db, branch, sink, and synthetic fixtures.
- * Rejects production-labelled endpoints, mismatched identities, and real-data fixtures.
+ * Rejects production-labelled endpoints, mismatched identities, missing authorization, and real-data fixtures.
  */
-export function validateTargetManifest(manifest) {
+export function validateTargetManifest(manifest, options = {}) {
   assert.ok(
     manifest && typeof manifest === "object",
     "Target manifest must be a non-null object",
@@ -53,6 +114,14 @@ export function validateTargetManifest(manifest) {
     manifest.fixtureNamespace,
     "Target manifest requires fixtureNamespace",
   );
+  if (manifest.authorizationToken !== undefined || options.requireAuth) {
+    assert.ok(
+      manifest.authorizationToken &&
+        typeof manifest.authorizationToken === "string" &&
+        manifest.authorizationToken.trim().length >= 16,
+      "Target manifest requires authorizationToken proving authorization under G5 (minimum 16 characters)",
+    );
+  }
 
   // Reject production-labelled targets
   assert.ok(
@@ -80,6 +149,20 @@ export function validateTargetManifest(manifest) {
       "Target manifest branchId and neonBranch must match",
     );
   }
+
+  // Webhook sink must be synthetic isolated sink; reject public or production aggregators
+  assert.ok(
+    /(?:sink-synth|solodesk-(?:sink|synthetic)-[a-z0-9-]+|synthetic-sink)/i.test(
+      manifest.webhookSinkId,
+    ),
+    `webhookSinkId '${redact(manifest.webhookSinkId)}' must be a synthetic isolated sink (e.g. solodesk-sink-* or sink-synth-*)`,
+  );
+  assert.ok(
+    !/prod|webhook\.site|discord|slack|sendgrid|mailgun/i.test(
+      manifest.webhookSinkId,
+    ),
+    "webhookSinkId must not reference external or production sink services",
+  );
 
   // Reject copied real-data fixtures or non-synthetic fixture ownership
   assert.ok(
@@ -113,7 +196,7 @@ export function generateSyntheticIdentity(prefix = "flow") {
 
 /**
  * Redaction utility for safe test logging.
- * Replaces sensitive values (passwords, 6-digit OTP codes, cookie secrets) with [REDACTED].
+ * Replaces sensitive values (passwords, 6-digit OTP codes, cookie secrets, database passwords, JWTs) with [REDACTED].
  */
 export function redact(text) {
   if (typeof text !== "string") {
@@ -125,12 +208,17 @@ export function redact(text) {
   }
   return text
     .replace(
-      /(password|secret|code|token)["']?\s*[:=]\s*["']?([^"',\s]+)["']?/gi,
+      /(password|secret|code|token|key|credential|authorization)["']?\s*[:=]\s*["']?([^"',\s}]+)["']?/gi,
       '$1: "[REDACTED]"',
     )
-    .replace(/\b\d{6}\b/g, "[CODE-REDACTED]")
-    .replace(/set-cookie:\s*([^;\r\n]+)/gi, "set-cookie: [REDACTED]")
-    .replace(/bearer\s+[a-zA-Z0-9._-]+/gi, "Bearer [REDACTED]");
+    .replace(/(postgres(?:ql)?:\/\/[^:]+:)([^@]+)(@)/gi, "$1[REDACTED]$3")
+    .replace(
+      /\beyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\b/g,
+      "[JWT-REDACTED]",
+    )
+    .replace(/(?:set-cookie|cookie):\s*([^;\r\n]+)/gi, "cookie: [REDACTED]")
+    .replace(/bearer\s+[a-zA-Z0-9._-]+/gi, "Bearer [REDACTED]")
+    .replace(/\b\d{6}\b/g, "[CODE-REDACTED]");
 }
 
 /**
@@ -145,7 +233,7 @@ export class EphemeralChallengeStore {
       typeof code === "string" && /^\d{6}$/.test(code),
       "Code must be a 6-digit string",
     );
-    this.#challenges.set(`${email}:${purpose}`, {
+    this.#challenges.set(`${email.toLowerCase().trim()}:${purpose}`, {
       code,
       receivedAt: Date.now(),
       consumed: false,
@@ -153,16 +241,45 @@ export class EphemeralChallengeStore {
   }
 
   get(email, purpose) {
-    const entry = this.#challenges.get(`${email}:${purpose}`);
+    const entry = this.#challenges.get(`${email.toLowerCase().trim()}:${purpose}`);
     if (!entry || entry.consumed) return null;
     return entry.code;
   }
 
   consume(email, purpose, code) {
-    const entry = this.#challenges.get(`${email}:${purpose}`);
+    const entry = this.#challenges.get(`${email.toLowerCase().trim()}:${purpose}`);
     if (!entry || entry.consumed || entry.code !== code) return false;
     entry.consumed = true;
     return true;
+  }
+
+  /**
+   * Ephemeral bridge to pull/poll synthetic webhook sink for intercepted challenges.
+   * Challenge code is loaded directly into private in-memory store and never logged.
+   */
+  async bridgeFromSyntheticSink(sinkUrl, options = {}) {
+    if (!sinkUrl) return 0;
+    try {
+      const fetchFn = options.fetchFn || globalThis.fetch;
+      const res = await fetchFn(sinkUrl, {
+        headers: {
+          ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+        },
+      });
+      if (!res.ok) return 0;
+      const data = await res.json();
+      if (!Array.isArray(data)) return 0;
+      let count = 0;
+      for (const item of data) {
+        if (item?.recipient && item?.otp && item?.purpose) {
+          this.record(item.recipient, item.purpose, item.otp);
+          count++;
+        }
+      }
+      return count;
+    } catch {
+      return 0;
+    }
   }
 
   clear() {
@@ -173,7 +290,7 @@ export class EphemeralChallengeStore {
 /**
  * Self-check runner for guards and isolation logic without contacting remote services.
  */
-export function runGuardSelfChecks() {
+export async function runGuardSelfChecks() {
   console.log("Running auth flow harness guard self-checks...");
 
   // 1. Validate guard rejection of missing or incorrect SOLODESK_TEST_ENV
@@ -318,8 +435,142 @@ export function runGuardSelfChecks() {
     "Recovery password must be redacted from logs",
   );
 
+  // Validate synthetic sink bridge loading into in-memory store
+  const bridgeStore = new EphemeralChallengeStore();
+  const mockFetch = async () =>
+    new Response(
+      JSON.stringify([
+        {
+          recipient: "test@example.com",
+          otp: "012345",
+          purpose: "email-verification",
+        },
+      ]),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  await bridgeStore.bridgeFromSyntheticSink("http://synthetic-sink/events", {
+    fetchFn: mockFetch,
+  });
+  assert.equal(
+    bridgeStore.get("test@example.com", "email-verification"),
+    "012345",
+    "Bridge must load OTP into private in-memory store",
+  );
+  bridgeStore.clear();
+
+  // 8. Validate manifest authorization and sink isolation
+  const validManifest = {
+    environment: "isolated",
+    appUrl: "http://127.0.0.1:3000",
+    authBaseUrl: "http://127.0.0.1:3000",
+    databaseUrl:
+      "postgres://user:pass@ep-isolated-123.us-east-2.aws.neon.tech/neondb",
+    neonBranch: "feat-test-auth-preview",
+    webhookSinkId: "solodesk-sink-synthetic-test",
+    fixtureNamespace: "solodesk-synthetic-auth",
+    authorizationToken: "auth-token-valid-minimum-16-chars",
+  };
+  assert.equal(
+    validateTargetManifest(validManifest),
+    true,
+    "Valid isolated manifest must be accepted",
+  );
+
+  // Missing authorizationToken with requireAuth must throw
+  assert.throws(
+    () =>
+      validateTargetManifest(
+        { ...validManifest, authorizationToken: undefined },
+        { requireAuth: true },
+      ),
+    /authorizationToken/,
+    "Target manifest missing authorizationToken must throw when requireAuth is true",
+  );
+  assert.throws(
+    () =>
+      validateTargetManifest({ ...validManifest, authorizationToken: "short" }),
+    /authorizationToken/,
+    "Target manifest with short authorizationToken must throw",
+  );
+
+  // External or production webhook sink must throw
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        webhookSinkId: "https://webhook.site/abc-123",
+      }),
+    /webhookSinkId/,
+    "External webhook sink must be rejected",
+  );
+
+  // BranchId mismatch must throw
+  assert.throws(
+    () =>
+      validateTargetManifest({
+        ...validManifest,
+        neonBranch: "feat-test-auth-preview",
+        branchId: "other-branch-id",
+      }),
+    /branchId and neonBranch must match/,
+    "Mismatched branchId and neonBranch must throw",
+  );
+
+  // 9. Validate environment cross-check against manifest
+  assert.throws(
+    () =>
+      validateTargetEnv(
+        {
+          SOLODESK_TEST_ENV: "isolated",
+          NEON_BRANCH: "feat-test-auth-preview",
+          DATABASE_URL:
+            "postgres://user:pass@ep-other-host.us-east-2.aws.neon.tech/otherdb",
+        },
+        validManifest,
+      ),
+    /DATABASE_URL host must match target manifest/,
+    "Environment database URL mismatching manifest must throw",
+  );
+
+  // 10. Validate extended redaction: database URL passwords, JWTs, and cookies
+  const dbUrlString =
+    "Connected to postgres://app_user:SuperSecretDbPass123!@ep-isolated-123.us-east-2.aws.neon.tech/neondb";
+  const redactedDbUrl = redact(dbUrlString);
+  assert.ok(
+    !redactedDbUrl.includes("SuperSecretDbPass123!"),
+    "DB password must be redacted from database URL",
+  );
+  assert.ok(
+    redactedDbUrl.includes("[REDACTED]"),
+    "Redacted placeholder must replace DB password",
+  );
+
+  const jwtString =
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+  const redactedJwt = redact(jwtString);
+  assert.ok(
+    !redactedJwt.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"),
+    "Raw JWT must be redacted",
+  );
+  assert.ok(
+    redactedJwt.includes("[JWT-REDACTED]"),
+    "Redacted placeholder must replace JWT",
+  );
+
+  const cookieString =
+    "set-cookie: auth_session=secret_token_value_abc123; Path=/; HttpOnly";
+  const redactedCookie = redact(cookieString);
+  assert.ok(
+    !redactedCookie.includes("secret_token_value_abc123"),
+    "Cookie secret value must be redacted",
+  );
+  assert.ok(
+    redactedCookie.includes("cookie: [REDACTED]"),
+    "Redacted placeholder must replace cookie secret",
+  );
+
   console.log(
-    "PASS Guard self-checks: target isolation, synthetic identity bounds, redaction, in-memory store, US4 recovery rules",
+    "PASS Guard self-checks: target isolation, synthetic identity bounds, redaction, in-memory store, US4 recovery rules, manifest authorization",
   );
   return true;
 }
@@ -409,6 +660,41 @@ export async function testSignupAndVerification(base, challengeStore, emails) {
   assert.ok(
     resendRes.response.status === 200 || resendRes.response.status === 429,
     `Resend OTP unexpected status: ${resendRes.response.status}`,
+  );
+
+  // Complete email verification using captured challenge from bridge
+  const verificationCode = challengeStore
+    ? challengeStore.get(identity.email, "email-verification")
+    : null;
+  if (!verificationCode) {
+    throw new Error(
+      "BLOCKED: No ephemeral verification code intercepted in challengeStore. Verification proof cannot be completed without captured challenge.",
+    );
+  }
+
+  console.log("[G1] Verifying email with captured challenge...");
+  const verifyRes = await testRequest(
+    base,
+    "/api/auth/email-otp/verify-email",
+    jar,
+    { email: identity.email, otp: verificationCode },
+  );
+  assert.equal(
+    verifyRes.response.status,
+    200,
+    `Email verification failed: ${JSON.stringify(verifyRes.data)}`,
+  );
+
+  // Direct profile access AFTER verification must now succeed (200)
+  const postVerifyProfile = await testRequest(
+    base,
+    `/api/profile?userId=${signupData.user?.id}`,
+    jar,
+  );
+  assert.equal(
+    postVerifyProfile.response.status,
+    200,
+    "Post-verification access to /api/profile must succeed (200)",
   );
 
   return { identity, jar, userId: signupData.user?.id };
@@ -1039,8 +1325,8 @@ export async function testRecoveryScenarios(
       );
     }
   } else {
-    console.log(
-      "[US4] No in-memory recovery code intercepted in this run; verified negative denial contracts.",
+    throw new Error(
+      "BLOCKED: No ephemeral recovery code intercepted in challengeStore. Password reset and revocation proof cannot be verified without captured challenge.",
     );
   }
 
@@ -1082,7 +1368,7 @@ if (process.argv[1]?.endsWith("test-auth-flows.mjs")) {
   const isIntegration = process.argv.includes("--integration");
 
   if (isSelfCheck) {
-    runGuardSelfChecks();
+    await runGuardSelfChecks();
     console.log(
       "PASS [LOCAL] Offline guard self-checks completed successfully.",
     );
@@ -1110,20 +1396,25 @@ if (process.argv[1]?.endsWith("test-auth-flows.mjs")) {
     process.exit(2);
   }
 
-  // Check if .env.local exists and try loading
+  // Check inherited environment and .env.local without blindly overwriting manifest targets
   if (existsSync(".env.local")) {
-    try {
-      loadEnvFile(".env.local");
-    } catch {
-      // Ignore if cannot load
+    console.log(
+      "Checking inherited .env.local against target isolation rules...",
+    );
+    if (process.env.DATABASE_URL && /prod/i.test(process.env.DATABASE_URL)) {
+      console.error(
+        "BLOCKED: Inherited DATABASE_URL appears to point to production.",
+      );
+      process.exit(2);
     }
   }
 
+  let manifestContent;
   try {
     const { readFileSync } = await import("node:fs");
-    const manifestContent = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifestContent = JSON.parse(readFileSync(manifestPath, "utf8"));
     validateTargetManifest(manifestContent);
-    validateTargetEnv(process.env);
+    validateTargetEnv(process.env, manifestContent);
   } catch (err) {
     console.error(`BLOCKED: Target validation failed: ${err.message}`);
     process.exit(2);
@@ -1133,19 +1424,70 @@ if (process.argv[1]?.endsWith("test-auth-flows.mjs")) {
     console.log(
       "Target environment is isolated and valid. Proceeding with remote test suite...",
     );
-    const base = process.env.SOLODESK_BASE_URL || "http://localhost:3000";
+    const base =
+      manifestContent.appUrl ||
+      process.env.SOLODESK_BASE_URL ||
+      "http://localhost:3000";
     const challengeStore = new EphemeralChallengeStore();
     const emails = [];
     const testIdentity = generateSyntheticIdentity("runner");
     emails.push(testIdentity.email);
 
-    await testSignupAndVerification(base, challengeStore, emails);
-    await testDetailedSignupScenarios(base, challengeStore, emails);
-    await testPasswordSignInScenarios(base, testIdentity, emails);
-    await testRecoveryScenarios(base, testIdentity, challengeStore, emails);
-    console.log("PASS All auth flow scenarios completed successfully.");
+    let passedCount = 0;
+    const scenarios = [
+      {
+        name: "testSignupAndVerification",
+        fn: () => testSignupAndVerification(base, challengeStore, emails),
+      },
+      {
+        name: "testDetailedSignupScenarios",
+        fn: () => testDetailedSignupScenarios(base, challengeStore, emails),
+      },
+      {
+        name: "testPasswordSignInScenarios",
+        fn: () => testPasswordSignInScenarios(base, testIdentity, emails),
+      },
+      {
+        name: "testPasswordResetPaths",
+        fn: () => testPasswordResetPaths(base, testIdentity),
+      },
+      {
+        name: "testRecoveryScenarios",
+        fn: () =>
+          testRecoveryScenarios(base, testIdentity, challengeStore, emails),
+      },
+      {
+        name: "testTwoSessionResetRevocation",
+        fn: () => testTwoSessionResetRevocation(base, testIdentity),
+      },
+      {
+        name: "testAntiEnumeration",
+        fn: () => testAntiEnumeration(base),
+      },
+    ];
+
+    for (const sc of scenarios) {
+      console.log(`Executing ${sc.name}...`);
+      await sc.fn();
+      passedCount++;
+    }
+
+    if (passedCount !== scenarios.length) {
+      console.error(
+        `BLOCKED: Incomplete scenario execution (${passedCount}/${scenarios.length}).`,
+      );
+      process.exit(2);
+    }
+
+    console.log(
+      `PASS All ${passedCount} auth flow scenarios completed successfully.`,
+    );
     process.exit(0);
   } catch (err) {
+    if (err.message?.startsWith("BLOCKED:")) {
+      console.error(err.message);
+      process.exit(2);
+    }
     console.error(`FAIL: Auth flow assertion failure: ${err.message}`);
     process.exit(1);
   }

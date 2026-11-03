@@ -1,0 +1,62 @@
+Header fixture assertion callback:
+async(page)=>{
+page.setDefaultTimeout(5000);
+const cases=[];
+for(const locale of ["en","ar"])for(const width of [1280,390])for(const mode of ["returned","thrown","missing","success","lost"]){
+ await page.goto("http://127.0.0.1:4326/public-header?locale="+locale);
+ await page.setViewportSize({width,height:844});
+ await page.evaluate(mode=>{
+ window.fixture.calls=0;
+ window.fixture.signOut=()=>{window.fixture.calls++;if(mode==="thrown")throw Error("DO_NOT_RENDER");if(mode==="lost")return new Promise(resolve=>{window.finishSignOut=resolve});return Promise.resolve(mode==="success"?{data:{success:true},error:null}:mode==="missing"?undefined:{error:{message:"DO_NOT_RENDER"}})};
+ },mode);
+ if(width>=1024)await page.getByRole("button",{name:locale==="en"?"Account menu":"قائمة الحساب",exact:true}).click();
+ await page.getByText(locale==="en"?"Sign out":"تسجيل الخروج",{exact:true}).filter({visible:true}).last().click();
+ if(mode==="lost"){
+  await page.getByRole("status").filter({visible:true}).first().waitFor();
+  if(new URL(page.url()).pathname!=="/public-header")throw Error("Premature navigation");
+  await page.evaluate(()=>window.finishSignOut({error:{message:"DO_NOT_RENDER"}}));
+ }
+ if(mode==="success")await page.waitForURL("http://127.0.0.1:4326/");
+ else{
+  await page.getByRole("alert").filter({visible:true}).first().waitFor();
+  if(new URL(page.url()).pathname!=="/public-header")throw Error("Failure navigation");
+  if(await page.getByText("Synthetic Header User",{exact:true}).count()||await page.getByText("synthetic@example.com",{exact:true}).count()||await page.getByText("DO_NOT_RENDER",{exact:true}).count())throw Error("Leaked identity or error");
+  await page.setViewportSize({width:width===390?1280:390,height:844});
+  if(await page.getByText("Synthetic Header User",{exact:true}).count())throw Error("Resize leaked identity");
+  if(await page.getByRole("button",{name:locale==="en"?"Retry sign-out":"إعادة محاولة تسجيل الخروج",exact:true}).filter({visible:true}).count()!==1)throw Error("No unique retry");
+ }
+ if(await page.evaluate(()=>window.fixture.calls)!==1)throw Error("Duplicate dispatch");
+ cases.push({locale,width,mode,result:"pass"});
+}
+return {fixture:"mounted React; mocked auth/router; no provider calls",browser:page.context().browser().version(),cases};
+}
+
+Private fixture assertion callback:
+async(page)=>{
+page.setDefaultTimeout(5000);
+await page.goto("http://127.0.0.1:4326/app/account");
+await page.setViewportSize({width:1280,height:800});
+const input=page.getByLabel("Display name",{exact:true});
+await input.waitFor();await input.fill("Unsaved synthetic name");
+await page.evaluate(()=>window.runtime.refreshContext());
+await input.waitFor();if(await input.inputValue()!=="Unsaved synthetic name")throw Error("Draft lost on same-account recheck");
+await page.evaluate(()=>{window.fixture.saveProfile=()=>new Promise(resolve=>{window.finishProfile=()=>resolve({error:null})})});
+await page.getByRole("button",{name:"Save name",exact:true}).click();
+await page.waitForFunction(()=>Boolean(window.finishProfile));
+await page.evaluate(()=>{window.dispatchEvent(new PageTransitionEvent("pagehide"));window.dispatchEvent(new PageTransitionEvent("pageshow",{persisted:true}))});
+await input.waitFor();
+await page.evaluate(()=>window.finishProfile());
+await page.waitForTimeout(100);
+if(await page.getByText("Saved. Your name updates live on your other devices.",{exact:true}).count())throw Error("Late save acknowledgement reappeared");
+await page.evaluate(()=>{
+ window.fixture.contextFetch=()=>new Promise(resolve=>{window.finishContext=()=>resolve(Response.json(window.fixture.context))});
+ window.runtime.refreshContext();
+});
+await page.waitForFunction(()=>Boolean(window.finishContext));
+await page.evaluate(()=>window.runtime.signOut());
+await page.evaluate(()=>window.finishContext());
+await page.waitForFunction(()=>window.runtime.accountState==="unavailable");
+if(await page.evaluate(()=>getComputedStyle(document.querySelector("[data-testid=application-runtime-root]")).display)!=="none")throw Error("Late context restored private content");
+return {fixture:"mounted React; synthetic events; mocked identity/actions/Realtime/router",sameAccountDraftRetained:true,lateSaveIgnored:true,lateContextAfterFailedSignOutIgnored:true,realBFCache:false,realRealtime:false};
+}
+

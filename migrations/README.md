@@ -59,3 +59,28 @@ Run the local runner tests with:
 ```bash
 node --test scripts/test-migrations.test.mjs
 ```
+
+## Migration Catalogue
+
+### `001-email-deliveries.sql`
+
+- Declares `public.solodesk_email_deliveries` for unique outbound mail deduplication and delivery reconciliation.
+
+### `002-workspace-platform.sql`
+
+- Declares `solodesk` schema, workspace tables, memberships, invitations, activity events, and `solodesk.rate_limit_buckets`.
+
+### `003-account-completion.sql`
+
+- **Application Scope**: Phase 1 account completion, user preferences, security events, and admission index.
+- **Prerequisites**: `001` and `002` applied in numeric order.
+- **Objects Created**:
+  - `solodesk.account_preferences`: User-scoped revisioned preferences (UUID PK, `locale` 'en'/'ar', bounded IANA `timezone`, `optional_account_email`, canonical `revision` bigint). Missing rows return explicit defaults without inserting.
+  - `solodesk.account_security_events`: Append-only, redacted operational security events (`event_type`, `outcome`, `actor_id`, `correlation_id`, `action`, `target_reference`, `policy_version`). Prohibits raw provider JSON, passwords, or credentials.
+  - `idx_rate_limit_buckets_expires`: Bounded expiration index on `solodesk.rate_limit_buckets (expires_at)` for bucket cleanup.
+- **Least-Privilege Security**:
+  - `REVOKE ALL FROM PUBLIC` on all new application tables.
+  - Runtime service roles (`solodesk_app`) receive only narrow `SELECT, INSERT, UPDATE` grants.
+- **Concurrency & Transaction Rules**:
+  - Compatible with single-client runner transaction; contains no `BEGIN`/`COMMIT` or `CONCURRENTLY`.
+  - Application of `003` to any remote target requires G5 verified isolated environment.

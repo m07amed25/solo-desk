@@ -63,3 +63,7 @@ Thumbs.db
 /.playwright-cli/
 /output/playwright/
 !specs/006-shell-verification-completion/artifacts/*.log
+
+# Universal editor directories
+.vscode/
+.idea/

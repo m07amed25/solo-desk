@@ -1,0 +1,3 @@
+Running auth flow harness guard self-checks...
+PASS Guard self-checks: target isolation, synthetic identity bounds, redaction, in-memory store, US4 recovery rules, manifest authorization
+PASS [LOCAL] Offline guard self-checks completed successfully.

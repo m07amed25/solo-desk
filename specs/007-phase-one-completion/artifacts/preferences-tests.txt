@@ -1,0 +1,156 @@
+
+> solo-desk@0.1.0 test
+> node --test scripts/*.test.mjs && npm run test:email
+
+✔ reauth intent: validates input and creates pending intent with frozen targets (5.265468ms)
+✔ reauth verification: exactly 5-minute proof window (299,999 ms vs 300,000 ms) (0.727552ms)
+✔ stale original session: foreign or expired session cannot verify or reserve proof (0.683463ms)
+✔ atomic reservation: concurrent operations conflict, identical operation retries safely (0.496752ms)
+✔ expiry rejection: expired proof cannot be reserved (0.459374ms)
+✔ consumption: one-success consumes proof, preventing replay or second action (0.4749ms)
+✔ definitive no-effect release vs unknown outcome locks (0.611154ms)
+✔ operation creation & payload digest: immutable target snapshot without credentials (0.903013ms)
+✔ server adapters: social reauth is unavailable (G1), password verifies freshness (1.880849ms)
+✔ revocation dispatch: commits reservation before provider I/O, consumes on success (2.193906ms)
+✔ reauth route handlers: enforces admission, origin, and safe response projection (62.235008ms)
+✔ session revocation route handlers: enforces origin, validates UUIDs, and returns receipts (26.024489ms)
+✔ session DTO: projects strict allowlist and redacts raw bearer tokens and IP addresses (151.744743ms)
+✔ current session marker: derived strictly from caller session, never client input (72.697662ms)
+✔ page & cursor bounds: defaults to 20, caps at 100, opaque cursor binds account (69.220886ms)
+✔ upstream freshness failure: reports 503 UNAVAILABLE without leaking provider details (46.019861ms)
+✔ account authority guard requires fresh, verified, unbanned, unexpired identity (170.767165ms)
+✔ account preferences require no workspace membership and return explicit defaults on missing row without insert (46.249563ms)
+✔ input validation enforces strict allowlisting, recognized IANA zones, and bounds (41.791908ms)
+✔ compare-and-set prevents stale updates and isolates foreign targets (29.653934ms)
+✔ preference revisions are canonical PostgreSQL bigint values and fields are exact (33.00686ms)
+✔ preference services recheck original identity and current database authority before exposing or changing data (35.222044ms)
+✔ competing first saves have one winner and return only accepted own preferences to the loser (26.408876ms)
+✔ preference event failure rolls back; unknown commit is reconciled by an own read (28.490632ms)
+✔ database preference projections and updates stay bound to the original account (24.254005ms)
+✔ security events enforce redaction, closed types, and omit sensitive fields (24.080888ms)
+✔ request body parsing enforces origin, 4 KiB limits, Content-Type, and Cache-Control: private, no-store (28.659739ms)
+✔ account locale resolver enforces browser -> account -> English precedence without mutating DB (9.767924ms)
+(node:362786) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ runtime refresh stays quiet; history and sign-out still conceal private content (158.563384ms)
+✔ application loader projects narrow account and truthful workspace states (29.149913ms)
+✔ client generation counter only rejects old results and grants no access (0.225657ms)
+✔ current trusted session, bounded choices and safe failures at the imported loader (22.142455ms)
+✔ actual context GET uses private stable-code 200/400/401/503 responses (13.657557ms)
+✔ actual selection actions require current authority, canonical selectors and bounded compare-before-clear (34.820791ms)
+✔ actual preference redirects explicitly clear fragments and retain origin/body bounds (26.822234ms)
+✔ actual callback render clears fragments on success, denial and bounded-query rejection (16.114156ms)
+✔ SDK client transport adheres to strict contract for signup, verify, and resend (36.344899ms)
+✔ SDK client transport adheres to strict contract for password sign-in and unverified continuation (6.086071ms)
+✔ Social provider initiation and callback contracts preserve initiating entry and generic failure markers (2.998469ms)
+✔ SDK client transport adheres to strict contract for password recovery and combined reset submission (3.255455ms)
+✔ target manifest validation enforces synthetic boundaries and rejects production and mismatched targets (7.31692ms)
+✔ server capability policy enforces default-off credential gating and allows social/session paths (419.429909ms)
+✔ auth contract enforces exact HTTP method allowlisting per path (15.720111ms)
+✔ challenge handling enforces leading-zero preservation, single-use, superseded invalidation, and wrong-account isolation (0.607215ms)
+✔ password recovery provides non-disclosing responses for unknown and social-only accounts (1.401359ms)
+✔ auth route applies shared admission before registration, sign-in, OTP, and reset, exempting session/sign-out (112.083228ms)
+▶ HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication state
+  ✔ A definitive anonymous session overrides stale server identity (10.213977ms)
+  ✔ Pending session: shows skeleton placeholder while loading auth state (2.557986ms)
+  ✔ Unauthenticated: shows Sign in and Sign up buttons, hides avatar and workspace (1.299756ms)
+  ✔ Authenticated via Email (no avatar): shows Workspace button to /app, hides Sign buttons and avatar (8.229669ms)
+  ✔ Authenticated via Social login (has avatar image): shows avatar and Workspace button, hides Sign buttons (5.414215ms)
+✔ HeaderDesktopAuth and HeaderMobileAuth adapt dynamically to authentication state (295.875356ms)
+✔ HeaderDesktopAuth: bounds a lost sign-out reply with the SDK request timeout (41.046969ms)
+✔ HeaderDesktopAuth: returned error conceals identity, permits retry and never navigates (19.832932ms)
+✔ HeaderDesktopAuth: thrown failure conceals identity, permits retry and never navigates (15.826985ms)
+✔ HeaderDesktopAuth: missing acknowledgement conceals identity, permits retry and never navigates (17.351993ms)
+✔ HeaderDesktopAuth: concurrent clicks dispatch once and navigate on confirmed success (16.727859ms)
+✔ HeaderMobileAuth: bounds a lost sign-out reply with the SDK request timeout (26.934043ms)
+✔ HeaderMobileAuth: returned error conceals identity, permits retry and never navigates (23.470278ms)
+✔ HeaderMobileAuth: thrown failure conceals identity, permits retry and never navigates (16.196793ms)
+✔ HeaderMobileAuth: missing acknowledgement conceals identity, permits retry and never navigates (21.499645ms)
+✔ HeaderMobileAuth: concurrent clicks dispatch once and navigate on confirmed success (19.13544ms)
+✔ selection is ordered, deduplicated and limited to existing migration files (19.439489ms)
+✔ migration connections require a direct URL and retain certificate verification (0.834168ms)
+✔ migration SQL and checksum commit together after acquiring the runner lock (1.106549ms)
+✔ applied files are skipped and changed or missing history stops before new effects (1.069463ms)
+✔ SQL, receipt and deferred-commit failures roll back without reporting acceptance (0.944999ms)
+✔ CLI help and invalid selections need no database and expose no credentials (197.222669ms)
+✔ 003-account-completion migration satisfies immutability, least privilege, and transaction rules (1.154324ms)
+✔ 004-account-security migration satisfies immutability, least privilege, and transaction rules (0.661693ms)
+✔ fresh session helper rejects unverified, expired, revoked, malformed and unavailable authority (123.080591ms)
+✔ profile service denies unverified, mismatched, expired or revoked users and seals only current verified own rows (20.288573ms)
+✔ saveProfile action preserves parameter contracts, error codes, and own-user authorization (8.695351ms)
+✔ AP-01: generic shell identity reads require neither workspace membership nor Realtime envelope (11.205131ms)
+✔ fixed-window boundaries derive from database time and calculate exact Retry-After (137.356647ms)
+✔ ordered multi-key updates prevent deadlock races (22.233823ms)
+✔ denied counters saturate at bounded max and do not roll over (21.905378ms)
+✔ downstream rollback does not refund admission attempts (19.156691ms)
+✔ database outage or missing configuration fails closed with 503 and no memory fallback (28.658141ms)
+✔ signal normalization redacts raw IP and email, enforces bounded policy inputs (26.802934ms)
+(node:362812) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/mohamed-s/Desktop/Projects/solor-desk/lib/site-content.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /home/mohamed-s/Desktop/Projects/solor-desk/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+a [Error]: ENVIRONMENT_FALLBACK
+    at file:///home/mohamed-s/Desktop/Projects/solor-desk/node_modules/use-intl/dist/esm/production/react.js:1:1063
+    at v (file:///home/mohamed-s/Desktop/Projects/solor-desk/node_modules/use-intl/dist/esm/production/react.js:1:1241)
+    at file:///home/mohamed-s/Desktop/Projects/solor-desk/node_modules/next-intl/dist/esm/production/react-client/index.js:1:104
+    at ProductTour (evalmachine.<anonymous>:26:47)
+    at Object.react_stack_bottom_frame (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:10371:18)
+    at renderWithHooks (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5361:19)
+    at renderElement (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:5796:23)
+    at retryNode (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6772:31)
+    at renderNodeDestructive (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6717:11)
+    at renderElement (/home/mohamed-s/Desktop/Projects/solor-desk/node_modules/react-dom/cjs/react-dom-server-legacy.node.development.js:6390:15) {
+  code: 'ENVIRONMENT_FALLBACK'
+}
+✔ rendered bilingual footer has truthful labels, verified destinations and no subscription or health claims (102.747307ms)
+✔ rendered tour localizes all preview panels and labels synthetic totals (194.494008ms)
+✔ finite presentation defaults and destination denials (0.680037ms)
+✔ preferences accept precisely three bounded, unique fields (0.689718ms)
+✔ auth errors discard arbitrary/duplicate fields and retain bounded entry (1.124088ms)
+✔ English/Arabic catalogs match keys and ICU arguments; all messages format (181.619034ms)
+✔ shell recovery, modal and discard messages exist and format in both catalogs (0.5338ms)
+✔ workspace services reject supplied identity and transaction bypasses (213.406127ms)
+✔ transaction rollback failure and uncertain commit discard the connection (126.997558ms)
+✔ revision inputs stay within PostgreSQL BIGINT and enabled auth rejects unknown operations (92.020037ms)
+✔ unfinished invitation and managed step-up capabilities cannot be activated by flags (55.967813ms)
+✔ invitation encryption requires its independent key and authenticates context (14.703434ms)
+✔ a manifest file alone never reports operational invitation delivery (44.29231ms)
+✔ workspace validators enforce C01/C02 constraints and reserved slugs (235.345162ms)
+✔ canonical v1 intent digest is deterministic and sensitive to all payload mutations (90.017693ms)
+✔ createWorkspace executes atomic creation, prevents conflicts, and supports idempotent replay (261.098732ms)
+✔ updateWorkspaceSettings checks revision, enforces member grants, and writes receipt (103.764339ms)
+✔ list, context, and receipt access controls enforce tenant isolation and prevent authority leakage (271.320132ms)
+✔ invitation issuance and acceptance enforce role ceilings, recipient matching, and outbox encryption (196.282621ms)
+✔ invitation resend and revoke enforce role ceilings, generation rotation, and outbox cancellation (116.075993ms)
+✔ membership controls enforce active-owner invariant, role ceilings, leaving, and ownership transfer (226.587332ms)
+✔ AP-02–05: persisted grant removal, capability gates, and reauth safeguards (local evidence) (186.329817ms)
+✔ removed action grants deny direct private receipt replay before returning accepted fields (67.964767ms)
+✔ bounded choices and current scoped role ceilings reach the actual query boundary (63.826981ms)
+ℹ tests 104
+ℹ suites 0
+ℹ pass 104
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2208.228687
+
+> solo-desk@0.1.0 test:email
+> node scripts/test-email.mjs
+
+✔ auth subjects and headings use SoloDesk regardless of provider branding (46.092597ms)
+✔ templates escape visitor text and provide readable HTML and plain text (31.1791ms)
+✔ contact tokens reject test bypasses, tampering, instant and expired submissions (0.840403ms)
+✔ contact sends to the fixed inbox with Reply-To, and never invents delivery success (19.921002ms)
+✔ Neon webhook verifies the exact signed body and rejects replay/forgery (3.816225ms)
+✔ durable receipts deduplicate success and prevent automatic resends after uncertain failure (0.557419ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.169799
