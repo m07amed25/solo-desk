@@ -46,7 +46,6 @@ export type ApplicationRuntimeContextValue = ApplicationContext & {
 };
 const ApplicationRuntimeContext =
   createContext<ApplicationRuntimeContextValue | null>(null);
-let documentBootstrapped = false;
 
 export function useApplicationRuntime(): ApplicationRuntimeContextValue {
   const ctx = useContext(ApplicationRuntimeContext);
@@ -83,6 +82,7 @@ export function ApplicationRuntime({
   const pageController = useRef<AbortController | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMounted = useRef(false);
+  const initialMount = useRef(true);
   const isSigningOut = useRef(false);
   const writeBusy = useRef(false);
   const navigationBusy = useRef(false);
@@ -140,7 +140,7 @@ export function ApplicationRuntime({
   );
 
   const recheckContext = useCallback(
-    (expected?: string | null): Promise<boolean> => {
+    (expected?: string | null, background = false): Promise<boolean> => {
       if (
         !isMounted.current ||
         isSigningOut.current ||
@@ -148,7 +148,7 @@ export function ApplicationRuntime({
       )
         return Promise.resolve(false);
       if (recheck.current) return recheck.current;
-      conceal();
+      if (!background) conceal();
       const currentGen = generation.current;
       const abort = new AbortController();
       controller.current = abort;
@@ -170,6 +170,7 @@ export function ApplicationRuntime({
             return false;
           const previous = currentContext.current;
           if (next.account.id !== previous.account.id) {
+            conceal();
             discardPrivate();
             window.location.replace(`${window.location.pathname}#`);
             return false;
@@ -223,6 +224,7 @@ export function ApplicationRuntime({
           return matches;
         } catch {
           if (isMounted.current && currentGen === generation.current) {
+            conceal();
             setAccountState("unavailable");
             setErrorMessage("contextUnavailable");
           }
@@ -240,7 +242,7 @@ export function ApplicationRuntime({
   useLayoutEffect(() => {
     isMounted.current = true;
     navigationBusy.current = false;
-    if (documentBootstrapped) {
+    if (!initialMount.current) {
       if (protectedContainer.current) {
         protectedContainer.current.style.display = "none";
         protectedContainer.current.inert = true;
@@ -249,7 +251,6 @@ export function ApplicationRuntime({
         if (isMounted.current) void recheckContext();
       });
     } else {
-      documentBootstrapped = true;
       queueMicrotask(() => {
         if (isMounted.current)
           armExpiry(initialContext.account.sessionExpiresAt);
@@ -257,13 +258,18 @@ export function ApplicationRuntime({
     }
     return () => {
       isMounted.current = false;
-      conceal();
+      // Initial effect replay reuses the server-validated context before any browser departure.
+      if (initialMount.current) {
+        invalidate();
+        if (expiryTimer.current) clearTimeout(expiryTimer.current);
+      } else conceal();
     };
   }, [
     pathname,
     armExpiry,
     conceal,
     recheckContext,
+    invalidate,
     initialContext.account.sessionExpiresAt,
   ]);
 
@@ -280,19 +286,29 @@ export function ApplicationRuntime({
   }, [accountState, context]);
 
   useEffect(() => {
+    queueMicrotask(() => {
+      initialMount.current = false;
+    });
     const restore = () => {
       if (document.visibilityState === "visible" && !writeBusy.current)
         void recheckContext();
+    };
+    const refresh = () => {
+      if (document.visibilityState === "visible" && !writeBusy.current)
+        void recheckContext(undefined, true);
     };
     const foreground = () => {
       if (document.visibilityState === "hidden") conceal();
       else restore();
     };
+    const restoreHistory = (event: PageTransitionEvent) => {
+      if (event.persisted) restore();
+    };
     window.addEventListener("pagehide", conceal);
-    window.addEventListener("pageshow", restore);
-    window.addEventListener("focus", restore);
+    window.addEventListener("pageshow", restoreHistory);
+    window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", foreground);
-    const interval = setInterval(restore, 55000);
+    const interval = setInterval(refresh, 55000);
     const beforeUnload = (event: BeforeUnloadEvent) => {
       if ([...dirtyForms.current.values()].some((form) => form.isDirty())) {
         event.preventDefault();
@@ -302,8 +318,8 @@ export function ApplicationRuntime({
     window.addEventListener("beforeunload", beforeUnload);
     return () => {
       window.removeEventListener("pagehide", conceal);
-      window.removeEventListener("pageshow", restore);
-      window.removeEventListener("focus", restore);
+      window.removeEventListener("pageshow", restoreHistory);
+      window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", foreground);
       window.removeEventListener("beforeunload", beforeUnload);
       clearInterval(interval);
@@ -523,8 +539,12 @@ export function ApplicationRuntime({
     discardPrivate();
     setAccountState("signing-out");
     try {
-      const result = await authClient.signOut();
-      if (result.error) throw new Error("Unavailable");
+      const result = await authClient.signOut({
+        fetchOptions: { timeout: 15000 },
+      });
+      if (result?.error || result?.data?.success !== true)
+        throw new Error("Unconfirmed sign-out");
+      if (!isMounted.current) return;
       window.location.replace("/sign-in#");
     } catch {
       isSigningOut.current = false;
@@ -555,38 +575,44 @@ export function ApplicationRuntime({
   };
   return (
     <ApplicationRuntimeContext.Provider value={value}>
-      {accountState !== "ready" && (
-        <div
-          className="flex min-h-svh w-full items-center justify-center p-6"
-          role="status"
-        >
-          <Alert className="max-w-md">
-            <AlertDescription>
-              {t(
-                errorMessage ||
-                  (accountState === "signing-out"
-                    ? "signingOut"
-                    : "checkingAccount"),
-              )}
-            </AlertDescription>
-            {accountState === "unavailable" && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="lg" onClick={() => void recheckContext()}>
-                  {c("retry")}
-                </Button>
-                {errorMessage === "signOutFailed" && (
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => void signOut()}
-                  >
-                    {t("signOut")}
-                  </Button>
+      {accountState === "checking" ? (
+        <span className="sr-only" role="status">
+          {t("checkingAccount")}
+        </span>
+      ) : (
+        (accountState === "signing-out" || accountState === "unavailable") && (
+          <div
+            className="flex min-h-svh w-full items-center justify-center p-6"
+            role="status"
+          >
+            <Alert className="max-w-md">
+              <AlertDescription>
+                {t(
+                  errorMessage ||
+                    (accountState === "signing-out"
+                      ? "signingOut"
+                      : "checkingAccount"),
                 )}
-              </div>
-            )}
-          </Alert>
-        </div>
+              </AlertDescription>
+              {accountState === "unavailable" && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button size="lg" onClick={() => void recheckContext()}>
+                    {c("retry")}
+                  </Button>
+                  {errorMessage === "signOutFailed" && (
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => void signOut()}
+                    >
+                      {t("signOut")}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Alert>
+          </div>
+        )
       )}
       <div
         ref={protectedContainer}

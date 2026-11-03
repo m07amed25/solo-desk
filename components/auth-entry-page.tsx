@@ -45,7 +45,10 @@ async function Entry({
 
   const rawReturnTo = params.get("returnTo");
   const returnTo = authReturnPath(rawReturnTo);
-  const returnParam = rawReturnTo && returnTo !== "/app" ? `?returnTo=${encodeURIComponent(returnTo)}` : "";
+  const returnParam =
+    rawReturnTo && returnTo !== "/app"
+      ? `?returnTo=${encodeURIComponent(returnTo)}`
+      : "";
 
   const t = await getTranslations("Auth");
   const c = await getTranslations("Common");
@@ -54,10 +57,10 @@ async function Entry({
     session = await currentSession();
   } catch {
     return (
-      <Alert>
+      <Alert variant="destructive">
         <AlertDescription>
           {c("unavailable")}{" "}
-          <a href={`/${entry}`} className="underline">
+          <a href={`/${entry}`} className="underline underline-offset-4">
             {c("retry")}
           </a>
         </AlertDescription>

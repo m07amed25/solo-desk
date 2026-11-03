@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/mohamed-s/Desktop/Projects/solor-desk/docs/design/validate.py", line 154, in <module>
+    main()
+  File "/home/mohamed-s/Desktop/Projects/solor-desk/docs/design/validate.py", line 62, in main
+    assert actual[name].strip() == value, (mode, name, 'CSS/token drift')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('light', 'background', 'CSS/token drift')

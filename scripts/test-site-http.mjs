@@ -38,6 +38,9 @@ for (const locale of ["en", "ar"])
     for (const id of ["features", "how-it-works", "main-content"])
       assert.ok(body.includes(`id="${id}"`));
     assert.match(body, locale === "en" ? /Illustrative preview/ : /عرض توضيحي/);
+    const footer = body.match(/<footer[\s\S]*?<\/footer>/)?.[0];
+    assert.ok(footer, "Landing footer must render");
+    assert.doesNotMatch(footer, /<form|type="email"|operational|SoloDesk, Inc\.|https:\/\/(github|x|linkedin|youtube)\.com/i);
     assert.doesNotMatch(body, /<form[^>]*action="\/api\/auth|type="password"/);
   }
 for (const alias of [

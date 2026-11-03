@@ -1,0 +1,139 @@
+{
+  "fixture": "mounted React with mocked identity/router/actions/Realtime; not provider or production Next acceptance",
+  "browser": "Chromium 155.0.8059.84",
+  "header_cases": [
+    {
+      "locale": "en",
+      "width": 1280,
+      "outcome": "returned",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 1280,
+      "outcome": "thrown",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 1280,
+      "outcome": "missing",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 1280,
+      "outcome": "success",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 1280,
+      "outcome": "lost",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 390,
+      "outcome": "returned",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 390,
+      "outcome": "thrown",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 390,
+      "outcome": "missing",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 390,
+      "outcome": "success",
+      "result": "pass"
+    },
+    {
+      "locale": "en",
+      "width": 390,
+      "outcome": "lost",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 1280,
+      "outcome": "returned",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 1280,
+      "outcome": "thrown",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 1280,
+      "outcome": "missing",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 1280,
+      "outcome": "success",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 1280,
+      "outcome": "lost",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 390,
+      "outcome": "returned",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 390,
+      "outcome": "thrown",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 390,
+      "outcome": "missing",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 390,
+      "outcome": "success",
+      "result": "pass"
+    },
+    {
+      "locale": "ar",
+      "width": 390,
+      "outcome": "lost",
+      "result": "pass"
+    }
+  ],
+  "private": {
+    "sameAccountDraftRetained": true,
+    "lateSaveIgnored": true,
+    "lateContextAfterFailedSignOutIgnored": true,
+    "realBFCache": false,
+    "realRealtime": false
+  },
+  "final_arabic_mobile_check": {
+    "width": 390,
+    "overflow": false,
+    "visibleRecovery": 1
+  },
+  "source_note": "20-case matrix and private fixture preceded the final SDK-timeout-only follow-up; final imported tests cover that change. The Arabic mobile recovery capture was repeated after the follow-up."
+}

@@ -1,0 +1,113 @@
+
+> solo-desk@0.1.0 test:full
+> npm run lint && next typegen && tsc --noEmit && node scripts/check-translations.mjs && npm test && npm run build
+
+
+> solo-desk@0.1.0 lint
+> eslint
+
+
+/home/mohamed-s/Desktop/Projects/solor-desk/app/api/auth/[...path]/route.ts
+  37:9   error  'clean' is never reassigned. Use 'const' instead  prefer-const
+  43:15  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/components/account-reauthentication.tsx
+    3:38  warning  'useCallback' is defined but never used   @typescript-eslint/no-unused-vars
+   27:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  205:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/components/auth-email-form.tsx
+  200:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  384:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  396:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  418:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  426:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  452:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  454:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  456:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  467:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  489:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  521:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  523:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  525:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  536:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  549:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  603:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  619:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/lib/account-locale.ts
+   6:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/lib/account.ts
+   26:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  600:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  617:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/lib/auth/account-security.ts
+   469:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   470:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   471:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   471:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   473:20  error  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   775:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1124:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1246:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/lib/auth/server.ts
+  43:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/lib/rate-limit.ts
+   54:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   56:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   56:69  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   57:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:72  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:12  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+
+/home/mohamed-s/Desktop/Projects/solor-desk/proxy.ts
+  46:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:67  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account-security.test.mjs
+   10:3   warning  'AccountSecurityError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  638:9   warning  'mockPool' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  862:53  warning  'confId' is defined but never used                         @typescript-eslint/no-unused-vars
+
+/home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account.test.mjs
+  62:7  warning  'userB' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-auth-contract.test.mjs
+   747:11  warning  'user' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+   956:30  warning  'MockNextRequest' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  1004:21  warning  'purpose' is defined but never used                        @typescript-eslint/no-unused-vars
+  1095:7   warning  'sessionHandlerCalled' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  1111:7   warning  'signOutHandlerCalled' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-auth-flows.mjs
+  2:10  warning  'loadEnvFile' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-rate-limit.test.mjs
+   57:26  warning  'params' is defined but never used  @typescript-eslint/no-unused-vars
+  174:30  warning  'params' is defined but never used  @typescript-eslint/no-unused-vars
+  224:30  warning  'params' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 73 problems (58 errors, 15 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

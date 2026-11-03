@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-03",
+  "feature_directory": "specs/007-phase-one-completion",
+  "artifact": "tasks.md",
+  "validation": "PASS task document only; no implementation/acceptance claimed",
+  "total_tasks": 97,
+  "per_user_story": {
+    "US1": 11,
+    "US2": 9,
+    "US3": 12,
+    "US4": 8,
+    "US5": 14,
+    "US6": 8,
+    "US7": 14
+  },
+  "setup_tasks": 4,
+  "foundational_tasks": 9,
+  "final_tasks": 8,
+  "parallel_tasks": 20,
+  "all_tasks_unchecked": true,
+  "story_priorities_in_order": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2
+  ],
+  "story_labels_and_paths": "PASS",
+  "dependencies": "acyclic; all explicit IDs precede their dependent task",
+  "verbatim_model_table_constraints": 22,
+  "coverage": {
+    "FR": 35,
+    "SC": 12
+  },
+  "before_after_hooks": "none configured",
+  "tasks_sha256": "1ffa9d6c58178c14fd83babfdb2984f6083c450afb9afb0936666d1f7620dc7c",
+  "implementation_readiness": "G1/G2 blocked; G3-G6 owned activation/verification/release gates retained",
+  "not_run": [
+    "application changes",
+    "tests/build/browser/live auth/database campaigns",
+    "deployment/provisioning/external messages"
+  ],
+  "independent_test_criteria": "included per story",
+  "suggested_mvp": "US1 after gates; while blocked, safe US4 plus US6 correction increment without Phase 01 acceptance"
+}

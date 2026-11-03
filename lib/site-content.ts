@@ -93,7 +93,7 @@ export const featureGrid: readonly FeatureDefinition[] = [
   { id: "timer", status: "inDevelopment", areaId: "time", iconName: "Timer" },
   {
     id: "saveStatus",
-    status: "available",
+    status: "inDevelopment",
     areaId: "platform",
     iconName: "CloudCheck",
   },
@@ -202,7 +202,7 @@ export const previewClients = [
 
 export const previewInsights = {
   monthlyHours: 135,
-  billableRatio: "94%",
+  billableRatio: 0.94,
   activeProjects: 4,
   invoicedYTD: 24500,
 } as const;

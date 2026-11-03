@@ -46,32 +46,38 @@ export function presentation(locale: unknown, theme: unknown) {
 export function authEntry(value: unknown): AuthEntry {
   return value === "sign-up" ? "sign-up" : "sign-in";
 }
-export function authFailure(entry: AuthEntry) {
-  return `/${entry}?authError=1`;
+export function authFailure(entry: AuthEntry, returnTo?: string | null) {
+  const returnParam =
+    returnTo && isAppDestination(returnTo) && returnTo !== "/app"
+      ? `&returnTo=${encodeURIComponent(returnTo)}`
+      : "";
+  return `/${entry}?authError=1${returnParam}`;
 }
 export function normalizedAuthPath(entry: AuthEntry, params: URLSearchParams) {
   if (!params.size) return null;
+  const returnTo = params.get("returnTo");
+  const fallbackReturn =
+    returnTo && isAppDestination(returnTo) ? returnTo : null;
   if (
     new TextEncoder().encode(params.toString()).byteLength > preferenceLimit
   ) {
-    return authFailure(entry);
+    return authFailure(entry, fallbackReturn);
   }
   for (const key of params.keys()) {
     if (key !== "authError" && key !== "returnTo") {
-      return authFailure(entry);
+      return authFailure(entry, fallbackReturn);
     }
   }
   if (
     params.getAll("authError").length > 1 ||
     params.getAll("returnTo").length > 1
   ) {
-    return authFailure(entry);
+    return authFailure(entry, fallbackReturn);
   }
   const authError = params.get("authError");
   if (authError !== null && authError !== "1") {
-    return authFailure(entry);
+    return authFailure(entry, fallbackReturn);
   }
-  const returnTo = params.get("returnTo");
   if (returnTo !== null && !isAppDestination(returnTo)) {
     return authFailure(entry);
   }

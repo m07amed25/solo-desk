@@ -3,14 +3,19 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createRealtimeClient } from "@neon/realtime/client";
 
 // Exercise the real service code with synthetic adapters; this never connects to Neon.
-function service(path, adapters) {
+function service(path, adapters, env = {}) {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
   const output = ts.transpileModule(source, {
+    fileName: path,
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
       target: ts.ScriptTarget.ES2022,
+      jsx: ts.JsxEmit.ReactJSX,
     },
   }).outputText;
   const exports = {};
@@ -29,6 +34,8 @@ function service(path, adapters) {
         NEON_AUTH_BASE_URL: "https://auth-unavailable.invalid",
         NEON_AUTH_COOKIE_SECRET: "synthetic",
         NEON_REALTIME_SECRET: "synthetic",
+        NEON_REALTIME_URL: "wss://realtime.example.invalid",
+        ...env,
       },
     },
   });
@@ -119,6 +126,83 @@ test("fresh session helper rejects unverified, expired, revoked, malformed and u
   result = { data: null, error: { code: "unavailable" } };
   await assert.rejects(currentSession, /Authentication unavailable/);
   assert.equal(calls, 8);
+});
+
+test("account page passes the configured server Realtime URL and handles missing or unsafe configuration", async () => {
+  let loads = 0;
+  let profile = { userId };
+  const urls = [];
+  const redirects = [];
+  const adapters = {
+    "react/jsx-runtime": await import("react/jsx-runtime"),
+    "next/link": {
+      default: ({ children, href }) => createElement("a", { href }, children),
+    },
+    "next/server": { connection: async () => {} },
+    "next/navigation": {
+      redirect: (path) => {
+        redirects.push(path);
+        throw new Error("REDIRECT");
+      },
+    },
+    "next-intl/server": { getTranslations: async () => (key) => key },
+    "@/components/application-shell": {
+      ApplicationShell: ({ children }) => children,
+    },
+    "@/components/live-profile": {
+      LiveProfile: ({ realtimeUrl }) => {
+        urls.push(realtimeUrl);
+        const client = createRealtimeClient({ url: realtimeUrl });
+        client.close();
+        return createElement("div", null, "Profile");
+      },
+    },
+    "@/components/account-reauthentication": {
+      AccountReauthentication: () => null,
+    },
+    "@/components/ui/alert": {
+      Alert: ({ children }) => children,
+      AlertDescription: ({ children }) => children,
+    },
+    "@/lib/profile": {
+      loadProfile: async () => {
+        loads++;
+        return profile;
+      },
+    },
+  };
+  const path = "../app/(site)/[locale]/[theme]/app/account/page.tsx";
+  const valid = service(path, adapters);
+  assert.match(renderToStaticMarkup(await valid.default()), /Profile/);
+  assert.deepEqual(urls, ["wss://realtime.example.invalid/"]);
+  assert.equal(loads, 1);
+  for (const value of [
+    undefined,
+    "",
+    "invalid",
+    "https://realtime.example.invalid",
+    "postgresql://synthetic:synthetic@example.invalid/db",
+    "wss://synthetic:synthetic@example.invalid",
+  ]) {
+    const page = service(path, adapters, { NEON_REALTIME_URL: value });
+    const html = renderToStaticMarkup(await page.default());
+    assert.match(html, /unavailable/);
+    assert.match(html, /retry/);
+    assert.doesNotMatch(html, /synthetic|example\.invalid/);
+  }
+  assert.equal(
+    loads,
+    1,
+    "Invalid transport configuration must not start profile reads",
+  );
+  assert.equal(
+    urls.length,
+    1,
+    "Invalid transport configuration must not reach the browser client",
+  );
+  profile = null;
+  await assert.rejects(valid.default(), /REDIRECT/);
+  assert.deepEqual(redirects, ["/sign-in?returnTo=%2Fapp%2Faccount#"]);
 });
 
 test("profile service denies unverified, mismatched, expired or revoked users and seals only current verified own rows", async () => {
@@ -283,4 +367,3 @@ test("AP-01: generic shell identity reads require neither workspace membership n
     /Authentication unavailable/,
   );
 });
-

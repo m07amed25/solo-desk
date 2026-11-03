@@ -1,0 +1,39 @@
+lib/workspaces.ts(265,94): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+lib/workspaces.ts(279,94): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+lib/workspaces.ts(2537,36): error TS2367: This comparison appears to be unintentional because the types '"member" | "admin"' and '"owner"' have no overlap.
+lib/workspaces.ts(3336,20): error TS2339: Property 'query' does not exist on type 'never'.
+lib/workspaces.ts(3339,16): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3339,39): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3344,18): error TS2339: Property 'query' does not exist on type 'never'.
+lib/workspaces.ts(3346,25): error TS2339: Property 'toString' does not exist on type 'never'.
+lib/workspaces.ts(3346,50): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3348,18): error TS2339: Property 'query' does not exist on type 'never'.
+lib/workspaces.ts(3350,14): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3350,40): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3352,38): error TS2339: Property 'admin' does not exist on type 'never'.
+lib/workspaces.ts(3353,20): error TS2339: Property 'query' does not exist on type 'never'.
+lib/workspaces.ts(3356,16): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3356,42): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3360,27): error TS2349: This expression is not callable.
+  Type 'never' has no call signatures.
+lib/workspaces.ts(3361,18): error TS2339: Property 'query' does not exist on type 'never'.
+lib/workspaces.ts(3369,15): error TS2339: Property 'operationId' does not exist on type 'never'.
+lib/workspaces.ts(3370,15): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3372,15): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3373,19): error TS2339: Property 'toString' does not exist on type 'never'.
+lib/workspaces.ts(3374,14): error TS2339: Property 'stringify' does not exist on type 'never'.
+lib/workspaces.ts(3375,37): error TS2339: Property 'user_id' does not exist on type 'never'.
+lib/workspaces.ts(3376,41): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3377,54): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3383,18): error TS2339: Property 'query' does not exist on type 'never'.
+lib/workspaces.ts(3389,15): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3391,15): error TS2339: Property 'operationId' does not exist on type 'never'.
+lib/workspaces.ts(3392,15): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3393,19): error TS2339: Property 'toString' does not exist on type 'never'.
+lib/workspaces.ts(3395,14): error TS2339: Property 'stringify' does not exist on type 'never'.
+lib/workspaces.ts(3396,37): error TS2339: Property 'user_id' does not exist on type 'never'.
+lib/workspaces.ts(3397,41): error TS2339: Property 'id' does not exist on type 'never'.
+lib/workspaces.ts(3404,26): error TS2339: Property 'operationId' does not exist on type 'never'.
+lib/workspaces.ts(3405,26): error TS2339: Property 'workspaceId' does not exist on type 'never'.
+lib/workspaces.ts(3406,23): error TS2339: Property 'targetMembershipId' does not exist on type 'never'.
+lib/workspaces.ts(3407,27): error TS2339: Property 'toString' does not exist on type 'never'.

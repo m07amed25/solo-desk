@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { SignIn } from "@/components/sign-in";
 import { AuthEmailForm } from "@/components/auth-email-form";
 import type { AppDestination, AuthEntry } from "@/lib/site";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 export function AuthInteractivePanel({
   entry,
@@ -20,18 +22,42 @@ export function AuthInteractivePanel({
   const t = useTranslations("Auth");
   const [inFlight, setInFlight] = useState(false);
   const [isInnerStep, setIsInnerStep] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(
+    failed ? t("failed") : null,
+  );
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Top-level failure banner if URL contained authError=1 */}
+      {authError && !isInnerStep && (
+        <Alert variant="destructive">
+          <AlertDescription className="flex items-center justify-between gap-2">
+            <span>{authError}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 underline text-xs font-normal hover:bg-transparent"
+              onClick={() => setAuthError(null)}
+            >
+              {t("dismiss")}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Social login buttons (only visible during top-level form step) */}
       {!isInnerStep && (
         <>
           <SignIn
             entry={entry}
             returnTo={returnTo}
-            failed={failed}
+            failed={false}
             disabled={inFlight}
-            onInFlightChange={setInFlight}
+            onInFlightChange={(busy) => {
+              if (busy) setAuthError(null);
+              setInFlight(busy);
+            }}
           />
           {credentialsEnabled && (
             <div className="relative my-1 flex items-center justify-center">
@@ -52,8 +78,14 @@ export function AuthInteractivePanel({
         returnTo={returnTo}
         disabled={inFlight}
         credentialsEnabled={credentialsEnabled}
-        onInFlightChange={setInFlight}
-        onStepChange={(step) => setIsInnerStep(step !== "form")}
+        onInFlightChange={(busy) => {
+          if (busy) setAuthError(null);
+          setInFlight(busy);
+        }}
+        onStepChange={(step) => {
+          setAuthError(null);
+          setIsInnerStep(step !== "form");
+        }}
       />
     </div>
   );

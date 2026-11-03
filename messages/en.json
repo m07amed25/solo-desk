@@ -65,11 +65,17 @@
     "contextUnavailable": "Your account is temporarily unavailable. Try again to reconnect.",
     "signingOut": "Signing out…",
     "signOutFailed": "Could not sign out. Try again, or recheck your account.",
-    "currentLocation": "Current location"
+    "currentLocation": "Current location",
+    "loadingAuth": "Checking your account",
+    "userMenu": "Account menu",
+    "userAvatar": "Account avatar",
+    "signOutUncertain": "Your account status could not be confirmed. Retry sign-out or reload to check your account.",
+    "retrySignOut": "Retry sign-out",
+    "checkAccount": "Reload and check account"
   },
   "Landing": {
     "title": "Your work. Your time.\nAll in one place.",
-    "description": "A clearer way to manage freelance projects, track your time, and bring your work to invoice. Built for independent engineers and small teams.",
+    "description": "SoloDesk is being built to connect freelance projects, time, and invoices. Explore the planned workflow and current account entry.",
     "meta": "SoloDesk — a clearer view of your freelance work",
     "preview": "Illustrative preview · planned capabilities",
     "previewShort": "Illustrative · planned",
@@ -117,11 +123,11 @@
     "rights": "SoloDesk · Work with clarity.",
     "highlights": {
       "multiCurrencyTitle": "Multi-Currency Architecture",
-      "multiCurrencyDesc": "Handle USD, EUR, GBP, and AED with exact mathematical precision.",
+      "multiCurrencyDesc": "Planned support for multiple currencies with exact financial calculations.",
       "recoverableTimeTitle": "Recoverable Hours",
-      "recoverableTimeDesc": "Focused time tracking directly connected to approved deliverables.",
+      "recoverableTimeDesc": "A planned workflow connecting focused time to approved deliverables.",
       "bilingualTitle": "Bilingual from Day One",
-      "bilingualDesc": "Native English and Arabic RTL design with tailored typography."
+      "bilingualDesc": "English and Arabic interfaces with right-to-left layout and shared typography."
     },
     "tour": {
       "heading": "Comprehensive Capability Tour",
@@ -182,19 +188,19 @@
     },
     "features": {
       "heading": "Engineered for speed, precision, and focus.",
-      "description": "Every detail built for independent professionals who demand craft and reliability.",
+      "description": "Explore what is available, in development, and planned for independent work.",
       "items": {
         "shortcuts": {
           "title": "Command Palette & Shortcuts",
           "description": "Navigate anywhere and trigger actions with rapid keyboard shortcuts."
         },
         "timer": {
-          "title": "Persistent Timer",
+          "title": "Time Tracking",
           "description": "Unobtrusive floating timer tracking focus without interrupting your workflow."
         },
         "saveStatus": {
           "title": "Transparent Save State",
-          "description": "Real-time indicators showing whether changes are local, saving, or safely committed."
+          "description": "Planned indicators for in-memory edits, pending saves, and accepted changes."
         },
         "multiCurrency": {
           "title": "Multi-Currency Architecture",
@@ -202,7 +208,7 @@
         },
         "taxDiscount": {
           "title": "Configurable Taxes & Discounts",
-          "description": "Apply compliant percentage or fixed adjustments to line items or totals."
+          "description": "Planned percentage and fixed adjustments under reviewed calculation rules."
         },
         "workspaces": {
           "title": "Team & Client Workspaces",
@@ -219,13 +225,13 @@
       }
     },
     "howItWorks": {
-      "heading": "From first setup to paid invoice in 4 steps.",
-      "description": "SoloDesk gets out of your way so you can focus on billable engineering.",
+      "heading": "The planned workflow, from account to invoice.",
+      "description": "Business steps are previews of work in development, not active business tools.",
       "steps": {
         "account": {
           "step": "1",
           "title": "Create your account",
-          "description": "Sign in securely with Google or GitHub. Set your currency and workspace preferences in seconds."
+          "description": "Open account entry to see the sign-in methods currently enabled. Business settings are still being developed."
         },
         "setup": {
           "step": "2",
@@ -245,44 +251,44 @@
       }
     },
     "whySoloDesk": {
-      "heading": "Why independent engineers choose SoloDesk.",
-      "description": "Built around principles that respect your craft, your data, and your time.",
+      "heading": "The principles behind SoloDesk.",
+      "description": "These principles guide the product in development.",
       "principles": {
         "exactness": {
           "title": "Exact Financial Handling",
-          "description": "No binary floating-point math or rounded guesswork. Monetary amounts are tracked in exact integer minor units with verifiable revision snapshots."
+          "description": "Planned financial tools must preserve exact amounts and a clear history of accepted changes."
         },
         "speed": {
           "title": "Speed & Low Cognitive Load",
-          "description": "Zero bloat, instant page transitions, and complete keyboard shortcuts. Get in, record your work, and get back to writing code."
+          "description": "Focused navigation and keyboard access guide the design. A command palette is planned."
         },
         "transparency": {
           "title": "Transparent Save State",
-          "description": "Never wonder whether your time or task was saved. Unambiguous status indicators distinguish local drafts, saving state, and verified server commitments."
+          "description": "The planned workflow distinguishes unsaved input, pending requests, and accepted changes."
         },
         "privacy": {
           "title": "Privacy & Data Isolation",
-          "description": "No third-party trackers, no surveillance scripts, and strictly isolated workspace data. Your clients, rates, and hours belong solely to you."
+          "description": "Workspace isolation and current access checks are requirements for the planned business tools."
         }
       }
     },
     "security": {
       "heading": "Security & privacy commitments.",
-      "description": "Plain-language assurances of how your information is safeguarded.",
+      "description": "Our security requirements and the work still under review.",
       "commitments": {
         "noTrackersTitle": "No Advertising Trackers",
-        "noTrackersDesc": "We do not sell data, load cross-site ad networks, or run invasive tracking scripts.",
-        "tenantIsolationTitle": "Strict Tenant Isolation",
-        "tenantIsolationDesc": "All queries and actions require verified session authority and workspace access grants.",
-        "encryptionTitle": "Encrypted in Transit & at Rest",
-        "encryptionDesc": "All network connections enforce TLS 1.3 encryption, and database backups are encrypted at rest.",
+        "noTrackersDesc": "No advertising trackers are included in this public site. Optional product analytics are not enabled.",
+        "tenantIsolationTitle": "Account and Workspace Boundaries",
+        "tenantIsolationDesc": "Server-side account checks protect account services. Workspace isolation remains a release requirement for team features.",
+        "encryptionTitle": "Transport and Storage Protection",
+        "encryptionDesc": "Encrypted transport, storage, and recoverable backups are release requirements. Operational verification is still in progress.",
         "disclaimerTitle": "Honest Transparency",
         "disclaimerDesc": "SoloDesk is an evolving platform; we make no unverified compliance badges or speculative uptime certifications."
       }
     },
     "audience": {
       "heading": "Tailored for technical independence.",
-      "description": "Whether you bill hourly or ship fixed deliverables, SoloDesk scales with your practice.",
+      "description": "Planned workflows for freelancers, consultants, and small engineering teams.",
       "profiles": {
         "freelance": {
           "title": "Freelance Software Engineer",
@@ -307,7 +313,7 @@
         "planned": "Planned Next"
       },
       "columnsDesc": {
-        "available": "Production-ready capabilities you can use right now.",
+        "available": "Current surfaces; enabled account methods depend on configuration.",
         "inDevelopment": "Under active construction with core functionality in progress.",
         "planned": "Scheduled architectural features on our delivery track."
       }
@@ -318,11 +324,11 @@
       "questions": {
         "availability": {
           "q": "What features are available today?",
-          "a": "Account registration and authentication via Google and GitHub are live. Core business modules (Clients, Projects, Time Tracking, and Invoices) are actively in development, with foundational UI previews available to explore."
+          "a": "Public previews and account entry are available. The account page shows the sign-in methods currently enabled. Clients, projects, time tracking, and invoicing are in development."
         },
         "dataOwnership": {
           "q": "Who owns my data and client records?",
-          "a": "You own 100% of your data. SoloDesk never claims ownership of your client lists, project details, logged hours, or financial records, and provides export capabilities for complete portability."
+          "a": "Business-data export and portability are planned alongside the business tools. Those tools and exports are not available yet."
         },
         "privacy": {
           "q": "Does SoloDesk use third-party analytics or advertising trackers?",
@@ -334,7 +340,7 @@
         },
         "devices": {
           "q": "Which devices and screen sizes are supported?",
-          "a": "The application is fully responsive across desktop, tablet, and mobile viewports, tested down to 320 CSS pixels reflow and 200% browser zoom with zero horizontal scrolling."
+          "a": "SoloDesk is designed for desktop, tablet, and mobile browsers. Accessibility and browser compatibility review is ongoing."
         },
         "teams": {
           "q": "Can I use SoloDesk with a team or agency?",
@@ -346,7 +352,7 @@
         },
         "auth": {
           "q": "How is my account secured?",
-          "a": "Authentication is powered by modern cryptographic session management via Better Auth, supporting verified OAuth providers (Google and GitHub) without storing plaintext passwords."
+          "a": "Accounts use managed Better Auth. The account entry page shows the enabled sign-in methods; provider and recovery verification is still in progress."
         }
       }
     },
@@ -405,6 +411,33 @@
       "legal": "Legal & Privacy",
       "allRights": "All rights reserved.",
       "disclaimer": "SoloDesk is an independent project. Capabilities marked as in development or planned are subject to change."
+    },
+    "tourPreview": {
+      "activeProjects": "Active projects: {count, number}",
+      "currency": "Currency",
+      "loggedHours": "{hours, number} hours logged",
+      "taskOne": "Map the core screens",
+      "taskTwo": "Build the account flow",
+      "taskThree": "Review the handoff",
+      "done": "Complete",
+      "inProgress": "In progress",
+      "activeTimer": "Illustrative timer",
+      "timerWork": "API integration",
+      "studio": "Website redesign",
+      "api": "API integration",
+      "review": "Design review",
+      "hours": "{hours, number} h {minutes, number} min",
+      "sampleClient": "North Studio (example)",
+      "due": "Due in 14 days · example",
+      "invoiceWork": "Development · example",
+      "invoiceReview": "Design review · example",
+      "amount": "{amount, number, ::currency/USD}",
+      "total": "Illustrative total",
+      "monthlyHours": "Monthly focus hours",
+      "hoursUnit": "hours",
+      "billableRatio": "Billable ratio",
+      "activeWorkspaces": "Active workspaces",
+      "invoicedYTD": "Invoiced this year · USD"
     }
   },
   "Auth": {
@@ -476,7 +509,13 @@
     "resettingPassword": "Updating password…",
     "resetSuccess": "Password updated successfully. You can now sign in.",
     "backToSignIn": "Back to sign in",
-    "illustrativeCaption": "SoloDesk workspace illustrative preview"
+    "illustrativeCaption": "SoloDesk workspace illustrative preview",
+    "rateLimited": "Too many attempts. Please wait {seconds} seconds before trying again.",
+    "rateLimitedGeneric": "Too many attempts. Please wait a moment before trying again.",
+    "serviceUnavailable": "Authentication service is temporarily unavailable. Please try again in a few moments.",
+    "cooldownNotice": "Please wait {seconds} seconds before requesting a new code",
+    "dismiss": "Dismiss",
+    "retry": "Try again"
   },
   "Profile": {
     "title": "Your account",
@@ -613,5 +652,26 @@
     "noAvailableWorkspaces": "No available workspaces",
     "accountActive": "Active",
     "accountId": "Account ID"
+  },
+  "AccountSecurity": {
+    "title": "Session Management & Security",
+    "description": "Control active sessions and confirm your identity before sensitive actions.",
+    "revokeOthersTitle": "Revoke other sessions",
+    "revokeOthersDesc": "Sign out of all other devices and browser sessions while keeping this session active.",
+    "revokeOthersButton": "Revoke other sessions",
+    "confirmTitle": "Confirm your identity",
+    "confirmPrompt": "Please enter your password to confirm this action.",
+    "passwordLabel": "Current password",
+    "passwordPlaceholder": "••••••••",
+    "confirmButton": "Confirm & proceed",
+    "confirming": "Confirming…",
+    "revoking": "Revoking sessions…",
+    "cancel": "Cancel",
+    "proofExpiryNotice": "Confirmation proof is valid for 5 minutes.",
+    "socialUnavailable": "Social reauthentication is currently unavailable under the managed provider.",
+    "revocationSuccess": "Other sessions have been successfully revoked.",
+    "revocationPartial": "Some sessions could not be resolved. Please verify your active session list.",
+    "revocationUnknown": "Revocation outcome could not be definitively confirmed. Please refresh.",
+    "ordinarySignOutNote": "Ending your current session does not require reauthentication. Use Sign out in the menu."
   }
 }

@@ -196,7 +196,9 @@ export function AuthEmailForm({
 
       if (result.error) {
         setStatus("failed");
-        setErrorMessage(t("failed"));
+        setErrorMessage(getErrorMessage(result.error, "failed"));
+        const errObj = result.error as any;
+        if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
         setInFlight(false);
         return;
       }
@@ -208,11 +210,44 @@ export function AuthEmailForm({
       setStatus("idle");
       setStep("verify");
       setResendCooldown(30);
-    } catch {
+    } catch (err) {
       setStatus("failed");
-      setErrorMessage(t("failed"));
+      setErrorMessage(getErrorMessage(err, "failed"));
+      const errObj = err as any;
+      if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
       setInFlight(false);
     }
+  }
+
+  function getErrorMessage(
+    err: unknown,
+    fallbackKey:
+      | "failed"
+      | "verificationFailed"
+      | "invalidCredentials"
+      | "genericError" = "failed",
+  ): string {
+    const errorObj = err as {
+      code?: string;
+      message?: string;
+      status?: number;
+      retryAfter?: number;
+    };
+    if (errorObj?.status === 429 || errorObj?.code === "RATE_LIMITED") {
+      return errorObj?.retryAfter
+        ? t("rateLimited", { seconds: errorObj.retryAfter })
+        : t("rateLimitedGeneric");
+    }
+    if (errorObj?.status === 503 || errorObj?.code === "UNAVAILABLE") {
+      return t("serviceUnavailable");
+    }
+    if (
+      errorObj?.code === "CHALLENGE_EXPIRED" ||
+      errorObj?.code === "CHALLENGE_ALREADY_CONSUMED"
+    ) {
+      return t("verificationFailed");
+    }
+    return t(fallbackKey);
   }
 
   // Handle sign-in submission
@@ -242,7 +277,30 @@ export function AuthEmailForm({
         code?: string;
         message?: string;
         status?: number;
+        retryAfter?: number;
       };
+
+      if (authErr?.status === 429 || authErr?.code === "RATE_LIMITED") {
+        setPassword("");
+        setStatus("failed");
+        setErrorMessage(
+          authErr?.retryAfter
+            ? t("rateLimited", { seconds: authErr.retryAfter })
+            : t("rateLimitedGeneric"),
+        );
+        if (authErr?.retryAfter) setResendCooldown(authErr.retryAfter);
+        setInFlight(false);
+        return;
+      }
+
+      if (authErr?.status === 503 || authErr?.code === "UNAVAILABLE") {
+        setPassword("");
+        setStatus("failed");
+        setErrorMessage(t("serviceUnavailable"));
+        setInFlight(false);
+        return;
+      }
+
       const isUnverified =
         authErr?.code === "EMAIL_NOT_VERIFIED" ||
         authErr?.code === "email_not_confirmed" ||
@@ -322,7 +380,9 @@ export function AuthEmailForm({
 
       if (result.error) {
         setStatus("failed");
-        setErrorMessage(t("verificationFailed"));
+        setErrorMessage(getErrorMessage(result.error, "verificationFailed"));
+        const errObj = result.error as any;
+        if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
         setInFlight(false);
         return;
       }
@@ -330,9 +390,11 @@ export function AuthEmailForm({
       // Fresh verified session confirmed: navigate to protected app
       setCode("");
       router.push(`${returnTo || "/app"}#`);
-    } catch {
+    } catch (err) {
       setStatus("failed");
-      setErrorMessage(t("verificationFailed"));
+      setErrorMessage(getErrorMessage(err, "verificationFailed"));
+      const errObj = err as any;
+      if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
       setInFlight(false);
     }
   }
@@ -352,13 +414,17 @@ export function AuthEmailForm({
       });
 
       if (result.error) {
-        setErrorMessage(t("failed"));
+        setErrorMessage(getErrorMessage(result.error, "failed"));
+        const errObj = result.error as any;
+        if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
       } else {
         setNoticeMessage(t("codeSent"));
         setResendCooldown(30);
       }
-    } catch {
-      setErrorMessage(t("failed"));
+    } catch (err) {
+      setErrorMessage(getErrorMessage(err, "failed"));
+      const errObj = err as any;
+      if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
     } finally {
       setStatus("idle");
       setInFlight(false);
@@ -383,10 +449,36 @@ export function AuthEmailForm({
     setStatus("pending");
 
     try {
-      // Modern preferred request path
-      await authClient.emailOtp.requestPasswordReset({
-        email: trimmedEmail,
-      });
+      let result: any;
+      if (
+        typeof (authClient.emailOtp as any)?.requestPasswordReset === "function"
+      ) {
+        result = await (authClient.emailOtp as any).requestPasswordReset({
+          email: trimmedEmail,
+        });
+      } else {
+        result = await authClient.emailOtp.sendVerificationOtp({
+          email: trimmedEmail,
+          type: "forget-password",
+        });
+      }
+
+      if (result?.error) {
+        const errObj = result.error as any;
+        if (errObj?.status === 429 || errObj?.code === "RATE_LIMITED") {
+          setErrorMessage(getErrorMessage(errObj));
+          if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
+          setInFlight(false);
+          setStatus("failed");
+          return;
+        }
+        if (errObj?.status === 503 || errObj?.code === "UNAVAILABLE") {
+          setErrorMessage(t("serviceUnavailable"));
+          setInFlight(false);
+          setStatus("failed");
+          return;
+        }
+      }
 
       // Generic response for both existing and unknown emails (anti-enumeration)
       setInFlight(false);
@@ -394,8 +486,21 @@ export function AuthEmailForm({
       setStep("reset");
       setNoticeMessage(t("resetCodeSent"));
       setResendCooldown(30);
-    } catch {
-      // Even on error, show generic acknowledgement to protect against enumeration
+    } catch (err: any) {
+      if (err?.status === 429 || err?.code === "RATE_LIMITED") {
+        setErrorMessage(getErrorMessage(err));
+        if (err?.retryAfter) setResendCooldown(err.retryAfter);
+        setInFlight(false);
+        setStatus("failed");
+        return;
+      }
+      if (err?.status === 503 || err?.code === "UNAVAILABLE") {
+        setErrorMessage(t("serviceUnavailable"));
+        setInFlight(false);
+        setStatus("failed");
+        return;
+      }
+      // Even on unexpected error, show generic acknowledgement to protect against enumeration
       setInFlight(false);
       setStatus("idle");
       setStep("reset");
@@ -413,12 +518,44 @@ export function AuthEmailForm({
     setErrorMessage(null);
 
     try {
-      await authClient.emailOtp.requestPasswordReset({
-        email: email.trim(),
-      });
+      let result: any;
+      if (
+        typeof (authClient.emailOtp as any)?.requestPasswordReset === "function"
+      ) {
+        result = await (authClient.emailOtp as any).requestPasswordReset({
+          email: email.trim(),
+        });
+      } else {
+        result = await authClient.emailOtp.sendVerificationOtp({
+          email: email.trim(),
+          type: "forget-password",
+        });
+      }
+
+      if (result?.error) {
+        const errObj = result.error as any;
+        if (errObj?.status === 429 || errObj?.code === "RATE_LIMITED") {
+          setErrorMessage(getErrorMessage(errObj));
+          if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
+          return;
+        }
+        if (errObj?.status === 503 || errObj?.code === "UNAVAILABLE") {
+          setErrorMessage(t("serviceUnavailable"));
+          return;
+        }
+      }
       setNoticeMessage(t("resetCodeSent"));
       setResendCooldown(30);
-    } catch {
+    } catch (err: any) {
+      if (err?.status === 429 || err?.code === "RATE_LIMITED") {
+        setErrorMessage(getErrorMessage(err));
+        if (err?.retryAfter) setResendCooldown(err.retryAfter);
+        return;
+      }
+      if (err?.status === 503 || err?.code === "UNAVAILABLE") {
+        setErrorMessage(t("serviceUnavailable"));
+        return;
+      }
       // Even on error, show generic acknowledgement to protect against enumeration
       setNoticeMessage(t("resetCodeSent"));
       setResendCooldown(30);
@@ -462,7 +599,9 @@ export function AuthEmailForm({
 
       if (result.error) {
         setStatus("failed");
-        setErrorMessage(t("verificationFailed"));
+        setErrorMessage(getErrorMessage(result.error, "verificationFailed"));
+        const errObj = result.error as any;
+        if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
         setInFlight(false);
         return;
       }
@@ -474,9 +613,11 @@ export function AuthEmailForm({
       setStatus("idle");
       setStep("form");
       setNoticeMessage(t("resetSuccess"));
-    } catch {
+    } catch (err) {
       setStatus("failed");
-      setErrorMessage(t("genericError"));
+      setErrorMessage(getErrorMessage(err, "genericError"));
+      const errObj = err as any;
+      if (errObj?.retryAfter) setResendCooldown(errObj.retryAfter);
       setInFlight(false);
     }
   }
@@ -542,6 +683,11 @@ export function AuthEmailForm({
             variant="ghost"
             size="sm"
             disabled={isPending || resendCooldown > 0}
+            aria-label={
+              resendCooldown > 0
+                ? t("cooldownNotice", { seconds: resendCooldown })
+                : undefined
+            }
             onClick={handleResendCode}
           >
             {isPending && status === "pending" ? (
@@ -744,6 +890,11 @@ export function AuthEmailForm({
             variant="ghost"
             size="sm"
             disabled={isPending || resendCooldown > 0}
+            aria-label={
+              resendCooldown > 0
+                ? t("cooldownNotice", { seconds: resendCooldown })
+                : undefined
+            }
             onClick={handleResendResetCode}
           >
             {isPending && status === "pending" ? (

@@ -1,0 +1,40 @@
+✔ account authority guard requires fresh, verified, unbanned, unexpired identity (77.860323ms)
+✔ account preferences require no workspace membership and return explicit defaults on missing row without insert (20.282423ms)
+✔ input validation enforces strict allowlisting, recognized IANA zones, and bounds (22.489057ms)
+✔ compare-and-set prevents stale updates and isolates foreign targets (14.214773ms)
+✔ preference revisions are canonical PostgreSQL bigint values and fields are exact (10.852285ms)
+✔ preference services recheck original identity and current database authority before exposing or changing data (12.037916ms)
+✔ competing first saves have one winner and return only accepted own preferences to the loser (8.765333ms)
+✖ preference event failure rolls back; unknown commit is reconciled by an own read (12.184406ms)
+✔ database preference projections and updates stay bound to the original account (8.902988ms)
+✔ security events enforce redaction, closed types, and omit sensitive fields (8.410431ms)
+✔ request body parsing enforces origin, 4 KiB limits, Content-Type, and Cache-Control: private, no-store (11.827843ms)
+✔ account locale resolver enforces browser -> account -> English precedence without mutating DB (5.994462ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 11
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 385.475207
+
+✖ failing tests:
+
+test at scripts/test-account.test.mjs:452:1
+✖ preference event failure rolls back; unknown commit is reconciled by an own read (12.184406ms)
+  AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+  
+  Caught error:
+  
+  Error: connection lost after commit
+      at async TestContext.<anonymous> (file:///home/mohamed-s/Desktop/Projects/solor-desk/scripts/test-account.test.mjs:491:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [Error],
+    expected: [Function (anonymous)],
+    operator: 'rejects',
+    diff: 'simple'
+  }

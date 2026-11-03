@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { createTranslator } from "next-intl";
+import { createRequire } from "node:module";
+import vm from "node:vm";
+import ts from "typescript";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createTranslator, NextIntlClientProvider } from "next-intl";
+import * as siteContent from "../lib/site-content.ts";
 import { parse } from "@formatjs/icu-messageformat-parser";
 import {
   presentation,
@@ -20,6 +26,132 @@ const en = JSON.parse(
 const ar = JSON.parse(
   readFileSync(new URL("../messages/ar.json", import.meta.url)),
 );
+
+test("rendered bilingual footer has truthful labels, verified destinations and no subscription or health claims", async () => {
+  const require = createRequire(import.meta.url);
+  for (const [locale, messages] of [
+    ["en", en],
+    ["ar", ar],
+  ]) {
+    const translator = createTranslator({ locale, messages });
+    function component(path) {
+      const source = readFileSync(new URL(path, import.meta.url), "utf8");
+      const exports = {};
+      vm.runInNewContext(
+        ts.transpileModule(source, {
+          compilerOptions: {
+            module: ts.ModuleKind.CommonJS,
+            target: ts.ScriptTarget.ES2022,
+            jsx: ts.JsxEmit.ReactJSX,
+          },
+        }).outputText,
+        {
+          exports,
+          Date,
+          require(name) {
+            if (name === "next/image")
+              return {
+                default: ({ src, alt }) =>
+                  React.createElement("img", { src, alt }),
+              };
+            if (name === "next/cache") return { cacheLife() {} };
+            if (name === "next-intl/server")
+              return {
+                getTranslations: async (ns) => (key, args) =>
+                  translator(`${ns}.${key}`, args),
+              };
+            return require(name);
+          },
+        },
+      );
+      return exports;
+    }
+    const { FooterSection } = component(
+      "../components/landing/footer-section.tsx",
+    );
+    const html = renderToStaticMarkup(await FooterSection());
+    assert.doesNotMatch(
+      html,
+      /<form|type="email"|Subscribed|once a month|operational|SoloDesk, Inc\.|https:\/\/(github|x|linkedin|youtube)\.com/i,
+    );
+    const links = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    assert.deepEqual(links, [
+      "/",
+      "/#features",
+      "/#tour",
+      "/#how-it-works",
+      "/#security",
+      "/#faq",
+      "/#contact",
+      "/sign-in",
+      "/sign-up",
+    ]);
+    assert.ok(html.includes(messages.Landing.footer));
+    assert.ok(html.includes(messages.Landing.footerNav.disclaimer));
+    assert.ok(html.includes(messages.Navigation.features));
+  }
+});
+
+test("rendered tour localizes all preview panels and labels synthetic totals", () => {
+  const require = createRequire(import.meta.url);
+  const exports = {};
+  const source = readFileSync(
+    new URL("../components/product-tour.tsx", import.meta.url),
+    "utf8",
+  );
+  vm.runInNewContext(
+    ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+        jsx: ts.JsxEmit.ReactJSX,
+      },
+    }).outputText,
+    {
+      exports,
+      require: (name) =>
+        name === "@/lib/site-content" ? siteContent : require(name),
+    },
+  );
+  for (const [locale, messages] of [
+    ["en", en],
+    ["ar", ar],
+  ]) {
+    const html = renderToStaticMarkup(
+      React.createElement(
+        NextIntlClientProvider,
+        { locale, messages },
+        React.createElement(exports.ProductTour, {
+          messages: {
+            ...messages.Landing.tour,
+            previewNote: messages.Landing.previewShort,
+          },
+        }),
+      ),
+    );
+    for (const key of [
+      "currency",
+      "activeTimer",
+      "invoiceWork",
+      "invoiceReview",
+      "total",
+      "monthlyHours",
+      "activeWorkspaces",
+    ])
+      assert.ok(
+        html.includes(messages.Landing.tourPreview[key]),
+        `${locale}:${key}`,
+      );
+    assert.ok(html.includes(messages.Landing.previewShort));
+    if (locale === "ar")
+      assert.doesNotMatch(
+        html,
+        /active projects|hrs logged|Active Timer|Due in 14 days|Total Balance Due|Bilingual RTL &amp; Accessibility Audit/,
+      );
+  }
+});
 
 test("finite presentation defaults and destination denials", () => {
   assert.deepEqual(presentation("ar", "system"), {
@@ -203,6 +335,8 @@ test("English/Arabic catalogs match keys and ICU arguments; all messages format"
             provider: "Google",
             hours: 2,
             minutes: 30,
+            seconds: 30,
+            count: 2,
             amount: 1250,
             language: "العربية",
             current: "Dark",

@@ -1,3 +1,4 @@
+import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { ProductTour } from "@/components/product-tour";
 
@@ -6,6 +7,7 @@ export async function TourSection() {
 
   const allMessages = (await getMessages()) as unknown as {
     Landing: {
+      tourPreview: Record<string, string>;
       tour: {
         heading: string;
         statusAvailable: string;
@@ -50,7 +52,13 @@ export async function TourSection() {
         </div>
       </div>
       <div className="mt-8">
-        <ProductTour messages={tourMessages} />
+        <NextIntlClientProvider
+          messages={{
+            Landing: { tourPreview: allMessages.Landing.tourPreview },
+          }}
+        >
+          <ProductTour messages={tourMessages} />
+        </NextIntlClientProvider>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations, useFormatter } from "next-intl";
 import { useState, useRef, useId, type KeyboardEvent } from "react";
 import {
   Users,
@@ -20,7 +21,7 @@ import {
 } from "@/lib/site-content";
 
 interface TourMessages {
-  heading?: string;
+  heading: string;
   statusAvailable: string;
   statusInDevelopment: string;
   statusPlanned: string;
@@ -80,6 +81,8 @@ function getStatusBadge(status: AvailabilityStatus, messages: TourMessages) {
 }
 
 export function ProductTour({ messages }: ProductTourProps) {
+  const t = useTranslations("Landing.tourPreview");
+  const format = useFormatter();
   const [activeTab, setActiveTab] = useState<string>("clients");
   const tabListRef = useRef<HTMLDivElement>(null);
   const baseId = useId();
@@ -121,7 +124,7 @@ export function ProductTour({ messages }: ProductTourProps) {
       <div
         ref={tabListRef}
         role="tablist"
-        aria-label={messages.heading || "Product capability tour"}
+        aria-label={messages.heading}
         className="flex flex-wrap gap-1.5 border-b border-border/40 pb-3"
       >
         {capabilityAreas.map((area, index) => {
@@ -226,18 +229,23 @@ export function ProductTour({ messages }: ProductTourProps) {
                           >
                             <div className="flex flex-col gap-0.5">
                               <p className="text-sm font-medium text-foreground">
-                                {client.name}
+                                <bdi>{client.name}</bdi>
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                <bdi>{client.activeProjects}</bdi> active
-                                projects · Currency:{" "}
+                                {t("activeProjects", {
+                                  count: client.activeProjects,
+                                })}{" "}
+                                · {t("currency")}
+                                {": "}
                                 <bdi className="font-mono">
                                   {client.currency}
                                 </bdi>
                               </p>
                             </div>
                             <div className="font-mono text-xs tabular-nums text-muted-foreground">
-                              <bdi>{client.totalHours} hrs logged</bdi>
+                              <bdi>
+                                {t("loggedHours", { hours: client.totalHours })}
+                              </bdi>
                             </div>
                           </div>
                         ))}
@@ -269,15 +277,11 @@ export function ProductTour({ messages }: ProductTourProps) {
                                     : "text-foreground"
                                 }`}
                               >
-                                {task.name === "taskOne"
-                                  ? "Map core workspace architecture"
-                                  : task.name === "taskTwo"
-                                    ? "Implement token rate limiter"
-                                    : "Conduct RTL accessibility audit"}
+                                {t(task.name)}
                               </span>
                             </div>
                             <span className="font-mono text-xs text-muted-foreground/80">
-                              {task.done ? "Verified" : "In Progress"}
+                              {t(task.done ? "done" : "inProgress")}
                             </span>
                           </div>
                         ))}
@@ -291,10 +295,10 @@ export function ProductTour({ messages }: ProductTourProps) {
                             <span className="size-2 rounded-full bg-emerald-500/80 inline-block" />
                             <div>
                               <p className="text-xs text-muted-foreground">
-                                Active Timer
+                                {t("activeTimer")}
                               </p>
                               <p className="text-sm font-medium text-foreground">
-                                API Contract Hardening
+                                {t("timerWork")}
                               </p>
                             </div>
                           </div>
@@ -305,15 +309,18 @@ export function ProductTour({ messages }: ProductTourProps) {
                         <div className="flex flex-col divide-y divide-border/30 pt-1">
                           {previewProjects.map((p) => (
                             <div
-                              key={p.name}
+                              key={t(p.name)}
                               className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 text-xs"
                             >
                               <span className="text-muted-foreground capitalize">
-                                {p.name}
+                                {t(p.name)}
                               </span>
                               <span className="font-mono text-foreground tabular-nums">
                                 <bdi>
-                                  {p.hours}h {p.minutes}m
+                                  {t("hours", {
+                                    hours: p.hours,
+                                    minutes: p.minutes,
+                                  })}
                                 </bdi>
                               </span>
                             </div>
@@ -327,42 +334,37 @@ export function ProductTour({ messages }: ProductTourProps) {
                         <div className="flex items-center justify-between pb-2 border-b border-border/30">
                           <div>
                             <p className="font-mono text-xs text-muted-foreground">
-                              INV-2026-084
+                              <bdi>INV-2026-084</bdi>
                             </p>
                             <p className="text-sm font-medium text-foreground">
-                              North Studio LLC
+                              {t("sampleClient")}
                             </p>
                           </div>
                           <span className="text-xs text-muted-foreground border border-border/50 rounded-full px-2 py-0.5">
-                            Due in 14 days
+                            {t("due")}
                           </span>
                         </div>
                         <div className="flex flex-col gap-1.5 py-1 text-xs text-muted-foreground">
                           <div className="flex justify-between">
-                            <span>
-                              Frontend Architecture & Delivery (20 hrs)
-                            </span>
+                            <span>{t("invoiceWork")}</span>
                             <span className="font-mono tabular-nums text-foreground">
-                              <bdi>$2,500.00</bdi>
+                              <bdi>{t("amount", { amount: 1000 })}</bdi>
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Bilingual RTL & Accessibility Audit</span>
+                            <span>{t("invoiceReview")}</span>
                             <span className="font-mono tabular-nums text-foreground">
-                              <bdi>$750.00</bdi>
+                              <bdi>{t("amount", { amount: 250 })}</bdi>
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between border-t border-border/30 pt-2.5">
                           <span className="text-xs font-medium text-muted-foreground">
-                            Total Balance Due
+                            {t("total")}
                           </span>
                           <span className="font-mono text-base font-semibold tabular-nums text-foreground">
                             <bdi>
-                              $
-                              {previewInvoiceAmount.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                              })}
+                              {t("amount", { amount: previewInvoiceAmount })}
                             </bdi>
                           </span>
                         </div>
@@ -373,41 +375,48 @@ export function ProductTour({ messages }: ProductTourProps) {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="rounded-lg border border-border/30 bg-muted/10 p-3.5">
                           <p className="text-xs text-muted-foreground">
-                            Monthly Focus Hours
+                            {t("monthlyHours")}
                           </p>
                           <p className="mt-1 font-mono text-lg font-medium tabular-nums text-foreground">
-                            <bdi>{previewInsights.monthlyHours}</bdi>{" "}
+                            <bdi>
+                              {format.number(previewInsights.monthlyHours)}
+                            </bdi>{" "}
                             <span className="text-xs font-normal text-muted-foreground">
-                              hrs
+                              {t("hoursUnit")}
                             </span>
                           </p>
                         </div>
                         <div className="rounded-lg border border-border/30 bg-muted/10 p-3.5">
                           <p className="text-xs text-muted-foreground">
-                            Billable Ratio
-                          </p>
-                          <p className="mt-1 font-mono text-lg font-medium tabular-nums text-foreground">
-                            <bdi>{previewInsights.billableRatio}</bdi>
-                          </p>
-                        </div>
-                        <div className="rounded-lg border border-border/30 bg-muted/10 p-3.5">
-                          <p className="text-xs text-muted-foreground">
-                            Active Workspaces
-                          </p>
-                          <p className="mt-1 font-mono text-lg font-medium tabular-nums text-foreground">
-                            <bdi>{previewInsights.activeProjects}</bdi>
-                          </p>
-                        </div>
-                        <div className="rounded-lg border border-border/30 bg-muted/10 p-3.5">
-                          <p className="text-xs text-muted-foreground">
-                            Invoiced YTD (USD)
+                            {t("billableRatio")}
                           </p>
                           <p className="mt-1 font-mono text-lg font-medium tabular-nums text-foreground">
                             <bdi>
-                              $
-                              {previewInsights.invoicedYTD.toLocaleString(
-                                "en-US",
-                              )}
+                              {format.number(previewInsights.billableRatio, {
+                                style: "percent",
+                              })}
+                            </bdi>
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-border/30 bg-muted/10 p-3.5">
+                          <p className="text-xs text-muted-foreground">
+                            {t("activeWorkspaces")}
+                          </p>
+                          <p className="mt-1 font-mono text-lg font-medium tabular-nums text-foreground">
+                            <bdi>
+                              {format.number(previewInsights.activeProjects)}
+                            </bdi>
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-border/30 bg-muted/10 p-3.5">
+                          <p className="text-xs text-muted-foreground">
+                            {t("invoicedYTD")}
+                          </p>
+                          <p className="mt-1 font-mono text-lg font-medium tabular-nums text-foreground">
+                            <bdi>
+                              {t("amount", {
+                                amount: previewInsights.invoicedYTD,
+                              })}
                             </bdi>
                           </p>
                         </div>
