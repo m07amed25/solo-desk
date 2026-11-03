@@ -262,7 +262,7 @@ export function validateWorkspaceName(name: string): string {
 }
 
 export function validateRevisionString(rev: unknown): string {
-  if (typeof rev !== "string" || rev.length > 19 || !/^[1-9]\d*$/.test(rev) || BigInt(rev) > 9223372036854775807n) {
+  if (typeof rev !== "string" || rev.length > 19 || !/^[1-9]\d*$/.test(rev) || BigInt(rev) > BigInt("9223372036854775807")) {
     throw new WorkspaceError(
       "VALIDATION",
       "Revision must be a positive decimal string",
@@ -276,7 +276,7 @@ export function validateDecimalString(
   rev: unknown,
   fieldName = "revision",
 ): string {
-  if (typeof rev !== "string" || rev.length > 19 || !/^[1-9]\d*$/.test(rev) || BigInt(rev) > 9223372036854775807n) {
+  if (typeof rev !== "string" || rev.length > 19 || !/^[1-9]\d*$/.test(rev) || BigInt(rev) > BigInt("9223372036854775807")) {
     throw new WorkspaceError(
       "VALIDATION",
       `${fieldName} must be a positive decimal string`,
@@ -2362,7 +2362,7 @@ export async function listWorkspaceMembers(
 
 // --- User Story 5: Member Management & Ownership Controls ---
 
-export function verifyFreshReauth(_session: unknown): never {
+export function verifyFreshReauth(_session: unknown): void {
   void _session;
   // No managed account/session/action-bound step-up adapter has been verified.
   throw new WorkspaceError("CAPABILITY_DISABLED", "Fresh reauthentication is unavailable", 503);
