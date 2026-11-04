@@ -1,0 +1,9 @@
+# US3 actual source/provider distinctions — T021
+
+Date: 2026-11-03. Investigation/preparation only; no actual provider campaign.
+
+Inspected installed better-auth 1.7.14 `dist/plugins/two-factor/backup-codes/index.mjs`: :228–232 conditional backupCodes update via incrementOne; :235 defaults to valid(ctx) unless disableSession; :324 server-only viewBackupCodes decrypts remaining material. `verify-two-factor.mjs:25–36` consumes challenge and creates a normal session/cookie; :102 returns an existing session token in authenticated mode. These upstream surfaces do not prove provider-supported limited recovery, no read-back, atomic code-set policy or revoke-all-prior-session continuation.
+
+`dist/api/routes/account.mjs:260` unlink uses freshSessionMiddleware, finds account list, checks list length then deletes one account. No demonstrated cross-family atomic TOTP/code/passkey invariant. `two-factor/index.mjs` disable behavior is upstream only, not accepted managed adapter. `@neondatabase/auth/dist/server-i57Km2d6.mjs:41` maps revokeOtherSessions to revoke-all-sessions; exact deployed outcomes remain unaccepted. Current managed [plugins](https://neon.com/docs/auth/guides/plugins) expose no accepted complete selected recovery contract; current server reference is for newer @neon/auth, not installed-package equivalence.
+
+After recovery revokes its initiator, original session cannot read privileged status/dispatch. Need an actual provider-bound restricted continuation with intended account/purpose, or fresh compliant sign-in, before any next effect. No app-issued recovery token, app lock, credential SQL or target-manifest validation fills this gap. Need actual provider concurrency/direct-origin proof for one-use and cross-family last-route guarantees. CAP remains blocked; no live calls.

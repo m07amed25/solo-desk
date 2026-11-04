@@ -107,8 +107,8 @@ async function requireDatabaseSession(
   client: Pick<PoolClient, "query">,
 ) {
   const { rows } = await client.query(
-    `SELECT u.id FROM neon_auth."user" u
-     JOIN neon_auth.session s ON s."userId" = u.id
+    `SELECT u.id FROM ${process.env.SOLODESK_AUTH_MODE === "app" ? "solodesk_auth" : "neon_auth"}."user" u
+     JOIN ${process.env.SOLODESK_AUTH_MODE === "app" ? "solodesk_auth" : "neon_auth"}.session s ON s."userId" = u.id
      WHERE u.id = $1::uuid AND s.id = $2::uuid AND u.banned IS NOT TRUE
        AND u."emailVerified" IS TRUE AND s."expiresAt" > CURRENT_TIMESTAMP
      LIMIT 1`,

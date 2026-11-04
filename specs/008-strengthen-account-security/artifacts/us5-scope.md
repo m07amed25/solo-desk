@@ -1,0 +1,9 @@
+# US5 optional passkey/passwordless disposition — T028
+
+Date: 2026-11-03. Investigation/preparation only; no actual provider campaign.
+
+F02.13 remains optional/unselected, including each other passwordless/hardware-backed variant separately. Installed @better-auth/passkey 1.7.14 exposes generate-register-options/generate-authenticate-options/verify/list/delete surfaces; managed Neon 0.7.0-beta fixed client array has no passkey plugin. Public managed supported plugin subset is not a passkey contract. App allowlist denies passkey operations and sign-in/email-otp, magic-link and phone primary authentication. Email verification OTP is separately selected existing behavior, not passwordless sign-in or MFA.
+
+Reuse T018 access-method constraints: owned reference, kind/authentication role, safe label, pending/active/removed state and optional timestamps are provider-owned safe bounded projections; new-method protocol unproven. No private-key/challenge/verifier mirror, extra backend, guessed support or passkey-as-second-factor role. Future explicit selection plus actual provider/browser/device capability, policy/data/security acceptance and design/task/analyze revision required. Local denial results are not positive acceptance; direct managed behavior unknown.
+
+Imported local denial result (2026-11-03): `node --test --test-name-pattern="actual app auth boundary denies" scripts/test-auth-contract.test.mjs` passed 2/2 tests. Actual capability module and route wrapper imported; credential flag both false/true; GET/POST/PUT/PATCH/DELETE deny unsupported operation families before managed transport, including supplied foreign actor/session/role/fresh/verifiedAt/code fields. Private no-store and no sensitive reflection asserted. Existing social Google/GitHub callbacks, get-session and sign-out forwarding retained. Provider transport/admission are controlled adapters; no direct managed-policy or positive journey acceptance.

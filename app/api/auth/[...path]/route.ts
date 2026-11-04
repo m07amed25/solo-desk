@@ -13,6 +13,7 @@ type RouteContext = { params: Promise<{ path: string[] }> };
 function wrapHandler(method: keyof typeof handlers) {
   const original = handlers[method];
   return async function (request: NextRequest, context: RouteContext) {
+    if (process.env.SOLODESK_AUTH_MODE === "app") return original(request, context);
     const url = new URL(request.url);
     const check = isAllowedAuthPath(url.pathname, request.method);
     if (!check.allowed) {

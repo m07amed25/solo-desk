@@ -349,7 +349,9 @@ export function AuthEmailForm({
 
       // Successful sign in: navigate to destination to pick up fresh server authority
       setPassword("");
-      router.push(`${returnTo || "/app"}#`);
+      if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect)
+        window.location.assign(`/app/account/security?returnTo=${encodeURIComponent(returnTo || "/app")}#`);
+      else router.push(`${returnTo || "/app"}#`);
     } catch (err: unknown) {
       await processSignInError(err);
     }

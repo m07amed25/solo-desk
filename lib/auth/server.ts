@@ -1,10 +1,117 @@
 import "server-only";
 import { createNeonAuth } from "@neondatabase/auth/next/server";
 
-export const auth = createNeonAuth({
-  baseUrl: process.env.NEON_AUTH_BASE_URL!,
-  cookies: { secret: process.env.NEON_AUTH_COOKIE_SECRET!, sessionDataTtl: 1 },
-});
+let applicationAuth:
+  Promise<ReturnType<typeof import("./app-auth").createAppAuth>> | undefined;
+export function getAppAuth() {
+  applicationAuth ??= (async () => {
+    const [{ createAppAuth }, { db }] = await Promise.all([
+      import("./app-auth"),
+      import("../db"),
+    ]);
+    return createAppAuth({
+      pool: db,
+      secret: process.env.BETTER_AUTH_SECRET || "",
+      origin: process.env.BETTER_AUTH_URL || "",
+      google:
+        process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+          ? {
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            }
+          : undefined,
+      github:
+        process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
+          ? {
+              clientId: process.env.GITHUB_CLIENT_ID,
+              clientSecret: process.env.GITHUB_CLIENT_SECRET,
+            }
+          : undefined,
+      async sendMail({ email, code, purpose }) {
+        const [
+          { sendEmail },
+          { default: AuthMessage, authSubjects },
+          { createElement },
+        ] = await Promise.all([
+          import("../email"),
+          import("../../emails/auth-message"),
+          import("react"),
+        ]);
+        await sendEmail({
+          to: email,
+          subject: authSubjects[purpose],
+          template: createElement(AuthMessage, {
+            name: "",
+            purpose,
+            code,
+            expiresAt: new Date(Date.now() + 300_000).toISOString(),
+          }),
+        });
+      },
+    });
+  })();
+  return applicationAuth;
+}
+
+const appMode = process.env.SOLODESK_AUTH_MODE === "app";
+export const auth = appMode
+  ? {
+      handler: () => ({
+        GET: async (request: Request) => (await getAppAuth()).handler(request),
+        POST: async (request: Request) => (await getAppAuth()).handler(request),
+      }),
+      async getSession(_options?: unknown) {
+        try {
+          const { headers } = await import("next/headers");
+          return {
+            data: await (
+              await getAppAuth()
+            ).api.getSession({
+              headers: await headers(),
+              query: { disableCookieCache: true },
+            }),
+            error: null,
+          };
+        } catch (error) {
+          const code = (error as { body?: { code?: string } })?.body?.code;
+          if (
+            [
+              "TWO_FACTOR_REQUIRED",
+              "VERIFIED_ACCOUNT_REQUIRED",
+              "UNAUTHORIZED",
+            ].includes(code || "")
+          )
+            return { data: null, error: null };
+          return {
+            data: null,
+            error: { message: "Authentication unavailable" },
+          };
+        }
+      },
+      async updateUser(body: { name: string }) {
+        try {
+          const { headers } = await import("next/headers");
+          await (
+            await getAppAuth()
+          ).api.updateUser({ headers: await headers(), body });
+          return { error: null };
+        } catch {
+          return { error: { message: "Profile update unavailable" } };
+        }
+      },
+      middleware: (_options?: unknown) => async () => {
+        throw new Error(
+          "Managed callback middleware is not used for application auth",
+        );
+      },
+    }
+  : createNeonAuth({
+      baseUrl: process.env.NEON_AUTH_BASE_URL!,
+      cookies: {
+        secret: process.env.NEON_AUTH_COOKIE_SECRET!,
+        sessionDataTtl: 1,
+      },
+    });
 
 // Fresh session authority shared by pages and the profile service; never shared-cached.
 // Note: Valid session checks and ordinary sign-out are strictly exempt from admission rate limits.
@@ -17,7 +124,7 @@ export async function currentSession() {
     session?.session && new Date(session.session.expiresAt).getTime();
   return session?.user &&
     session.user.emailVerified === true &&
-    session.user.banned !== true &&
+    (!("banned" in session.user) || session.user.banned !== true) &&
     expiry &&
     Number.isFinite(expiry) &&
     expiry > Date.now()

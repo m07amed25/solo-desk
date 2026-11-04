@@ -10,12 +10,13 @@ export async function readRequestBody(request: Request, maxBytes = 16_384) {
       if (done) break;
       size += value.byteLength;
       if (size > maxBytes) {
-        await reader.cancel();
+        // A cloned request waits for its unread sibling when cancellation is awaited.
+        void reader.cancel().catch(() => {});
         throw new RangeError("Request body too large");
       }
       chunks.push(value);
     }
-    return Buffer.concat(chunks).toString("utf8");
+    return new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
   } finally {
     reader.releaseLock();
   }

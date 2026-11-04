@@ -672,6 +672,76 @@ test("auth contract enforces exact HTTP method allowlisting per path", async () 
   }
 });
 
+
+async function importedAuthBoundary(credentialsEnabled) {
+  const { readFileSync } = await import("node:fs");
+  const { createRequire } = await import("node:module");
+  const vm = await import("node:vm");
+  const ts = (await import("typescript")).default;
+  const require = createRequire(import.meta.url);
+  const calls = [];
+  function load(path, adapters) {
+    const exports = {};
+    vm.runInNewContext(ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    }).outputText, {
+      exports, URL,
+      process: { env: { SOLODESK_AUTH_CREDENTIALS_ENABLED: String(credentialsEnabled) } },
+      require: (name) => name === "server-only" ? {} : name in adapters ? adapters[name] : require(name),
+    });
+    return exports;
+  }
+  const capabilities = load("../lib/auth/capabilities.ts", {});
+  const forward = async (req) => { calls.push(req.url); return Response.json({ forwarded: true }); };
+  const route = load("../app/api/auth/[...path]/route.ts", {
+    "@/lib/auth/capabilities": capabilities,
+    "@/lib/auth/server": {
+      auth: { handler: () => ({ GET: forward, POST: forward }) },
+      getAuthAdmissionPolicy: () => null,
+      consumeAuthAdmission: () => assert.fail("Disabled operation must not reach admission"),
+    },
+  });
+  return { route, calls };
+}
+
+for (const [label, paths] of [
+  ["unselected identity and unavailable MFA", [
+    "change-email", "link-social", "unlink-account",
+    "two-factor/enable", "two-factor/disable", "two-factor/verify-totp",
+    "two-factor/verify-backup-code", "two-factor/generate-backup-codes",
+  ]],
+  ["unselected passkey and separate passwordless", [
+    "passkey/generate-register-options", "passkey/generate-authenticate-options",
+    "passkey/verify-registration", "passkey/verify-authentication",
+    "passkey/list-user-passkeys", "passkey/delete-passkey", "passkey/update-passkey",
+    "sign-in/email-otp", "sign-in/magic-link", "sign-in/phone-number", "magic-link/verify",
+  ]],
+]) {
+  test(`actual app auth boundary denies ${label} before forwarding`, async () => {
+    for (const enabled of [false, true]) {
+      const { route, calls } = await importedAuthBoundary(enabled);
+      for (const path of paths) for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE"]) {
+        const req = new Request(`https://app.example.test/api/auth/${path}`, {
+          method,
+          ...(method === "POST" ? { headers: { "content-type": "application/json" }, body: JSON.stringify({
+            userId: "foreign-owner", sessionId: "foreign-session", role: "owner", fresh: true, verifiedAt: "2099-01-01", code: "012345",
+          }) } : {}),
+        });
+        const response = await route[method](req, { params: Promise.resolve({ path: path.split("/") }) });
+        assert.equal(response.status, method === "GET" || method === "POST" ? 403 : 405, `${enabled}:${method}:${path}`);
+        assert.equal(response.headers.get("cache-control"), "private, no-store");
+        assert.doesNotMatch(JSON.stringify(await response.json()), /foreign-owner|foreign-session|012345/);
+      }
+      assert.equal(calls.length, 0, "Denied methods and submitted authority claims never reach managed transport");
+      for (const [path, method] of [["sign-in/social", "POST"], ["callback/google", "GET"], ["callback/github", "POST"], ["get-session", "GET"], ["sign-out", "POST"]]) {
+        const response = await route[method](new Request(`https://app.example.test/api/auth/${path}`, { method }), { params: Promise.resolve({ path: path.split("/") }) });
+        assert.equal(response.status, 200);
+      }
+      assert.equal(calls.length, 5, "Existing social/callback/session/sign-out forwarding remains available");
+    }
+  });
+}
+
 test("challenge handling enforces leading-zero preservation, single-use, superseded invalidation, and wrong-account isolation", async () => {
   // In-memory challenge store simulating ephemeral provider challenge lifecycle
   const challengeStore = new Map(); // key -> { otp, email, purpose, expiresAt, consumed }

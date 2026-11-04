@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-03",
+  "status": "PASS for documentation checks; ERROR/BLOCKED for protected-effect implementation readiness",
+  "checks": [
+    {
+      "command": "setup-plan.sh --json",
+      "exit_code": 0,
+      "observation": "Core plan template created for active Feature008; JSON feature key distinct from actual Git branch."
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "observation": "No whitespace errors."
+    },
+    {
+      "command": "read-only Python artifact validation",
+      "exit_code": 0,
+      "observation": "Seven design docs populated; template headings, local file/anchor targets, unchanged spec/checklist/source input hashes, active pointer, explicit gate errors and no tasks/implementation checked."
+    },
+    {
+      "command": "node scripts/test-auth-flows.mjs --self-check",
+      "exit_code": 0,
+      "observation": "Offline target isolation, synthetic bounds, redaction, in-memory store, US4 recovery and manifest-authorization guards passed."
+    },
+    {
+      "command": "node scripts/test-account-postgres.mjs --self-check",
+      "exit_code": 0,
+      "observation": "SQL source self-check only; no database or authorization acceptance."
+    },
+    {
+      "command": "node scripts/test-account-security-postgres.mjs --self-check",
+      "exit_code": 0,
+      "observation": "SQL source/protocol self-check only; no database or authorization acceptance."
+    }
+  ],
+  "requirements_checklist": {
+    "checked": 14,
+    "total": 16,
+    "unchanged": true,
+    "pending": [
+      "Every policy-dependent requirement unambiguous/testable",
+      "All functional requirements fully resolved acceptance criteria"
+    ]
+  },
+  "hooks": "No .specify/extensions.yml; no before/after hooks registered.",
+  "not_run": [
+    "Application full suite/build/browser",
+    "Real PostgreSQL integration",
+    "Live managed provider/control-plane or direct-origin campaign",
+    "Full fresh dependency audit and deployed applicability",
+    "Human security/Arabic/assistive/usability review",
+    "Provisioning/migrations/deployment"
+  ],
+  "blocked": [
+    "P2-CAP complete managed MFA contract",
+    "P2-POL exact action-policy matrix",
+    "Applicable Feature007 identity/environment/data/release gates"
+  ],
+  "artifact_sha256": {
+    "plan.md": "5bb24df1a7107be0ba648b7377a711b3bc50c0027fb987782f2bcab20194a6ba",
+    "research.md": "6f680cee85bc258c14f0086a84103743db865ac9548a2b0f4d0390ecc4d78587",
+    "data-model.md": "03048630711df8dc7ed38245a5cb38b4edf75d182ff25c3656c8c35ba2e7391b",
+    "quickstart.md": "2072ad7fc3258a546f0d19fb524d21ac9bfebc7fbb9d23096e130e5cf42ae8d3",
+    "contracts/account-security.md": "30ee8f6bc70cd2181ba38cd78a11307b35bb1d544c40525510d94b226a5d0560",
+    "contracts/presentation.md": "5f1b20a9d10c9ec6e36c52927f199ebacd94e2f757c92aee9475a3db674aa43b",
+    "contracts/security-and-evidence.md": "9a919964c506a3d23c7c546823b33296667c2a5c0c35714393a6ffa851db37c8"
+  }
+}

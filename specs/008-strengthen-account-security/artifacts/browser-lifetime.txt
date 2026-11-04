@@ -1,0 +1,55 @@
+### Result
+{"scope":"synthetic component fixture; synthesized history events; keyboard unconfirmed sign-out","results":[{"locale":"en","heading":"Account security","historyHidden":true,"restored":true,"outageHidden":true,"signOutHidden":true,"retry":0},{"locale":"ar","heading":"أمان الحساب","historyHidden":true,"restored":true,"outageHidden":true,"signOutHidden":true,"retry":0}]}
+### Ran Playwright code
+```js
+await (async (page) => {
+  page.setDefaultTimeout(5000);
+  const results=[];
+  for (const locale of ['en','ar']) {
+    const url='http://127.0.0.1:4336/app/account?locale='+locale+'&theme=light';
+    await page.goto(url);
+    await page.waitForFunction(()=>window.runtime?.accountState==='ready');
+    const section=page.locator('section[aria-labelledby="account-security-title"]');
+    const heading=await section.locator('h2').textContent();
+    await page.evaluate(()=>{
+      window.fixture.contextFetch=()=>new Promise(resolve=>window.finishContext=resolve);
+      window.dispatchEvent(new Event('focus'));
+    });
+    await page.waitForFunction(()=>!!window.finishContext);
+    await page.evaluate(()=>{
+      const late=window.finishContext;
+      window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));
+      late(Response.json({...window.fixture.context,account:{...window.fixture.context.account,id:'foreign-owner'}}));
+    });
+    await page.waitForTimeout(50);
+    const historyHidden=!(await section.isVisible());
+    await page.evaluate(()=>{
+      window.fixture.contextFetch=null;
+      window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+    });
+    await page.waitForFunction(()=>window.runtime.accountState==='ready');
+    const restored=await section.isVisible();
+    await page.evaluate(async()=>{
+      window.fixture.contextFetch=()=>Promise.resolve(new Response(null,{status:503}));
+      await window.runtime.refreshContext();
+    });
+    await page.waitForFunction(()=>window.runtime.accountState==='unavailable');
+    const outageHidden=!(await section.isVisible());
+    await page.goto(url);
+    await page.waitForFunction(()=>window.runtime?.accountState==='ready');
+    await page.evaluate(()=>{window.fixture.contextFetch=null});
+    const signOut=page.getByRole('button',{name:locale==='en'?'Sign out':'تسجيل الخروج',exact:true});
+    await signOut.focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(()=>window.runtime.accountState==='unavailable');
+    const signOutHidden=!(await section.isVisible());
+    const retry=await page.getByRole('button',{name:locale==='en'?'Retry':'إعادة المحاولة',exact:true}).count();
+    results.push({locale,heading,historyHidden,restored,outageHidden,signOutHidden,retry});
+  }
+  return {scope:'synthetic component fixture; synthesized history events; keyboard unconfirmed sign-out',results};
+})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4336/app/account?locale=ar&theme=light
+### Events
+- New console entries: .playwright-cli/console-2026-11-03T17-59-46-696Z.log#L16-L19

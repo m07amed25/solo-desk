@@ -12,6 +12,7 @@ export const returnPaths = [
   "/app",
   "/app/workspace",
   "/app/account",
+  "/app/account/security",
 ] as const;
 export type SiteLocale = (typeof locales)[number];
 export type SiteTheme = (typeof themes)[number];

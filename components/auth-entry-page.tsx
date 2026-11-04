@@ -10,7 +10,8 @@ import { AuthFormSkeleton } from "@/components/auth-skeleton";
 import { WorkPreview } from "@/components/landing/work-preview";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { currentSession } from "@/lib/auth/server";
+import { currentSession, getAppAuth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 import { isCredentialsEnabled } from "@/lib/auth/capabilities";
 import {
   authReturnPath,
@@ -68,6 +69,21 @@ async function Entry({
     );
   }
   if (session?.user) redirect(`${returnTo}#`);
+  const appMode = process.env.SOLODESK_AUTH_MODE === "app";
+  let providers: string[] | undefined;
+  if (appMode) {
+    const engine = await getAppAuth();
+    const state = await engine.api.accountSecurityStatus({
+      headers: await headers(),
+    });
+    if (state.state !== "signed-out")
+      redirect(
+        `/app/account/security?returnTo=${encodeURIComponent(returnTo)}#`,
+      );
+    providers = (await engine.$context).socialProviders.map(
+      (provider) => provider.id,
+    );
+  }
   const messages = await getMessages();
   const signingUp = entry === "sign-up";
   return (
@@ -80,12 +96,16 @@ async function Entry({
           {t(signingUp ? "signUpBody" : "signInBody")}
         </p>
       </div>
-      <NextIntlClientProvider messages={{ Auth: messages.Auth }}>
+      <NextIntlClientProvider
+        messages={{ Auth: messages.Auth, Security: messages.Security }}
+      >
         <AuthInteractivePanel
           entry={entry}
           returnTo={returnTo}
           failed={params.get("authError") === "1"}
           credentialsEnabled={isCredentialsEnabled()}
+          appMode={appMode}
+          providers={providers}
         />
       </NextIntlClientProvider>
       <p className="text-sm text-muted-foreground">

@@ -1,0 +1,26 @@
+### Result
+[{"locale":"en","hidden":true,"retry":true},{"locale":"ar","hidden":true,"retry":true}]
+### Ran Playwright code
+```js
+await (async (page) => {
+  page.setDefaultTimeout(5000);
+  const results=[];
+  for (const [locale,retryLabel,signOutLabel] of [['en','Try again','Sign out'],['ar','حاول مجددًا','تسجيل الخروج']]) {
+    await page.goto('http://127.0.0.1:4336/app/account?locale='+locale+'&theme=light');
+    await page.waitForFunction(()=>window.runtime?.accountState==='ready');
+    await page.evaluate(()=>{window.fixture.contextFetch=null});
+    await page.getByRole('button',{name:signOutLabel,exact:true}).focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(()=>window.runtime.accountState==='unavailable');
+    const hidden=!(await page.locator('#account-security-title').isVisible());
+    const retry=await page.getByRole('button',{name:retryLabel,exact:true}).isVisible();
+    if (!hidden || !retry) throw new Error('Concealment/retry failure for '+locale);
+    results.push({locale,hidden,retry});
+  }
+  return results;
+})(page);
+```
+### Page
+- Page URL: http://127.0.0.1:4336/app/account?locale=ar&theme=light
+### Events
+- New console entries: .playwright-cli/console-2026-11-03T17-59-46-696Z.log#L21-L22

@@ -13,12 +13,14 @@ export function SignIn({
   failed,
   disabled = false,
   onInFlightChange,
+  providers = ["google", "github"],
 }: {
   entry: AuthEntry;
   returnTo?: AppDestination;
   failed: boolean;
   disabled?: boolean;
   onInFlightChange?: (inFlight: boolean) => void;
+  providers?: string[];
 }) {
   const t = useTranslations("Auth");
   const inFlight = useRef(false);
@@ -55,34 +57,38 @@ export function SignIn({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          disabled={attempt === "pending" || disabled}
-          onClick={() => signInWith("google")}
-        >
-          <span
-            className="provider-icon provider-google"
-            data-icon="inline-start"
-            aria-hidden="true"
-          />
-          <bdi>{t("google")}</bdi>
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          disabled={attempt === "pending" || disabled}
-          onClick={() => signInWith("github")}
-        >
-          <span
-            className="provider-icon provider-github"
-            data-icon="inline-start"
-            aria-hidden="true"
-          />
-          <bdi>{t("github")}</bdi>
-        </Button>
+        {providers.includes("google") && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            disabled={attempt === "pending" || disabled}
+            onClick={() => signInWith("google")}
+          >
+            <span
+              className="provider-icon provider-google"
+              data-icon="inline-start"
+              aria-hidden="true"
+            />
+            <bdi>{t("google")}</bdi>
+          </Button>
+        )}
+        {providers.includes("github") && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            disabled={attempt === "pending" || disabled}
+            onClick={() => signInWith("github")}
+          >
+            <span
+              className="provider-icon provider-github"
+              data-icon="inline-start"
+              aria-hidden="true"
+            />
+            <bdi>{t("github")}</bdi>
+          </Button>
+        )}
       </div>
       {attempt === "pending" && (
         <p role="status" className="text-sm text-muted-foreground">

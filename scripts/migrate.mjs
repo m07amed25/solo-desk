@@ -8,6 +8,35 @@ const root = new URL("../", import.meta.url);
 const migrationDirectory = new URL("migrations/", root);
 class MigrationError extends Error {}
 
+export function migrationFailureMessage(error) {
+  if (error instanceof MigrationError) return error.message;
+  const networkCodes = new Set([
+    "EAI_AGAIN",
+    "ENOTFOUND",
+    "ECONNREFUSED",
+    "ECONNRESET",
+    "ETIMEDOUT",
+    "ENETUNREACH",
+    "EHOSTUNREACH",
+  ]);
+  const codes = [
+    error?.code,
+    ...(Array.isArray(error?.errors)
+      ? error.errors.map((cause) => cause?.code)
+      : []),
+  ];
+  const network = [...new Set(codes.filter((code) => networkCodes.has(code)))];
+  if (
+    network.length ||
+    error?.message === "Connection terminated due to connection timeout"
+  )
+    return `Migration connection failed (${network.join(", ") || "timeout"}). Check network/DNS access to Neon and DATABASE_URL_UNPOOLED, then rerun unchanged migrations. Existing committed migrations will be skipped.`;
+  const code = /^[A-Z0-9]{5}$/.test(error?.code ?? "")
+    ? ` (SQLSTATE ${error.code})`
+    : "";
+  return `Migration failed${code}. Check the target database; rerun unchanged files to reconcile committed migrations.`;
+}
+
 export function readMigrations(selectors = [], directory = migrationDirectory) {
   const files = readdirSync(directory, { withFileTypes: true })
     .filter(
@@ -148,14 +177,7 @@ if (
   pathToFileURL(process.argv[1]).href === import.meta.url
 ) {
   main().catch((error) => {
-    const code = /^[A-Z0-9]{5}$/.test(error.code ?? "")
-      ? ` (SQLSTATE ${error.code})`
-      : "";
-    console.error(
-      error instanceof MigrationError
-        ? error.message
-        : `Migration failed${code}. Check the target database; rerun unchanged files to reconcile committed migrations.`,
-    );
+    console.error(migrationFailureMessage(error));
     process.exitCode = 1;
   });
 }

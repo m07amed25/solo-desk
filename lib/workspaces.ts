@@ -2338,7 +2338,7 @@ export async function listWorkspaceMembers(
       `SELECT m.id, m.user_id, m.role, m.status, m.revision, m.created_at,
               u.name, u.email
        FROM solodesk.workspace_memberships m
-       LEFT JOIN neon_auth."user" u ON u.id = m.user_id
+       LEFT JOIN ${process.env.SOLODESK_AUTH_MODE === "app" ? "solodesk_auth" : "neon_auth"}."user" u ON u.id = m.user_id
        WHERE m.workspace_id = $1
        ORDER BY m.created_at ASC
        LIMIT 50`,

@@ -18,13 +18,53 @@ export async function generateMetadata() {
 export default async function AccountPage() {
   await connection();
   const navigation = await getTranslations("Navigation");
+  const security = await getTranslations("AccountSecurity.protection");
+  const securityEntry =
+    process.env.SOLODESK_AUTH_MODE === "app" ? (
+      <section
+        className="mt-8 flex flex-col gap-3"
+        aria-labelledby="account-security-title"
+      >
+        <h2 id="account-security-title" className="text-xl font-semibold">
+          {security("title")}
+        </h2>
+        <Link
+          href="/app/account/security"
+          className="w-fit font-medium underline underline-offset-4"
+        >
+          {(await getTranslations("Security"))("manage")}
+        </Link>
+      </section>
+    ) : (
+      <section
+        aria-labelledby="account-security-title"
+        className="mt-8 flex flex-col gap-4"
+      >
+        <h2 id="account-security-title" className="text-xl font-semibold">
+          {security("title")}
+        </h2>
+        <Alert role="note" className="text-start">
+          <AlertDescription>
+            <p>{security("unavailable")}</p>
+            <p>{security("unknown")}</p>
+            <p>{security("recoveryLimit")}</p>
+          </AlertDescription>
+        </Alert>
+      </section>
+    );
   let envelope;
-  let realtimeUrl: string;
+  let realtimeUrl = "";
   try {
-    const url = new URL(process.env.NEON_REALTIME_URL || "");
-    if (!["ws:", "wss:"].includes(url.protocol) || url.username || url.password)
-      throw new Error("Realtime unavailable");
-    realtimeUrl = url.href;
+    if (process.env.SOLODESK_AUTH_MODE !== "app") {
+      const url = new URL(process.env.NEON_REALTIME_URL || "");
+      if (
+        !["ws:", "wss:"].includes(url.protocol) ||
+        url.username ||
+        url.password
+      )
+        throw new Error("Realtime unavailable");
+      realtimeUrl = url.href;
+    }
     envelope = await loadProfile();
   } catch {
     const c = await getTranslations("Common");
@@ -42,6 +82,7 @@ export default async function AccountPage() {
               </Link>
             </AlertDescription>
           </Alert>
+          {securityEntry}
         </div>
       </ApplicationShell>
     );
@@ -58,9 +99,12 @@ export default async function AccountPage() {
           {navigation("personalAccount")}
         </h1>
         <LiveProfile {...envelope} realtimeUrl={realtimeUrl} />
-        <div className="mt-8 border-t pt-8">
-          <AccountReauthentication action="revoke_other_sessions" />
-        </div>
+        {securityEntry}
+        {process.env.SOLODESK_AUTH_MODE !== "app" && (
+          <div className="mt-8 border-t pt-8">
+            <AccountReauthentication action="revoke_other_sessions" />
+          </div>
+        )}
       </div>
     </ApplicationShell>
   );

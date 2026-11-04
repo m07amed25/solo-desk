@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-03",
+  "scope": "Pre-execution identity; local and hosted versions are distinct",
+  "head": "ef88f2eff2c1d50f39293ceca09c18a84662ed84",
+  "branch": "codex/fix-vercel-workspace-typecheck",
+  "node": "v24.21.0",
+  "installed_versions": {
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "typescript": "5.9.3",
+    "next-intl": "4.14.9",
+    "@base-ui/react": "1.9.0",
+    "tailwindcss": "4.3.3",
+    "@neondatabase/auth": "0.7.0-beta",
+    "better-auth": "1.7.14",
+    "@better-auth/passkey": "1.7.14",
+    "pg": "8.23.1"
+  },
+  "input_sha256": {
+    "AGENTS.md": "5efe6f14f386f5eaee08fc69dff12e0c0680efd33f4281a13151b24721d6f4b3",
+    ".specify/memory/constitution.md": "b40bdaeb2b6bd9abb08b9addd8fdc01be96c533a723838f6113a60db9a27463a",
+    "package.json": "e9d755ee487ec29a34bbe5e136394d85dac82d62c0152129fef4f535b8cf95a8",
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b",
+    "docs/development/agent-skills.md": "83c301127634b1d6e6512ee336727a5541924fcb88d9f22f391d90745259f6ff",
+    "specs/008-strengthen-account-security/quickstart.md": "5db1d30016fb65a5d33039330c40c722b6941fdd113855554ec2df67da7d2a5a",
+    "specs/008-strengthen-account-security/research.md": "6f680cee85bc258c14f0086a84103743db865ac9548a2b0f4d0390ecc4d78587",
+    "specs/008-strengthen-account-security/spec.md": "c39abf6e93b1273f584d43e0249af86e715f5b524a82f54421aab6fc8e727db9",
+    "specs/008-strengthen-account-security/plan.md": "5bb24df1a7107be0ba648b7377a711b3bc50c0027fb987782f2bcab20194a6ba",
+    "specs/008-strengthen-account-security/data-model.md": "d0a53e869e9333e4692da2f0ae7f20421d9075702a15f8c4e6901c98e93bb61f",
+    "specs/008-strengthen-account-security/tasks.md": "cbbb695b095436944f4681ebb8ed682cf70474cdd89648f0a1fd5d64e0c03bc3",
+    "specs/008-strengthen-account-security/checklists/requirements.md": "f229bfc1e8bb165ec9c7a21f42e00efe85f59657f9f2191415ea28531740ce60",
+    "specs/008-strengthen-account-security/contracts/account-security.md": "9ddd2b2eca7699b493da47bdebf5b4a86d5de140aa6d68fab3afd35421ad03eb",
+    "specs/008-strengthen-account-security/contracts/security-and-evidence.md": "98df7a49f3145c401eb103dd1fa042ca654ec9962550afbad59ac16a2503a131",
+    "specs/008-strengthen-account-security/contracts/presentation.md": "5f1b20a9d10c9ec6e36c52927f199ebacd94e2f757c92aee9475a3db674aa43b",
+    "specs/008-strengthen-account-security/artifacts/specification-context.md": "63c0416874231809ac54e79abb816c2e7489102a6519311b0e8bae076eb5d9c5",
+    "lib/auth/server.ts": "002b6c8a931335550a4a80607d082acac8815e275224a9e9ba660dcecab2cb9a",
+    "lib/auth/capabilities.ts": "200f692cdb0f4124885ebb16a143c5918927d94f1247d6f455d8f6d36d3b82d2",
+    "lib/auth/account-security.ts": "1eabbf2b7b87dcf791fb64c1bfa2763f20c1560520785721125fac11ab40a013",
+    "lib/account.ts": "b5135c2f333707372227b190c48b042dfc93c7de1bc1d4ce31c3d6a3e91c149b",
+    "lib/profile.ts": "0379c3fbbe6d61bfc82dc2573d7cbc6cd1f82d1f3152179ba7a078c3bb9593d8",
+    "components/application-runtime.tsx": "99d18c975ac634f8c5b0840c5391c99341dcd26648b2c835288b347a630f7e48",
+    "components/application-shell.tsx": "70a23c204041b46674b2c135ed3de24140094bd6ceeeb9dc3d6c0cd27c72a2c3",
+    "app/api/auth/[...path]/route.ts": "afc63e1ea4721fff10d06939919ff517552f27c4b7594ed76d142f5e0c8825ee",
+    "app/(site)/[locale]/[theme]/app/account/page.tsx": "dc2c948fb003b46f5ee36d7af5a22ace87d27bf2f8d7fbdbe5622adbecfbfcce",
+    "scripts/test-site.test.mjs": "8e961b8bf038d2e9feda25530edcea2b93a3e098e42bcde785ed5017c6e72f30",
+    "scripts/test-application.test.mjs": "3b66b174c5d8c4235d99854d9a2818204f66b3984e894c2a438f543249f0bf43",
+    "scripts/test-auth-contract.test.mjs": "e2b1bce67a44df96bf9e0a12a839373d38eb6437f8afc996e8c283ff140ebf0b",
+    "messages/en.json": "91642aadeced6d305190d7d0aaf1463283ea36a0cd312b0f6a1bf8f51c44c82c",
+    "messages/ar.json": "d4cd3db2fcfe4dfbf0dd219a8392491179bdc818df83f45ec43d75a4f978afca"
+  },
+  "dirty_paths": [
+    " M docs/planning/decisions.md",
+    " M plan.md",
+    " M specs/007-phase-one-completion/artifacts/identity-policy.md",
+    " M specs/007-phase-one-completion/artifacts/managed-capabilities.md",
+    " M specs/007-phase-one-completion/artifacts/readiness.md",
+    "?? specs/008-strengthen-account-security/"
+  ],
+  "hosted_version": "Unknown; no target authorized",
+  "checklist": {
+    "checked": 16,
+    "total": 16,
+    "notes": "Markers differ from planning capture; POL-03 and notes remain deferred; no checklist edits made"
+  },
+  "next_guides_read": [
+    "01-app/03-api-reference/04-functions/connection.md",
+    "01-app/02-guides/authentication.md"
+  ],
+  "setup": "Git ignore covers Node outputs/env/logs/editors; flat ESLint global ignores cover generated outputs. Private npm package; no publication, Docker, Helm or Terraform setup selected."
+}

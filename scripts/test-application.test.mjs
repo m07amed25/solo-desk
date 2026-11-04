@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import * as React from "react";
 import * as jsxRuntime from "react/jsx-runtime";
+import { renderToStaticMarkup } from "react-dom/server";
 import { createRequire } from "node:module";
 import { createTranslator } from "next-intl";
 import {
@@ -62,7 +63,7 @@ function loadModule(path, adapters, globals = {}) {
   return exports;
 }
 
-test("runtime refresh stays quiet; history and sign-out still conceal private content", async () => {
+test("runtime refresh stays quiet; account security entry conceals on history, authority loss and sign-out", async () => {
   const hooks = [];
   const effects = [];
   const passiveEffects = [];
@@ -86,6 +87,21 @@ test("runtime refresh stays quiet; history and sign-out still conceal private co
     workspaces: { items: [] },
     selection: { state: "disabled" },
   };
+  const messages = JSON.parse(readFileSync(new URL("../messages/en.json", import.meta.url)));
+  const translator = createTranslator({ locale: "en", messages });
+  const accountPage = await loadModule("../app/(site)/[locale]/[theme]/app/account/page.tsx", {
+    "react/jsx-runtime": jsxRuntime,
+    "next/server": { connection: async () => {} },
+    "next/navigation": { redirect: () => assert.fail("Unexpected redirect") },
+    "next/link": { default: "a" },
+    "next-intl/server": { getTranslations: async (ns) => (key) => translator(`${ns}.${key}`) },
+    "@/components/application-shell": { ApplicationShell: "main" },
+    "@/components/live-profile": { LiveProfile: () => null },
+    "@/components/account-reauthentication": { AccountReauthentication: () => null },
+    "@/components/ui/alert": { Alert: "aside", AlertDescription: "div" },
+    "@/lib/profile": { loadProfile: async () => ({ userId }) },
+  }, { process: { env: { NEON_REALTIME_URL: "wss://synthetic.invalid" } } }).default();
+  assert.ok(renderToStaticMarkup(accountPage).includes(messages.AccountSecurity.protection.title));
   const runtimeModule = loadModule(
     "../components/application-runtime.tsx",
     {
@@ -167,9 +183,10 @@ test("runtime refresh stays quiet; history and sign-out still conceal private co
   );
   const render = () => {
     index = 0;
-    return runtimeModule.ApplicationRuntime({ initialContext, children: null });
+    return runtimeModule.ApplicationRuntime({ initialContext, children: accountPage });
   };
   const tree = render();
+  assert.equal(tree.props.children[1].props.children, accountPage, "Actual entry belongs inside the existing private lifetime boundary");
   tree.props.children[1].props.ref.current = root;
   let cleanup = effects.map((effect) => effect()).filter(Boolean);
   const initialEffects = effects.slice();
@@ -225,7 +242,14 @@ test("runtime refresh stays quiet; history and sign-out still conceal private co
   );
   finishContext(Response.json(initialContext));
   await new Promise(setImmediate);
+  listeners.get("focus")();
+  const staleContext = finishContext;
+  const beforeHistory = render().props.value.generation;
   listeners.get("pagehide")();
+  staleContext(Response.json({ ...initialContext, account: { ...initialContext.account, id: "foreign-owner" } }));
+  await new Promise(setImmediate);
+  assert.ok(render().props.value.generation > beforeHistory);
+  assert.deepEqual(navigation, [], "A stale reply after concealment cannot choose a new owner or navigate");
   assert.equal(
     root.style.display,
     "none",
@@ -281,16 +305,24 @@ test("runtime refresh stays quiet; history and sign-out still conceal private co
   hooks.length = 0;
   effects.length = 0;
   passiveEffects.length = 0;
+  passiveEffects.length = 0;
   const freshTree = render();
   freshTree.props.children[1].props.ref.current = root;
   const disposeFresh = effects.map((effect) => effect()).filter(Boolean);
   microtasks.splice(0).forEach((fn) => fn());
+  disposeFresh.push(...passiveEffects.map((effect) => effect()).filter(Boolean));
   assert.equal(
     contextRequests,
     beforeRemount,
     "A new server-validated runtime must not inherit another runtime's history state",
   );
   assert.equal(render().props.value.accountState, "ready");
+  listeners.get("focus")();
+  finishContext(Response.json({ ...initialContext, account: { ...initialContext.account, id: "foreign-owner" } }));
+  await new Promise(setImmediate);
+  assert.equal(root.style.display, "none", "Changed account cannot reveal the old account page");
+  assert.equal(root.inert, true);
+  assert.equal(navigation.at(-1), "/app/account#");
   for (const dispose of disposeFresh) dispose();
 });
 
@@ -790,6 +822,7 @@ test("actual callback render clears fragments on success, denial and bounded-que
   let session = mockSession();
   let reads = 0;
   const callback = loadModule("../app/(utility)/auth/callback/page.tsx", {
+    "next/headers": { headers: async () => new Headers() },
     "react/jsx-runtime": jsxRuntime,
     "next/server": { connection: async () => {} },
     "next/navigation": {

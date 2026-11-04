@@ -2,6 +2,8 @@
 
 > Current revalidation, 3 November 2026: No owner approval reference was supplied. The numeric thresholds and challenge policy below are synthetic/local fixtures, not approved production activation policy. G3 remains BLOCKED and T016 is unchecked. See [implementation-resume.md](implementation-resume.md).
 
+> Scope clarification for Phase 02: that revalidation supersedes the older approval/activation headings below. The five decisions confirmed in Feature 007's specification remain scoped requirements; no broader MFA, passkey, recovery-code, verified-email-change or linking policy is approved. Q-08's recorded Phase 01 resolutions still need the scoped activation evidence required by G3/G5. Feature 008 POL-01–POL-03 track the additional decisions; do not copy these fixture limits or the revocation-only five-minute proof into new actions by default. The current confirmation route's 5/300 cap also differs from the 3/60 fixture below and must be reconciled in its owning task before reuse.
+
 **Feature**: Phase One Account and Public Entry Completion (`specs/007-phase-one-completion`)  
 **Task**: T016 (User Story 1)  
 **Date**: 2026-11-03  

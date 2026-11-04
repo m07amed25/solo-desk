@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-03",
+  "scope": "planning only; no installed/managed/deployed-version equivalence implied",
+  "head": "ef88f2eff2c1d50f39293ceca09c18a84662ed84",
+  "actual_git_branch": "codex/fix-vercel-workspace-typecheck",
+  "spec_kit_feature_key": "008-strengthen-account-security",
+  "node": "v24.21.0",
+  "installed_versions": {
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "typescript": "5.9.3",
+    "next-intl": "4.14.9",
+    "@base-ui/react": "1.9.0",
+    "tailwindcss": "4.3.3",
+    "@neondatabase/auth": "0.7.0-beta",
+    "better-auth": "1.7.14",
+    "@better-auth/passkey": "1.7.14",
+    "pg": "8.23.1"
+  },
+  "input_sha256": {
+    "package.json": "e9d755ee487ec29a34bbe5e136394d85dac82d62c0152129fef4f535b8cf95a8",
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b",
+    ".specify/memory/constitution.md": "b40bdaeb2b6bd9abb08b9addd8fdc01be96c533a723838f6113a60db9a27463a",
+    "specs/008-strengthen-account-security/spec.md": "c39abf6e93b1273f584d43e0249af86e715f5b524a82f54421aab6fc8e727db9",
+    "specs/008-strengthen-account-security/checklists/requirements.md": "dac3acde32aebd6937910ee1e3dc36c1ec650c215fd04a69cadc03a3925497c2",
+    "lib/auth/server.ts": "002b6c8a931335550a4a80607d082acac8815e275224a9e9ba660dcecab2cb9a",
+    "lib/auth/account-security.ts": "1eabbf2b7b87dcf791fb64c1bfa2763f20c1560520785721125fac11ab40a013",
+    "lib/auth/capabilities.ts": "200f692cdb0f4124885ebb16a143c5918927d94f1247d6f455d8f6d36d3b82d2",
+    "lib/account.ts": "b5135c2f333707372227b190c48b042dfc93c7de1bc1d4ce31c3d6a3e91c149b",
+    "lib/rate-limit.ts": "4d158faaaa032b9f2c3ad11ba51ed780cce42098b9ebe0442cdcedca90775e83",
+    "app/api/auth/[...path]/route.ts": "afc63e1ea4721fff10d06939919ff517552f27c4b7594ed76d142f5e0c8825ee"
+  },
+  "working_tree_paths": [
+    " M docs/planning/decisions.md",
+    " M plan.md",
+    " M specs/007-phase-one-completion/artifacts/identity-policy.md",
+    " M specs/007-phase-one-completion/artifacts/managed-capabilities.md",
+    " M specs/007-phase-one-completion/artifacts/readiness.md",
+    "?? specs/008-strengthen-account-security/"
+  ],
+  "hosted_build": "unknown; G5 and provider evidence unavailable",
+  "preexisting_work": "Earlier spec/checklist/context, root/decision and narrow Feature007 documentation changes preserved. Only planning artifacts plus root planning checkpoint added in this invocation."
+}

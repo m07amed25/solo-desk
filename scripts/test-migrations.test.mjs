@@ -8,8 +8,29 @@ import test from "node:test";
 import {
   applyMigrations,
   migrationConnection,
+  migrationFailureMessage,
   readMigrations,
 } from "./migrate.mjs";
+
+test("migration failures identify network problems without exposing driver messages or credentials", () => {
+  const secret = "postgres://owner:private-password@private-host/db";
+  for (const error of [
+    Object.assign(new Error(secret), { code: "EAI_AGAIN" }),
+    new AggregateError([
+      Object.assign(new Error(secret), { code: "ENETUNREACH" }),
+    ]),
+  ]) {
+    const message = migrationFailureMessage(error);
+    assert.match(message, /connection failed/);
+    assert.match(message, /network\/DNS/);
+    assert.ok(!message.includes(secret));
+  }
+  assert.match(
+    migrationFailureMessage({ code: "23505", message: secret }),
+    /SQLSTATE 23505/,
+  );
+  assert.ok(!migrationFailureMessage(new Error(secret)).includes(secret));
+});
 
 test("selection is ordered, deduplicated and limited to existing migration files", (t) => {
   const path = mkdtempSync(join(tmpdir(), "solodesk-migrations-"));

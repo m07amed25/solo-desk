@@ -1,0 +1,15 @@
+# US3 acceptance campaign
+
+Date: 2026-11-03. Investigation/preparation only; no actual provider campaign.
+
+Prerequisites: accepted CAP/POL/IDENTITY/ENV and applicable DATA/RELEASE; two synthetic accounts, three sessions each, approved per-action policy version and independently verified isolated app/auth/DB/OAuth/sink/roles. None available here. Record source/build/managed config, exact inputs without secrets, before/after authoritative factor/identity/session state, first protected-request denial and unexpected effects. Exercise app and direct managed origins/cache/callbacks independently. Repeat enabled flows in English/Arabic, all themes, keyboard/mobile; human and browser results stay separate. Unknown policy values are symbolic references to an unapproved matrix row, never defaults. Every row below is NOT RUN/BLOCKED until executable supported contracts exist. No fake MFA harness is created.
+
+| Scenario | Trigger | Required accepted observation | Required denial/failure/no-effect observation |
+| --- | --- | --- | --- |
+| US3.1 | Recover with code, multiple sessions | One code consumed; ALL pre-existing A sessions including initiator denied on first next protected request; confirm replacement TOTP/current recovery material then fresh sign-in | B sessions unaffected; recovery-only continuation gives no normal profile/business/status authority from revoked initiator |
+| US3.2 | Issue/present/acknowledge/replace codes | New set shown once with custody guidance/ack, replaced set invalid, each code at most once | Read-back forbidden; lost response stays unknown, no blind regeneration or secret storage/log/URL; acknowledgement is no backup proof |
+| US3.3 | Disable/replace protection | Explicit consequence + approved current-owner fresh action proof; voluntary disable retains usable primary route | Old session alone cannot downgrade; wrong purpose/expired/consumed proof and authority loss before effect deny |
+| US3.4 | Last-route removal races | Atomic invariant across factor/social/passkey/recovery families: accepted primary + confirmed TOTP + unused acknowledged current code while enrolled | Competing removals cannot jointly violate routes; last-code recovery replaces material before completion; app lock cannot enforce direct provider |
+| US3.5 | Invalid/exhausted/replayed/foreign recovery | Zero recovery/downgrade, bounded non-disclosing approved retry/cooldown without easy permanent lockout | Two-instance caps/outage; no normal access while incomplete and no restored old sessions |
+| US3.6 | Lost reply/timeout/duplicate/partial outcome | Original operation correlation, pending/unknown observation then provider-authoritative reconciliation | No second code/blind contradictory change, false rollback/success or proof release on unknown effect |
+| US3.7 | All methods/codes lost | Explicit no guaranteed recovery and no automatic/support-assisted bypass | No unverified new enrollment, email-only merge, credential/session resurrection or ownership transfer |

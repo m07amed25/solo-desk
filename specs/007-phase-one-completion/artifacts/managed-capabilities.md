@@ -1,5 +1,7 @@
 # Managed Capabilities and Provider Evidence Ledger (Gate G1)
 
+> Phase 02 prerequisite review, 3 November 2026: the installed checkout has `@neondatabase/auth` 0.7.0-beta and `better-auth` 1.7.14. The 1.7.6 audit and “SUPPORTED”/privilege-verification claims below are historical upstream/local observations, not actual hosted acceptance. No independently verified target exists in current evidence; G1/G5 stay blocked. Current production routes supply no real password/list/revoke adapter; social freshness is unavailable. Reconcile installed revoke routing and token/ID shapes before use. See [owning corrections](readiness.md#phase-02-prerequisite-review--3-november-2026) and [dated capability distinctions](../../008-strengthen-account-security/artifacts/specification-context.md#capability-review).
+
 **Feature**: Phase One Account and Public Entry Completion (`specs/007-phase-one-completion`)  
 **Task**: T027 (User Story 3)  
 **Date**: 2026-11-03  

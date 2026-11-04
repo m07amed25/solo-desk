@@ -1,9 +1,10 @@
 import localFont from "next/font/local";
-import { Geist, Geist_Mono } from "next/font/google";
 
-export const geistSans = Geist({
+export const geistSans = localFont({
+  src: "../public/fonts/geist-latin.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
+  display: "swap",
 });
 
 export const rugis = localFont({
@@ -20,7 +21,9 @@ export const sahabah = localFont({
   display: "swap",
 });
 
-export const geistMono = Geist_Mono({
+export const geistMono = localFont({
+  src: "../public/fonts/geist-mono-latin.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
+  display: "swap",
 });

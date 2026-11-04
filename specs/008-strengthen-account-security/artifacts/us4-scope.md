@@ -1,0 +1,9 @@
+# US4 optional identity-change disposition — T025
+
+Date: 2026-11-03. Investigation/preparation only; no actual provider campaign.
+
+F02.12 remains optional/unselected. Current local app allowlist denies change-email/link-social/unlink-account regardless of credential flag. Upstream `better-auth/dist/api/routes/update-user.mjs:396` change-email, `account.mjs:75` link-social and `:260` unlink-account are not managed acceptance. [Managed user management](https://neon.com/docs/auth/guides/user-management) says email changes unsupported; current provider linking/collision/session behavior unproven. No implicit matching-email merge approved, including ordinary social sign-in.
+
+Future selection needs actual capability, named policy approval, same-account/original-session fresh action proof, verified identity control/collision denial, unknown/cancel/expiry reconciliation, approved session outcomes and atomic cross-family last-route behavior. Preserve stable account/workspace/business IDs. No activation requested or implemented. Local imported denial regressions will record only app forwarding denial; direct managed enforcement and positive scenarios remain unaccepted.
+
+Imported local denial result (2026-11-03): `node --test --test-name-pattern="actual app auth boundary denies" scripts/test-auth-contract.test.mjs` passed 2/2 tests. Actual capability module and route wrapper imported; credential flag both false/true; GET/POST/PUT/PATCH/DELETE deny unsupported operation families before managed transport, including supplied foreign actor/session/role/fresh/verifiedAt/code fields. Private no-store and no sensitive reflection asserted. Existing social Google/GitHub callbacks, get-session and sign-out forwarding retained. Provider transport/admission are controlled adapters; no direct managed-policy or positive journey acceptance.

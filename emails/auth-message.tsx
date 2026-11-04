@@ -2,6 +2,7 @@ import { Button, Heading, Hr, Link, Section, Text } from "react-email";
 import EmailLayout from "./components/email-layout";
 
 export const authSubjects = {
+  "change-email": "SoloDesk: Confirm your email change · تأكيد تغيير البريد الإلكتروني",
   "email-verification":
     "SoloDesk: Verify your email address · تأكيد عنوان بريدك الإلكتروني",
   "forget-password": "SoloDesk: Reset your password · إعادة تعيين كلمة المرور",
@@ -9,12 +10,14 @@ export const authSubjects = {
 };
 
 const headingsEn = {
+  "change-email": "Confirm your email change for SoloDesk",
   "email-verification": "Verify your email address for SoloDesk",
   "forget-password": "Reset your password for SoloDesk",
   "sign-in": "Sign in to SoloDesk",
 };
 
 const headingsAr = {
+  "change-email": "تأكيد تغيير بريدك الإلكتروني في سولو ديسك",
   "email-verification": "تأكيد عنوان بريدك الإلكتروني في سولو ديسك",
   "forget-password": "إعادة تعيين كلمة المرور في سولو ديسك",
   "sign-in": "تسجيل الدخول إلى سولو ديسك",

@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-auth-preview/
 /.react-email/
 /out/
 

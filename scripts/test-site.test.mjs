@@ -27,6 +27,62 @@ const ar = JSON.parse(
   readFileSync(new URL("../messages/ar.json", import.meta.url)),
 );
 
+test("account security entry is bilingual, informational and truthful through profile failures", async () => {
+  const require = createRequire(import.meta.url);
+  for (const [locale, messages, heading] of [
+    ["en", en, "Account security"],
+    ["ar", ar, "أمان الحساب"],
+  ]) {
+    const translator = createTranslator({ locale, messages });
+    for (const state of ["unknown", "enabled", "pending", "profile-failure", "realtime-failure"]) {
+      const profile = {
+        userId: "synthetic-owner",
+        initialData: [{ id: "synthetic-owner", name: "<foreign-method>" }],
+        twoFactorEnabled: state === "enabled",
+        pendingMethod: state === "pending" ? "foreign-pending-method" : null,
+      };
+      function load(path, adapters = {}) {
+        const exports = {};
+        vm.runInNewContext(
+          ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), {
+            compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+          }).outputText,
+          {
+            exports,
+            URL,
+            process: { env: { NEON_REALTIME_URL: state === "realtime-failure" ? "" : "wss://synthetic.invalid" } },
+            require: (name) => name in adapters ? adapters[name] : require(name),
+          },
+        );
+        return exports;
+      }
+      const { default: Page } = load("../app/(site)/[locale]/[theme]/app/account/page.tsx", {
+        "next/server": { connection: async () => {} },
+        "next/navigation": { redirect: () => assert.fail("Unexpected redirect") },
+        "next-intl/server": { getTranslations: async (ns) => (key) => translator(`${ns}.${key}`) },
+        "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
+        "@/components/application-shell": { ApplicationShell: ({ children }) => children },
+        "@/components/live-profile": { LiveProfile: () => React.createElement("div", null, "Profile fixture") },
+        "@/components/account-reauthentication": { AccountReauthentication: () => null },
+        "@/components/ui/alert": load("../components/ui/alert.tsx"),
+        "@/lib/profile": { loadProfile: async () => {
+          if (state === "profile-failure") throw new Error("Synthetic outage");
+          return profile;
+        } },
+      });
+      const html = renderToStaticMarkup(await Page());
+      assert.ok(html.includes(heading), `${locale}:${state}: security entry remains findable`);
+      const section = html.match(/<section\b[^>]*aria-labelledby="account-security-title"[\s\S]*?<\/section>/)?.[0];
+      assert.ok(section, "A named security section is required");
+      assert.doesNotMatch(section, /<button|<form|<input|foreign-method|foreign-pending-method|twoFactorEnabled/);
+      assert.doesNotMatch(section, /protection is disabled|MFA is enabled|no factors|setup complete/i);
+      for (const text of Object.values(messages.AccountSecurity.protection))
+        assert.ok(section.includes(text), `${locale}:${state}: ${text}`);
+      if (state.endsWith("failure")) assert.ok(html.includes(messages.Common.retry));
+    }
+  }
+});
+
 test("rendered bilingual footer has truthful labels, verified destinations and no subscription or health claims", async () => {
   const require = createRequire(import.meta.url);
   for (const [locale, messages] of [

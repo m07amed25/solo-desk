@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-03",
+  "candidate": "Local informational scope; no production build",
+  "sha256": {
+    "app/(site)/[locale]/[theme]/app/account/page.tsx": "bb23b0867518ad5cdad5fac68285ee785adda1749c46a0a6be43700b453d1d4b",
+    "messages/en.json": "611c1b4af24fd9bddb893df0f67ac61d0afc3b19b84e2bf4fea644295e8df8c1",
+    "messages/ar.json": "bf38d2e3241085d7f05b09b17f18ed7efb206676f1e3cba1cfdb6f4959efde12",
+    "scripts/test-site.test.mjs": "e2e628ceeb8944383fddb8ef1037f56a2084baa89471c4bf54e453bab93f4006",
+    "scripts/test-application.test.mjs": "6958c0f5b5225acc960bb6fe0a91c215b900a14aa8548e672eaf83183616475c",
+    "scripts/test-auth-contract.test.mjs": "0e35acd5711398e308b9d171fe64f62491dd6db423fa4eefe8f54d5f35bddd67",
+    "scripts/test-account-browser.md": "84bfb138c1c31671f09b04969304417e0894da86e5bb95d18b2f40f143571202",
+    "lib/auth/capabilities.ts": "200f692cdb0f4124885ebb16a143c5918927d94f1247d6f455d8f6d36d3b82d2",
+    "components/application-runtime.tsx": "99d18c975ac634f8c5b0840c5391c99341dcd26648b2c835288b347a630f7e48",
+    "package.json": "e9d755ee487ec29a34bbe5e136394d85dac82d62c0152129fef4f535b8cf95a8",
+    "package-lock.json": "537f3f7fc1c2321a59965b8869cbe1bbdb234c68d2cac699220901c9543aa96b"
+  },
+  "hosted": "Unknown/unproven"
+}

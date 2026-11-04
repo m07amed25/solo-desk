@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-03",
+  "scope": "Task generation only; no task executed; protected-effect backlog deferred by spec/plan",
+  "task_count": 36,
+  "all_unchecked": true,
+  "story_counts": {
+    "common": 15,
+    "US1": 6,
+    "US2": 4,
+    "US3": 5,
+    "US4": 3,
+    "US5": 3
+  },
+  "parallel_markers": 13,
+  "task_format": "PASS: checkbox, sequential unique ID, proper parallel/story labels and exact file path",
+  "dependencies": "PASS: internal references exist and precede consumers; external007 references separately scoped; no cycles",
+  "story_coverage": "Bounded gate-resolution/test preparation and informational scope covered; full protected implementation/positive acceptance remains deferred",
+  "data_constraints": {
+    "verbatim_quotes_checked": 13,
+    "result": "PASS: all copied field/validation constraints verbatim; no new schema/limit inferred"
+  },
+  "structure": "PASS: setup/foundation, five prioritized story phases, polish, graph, parallel examples and MVP strategy",
+  "requirements_checklist": {
+    "checked": 14,
+    "total": 16,
+    "modified": false
+  },
+  "input_hashes": "PASS: spec/checklist/constitution/package/lock/inspected source unchanged",
+  "hooks": "No extensions.yml; no before/after tasks hooks registered",
+  "validation_commands": [
+    {
+      "command": "setup-tasks.sh --json",
+      "result": "PASS: feature directory/core template and available design documents resolved"
+    },
+    {
+      "command": "python3 /tmp/solodesk008-task-validation.py",
+      "result": "PASS: artifact checks; an initial quote-punctuation mismatch was corrected before this passing validation"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "not_run": [
+    "Application tests/build/browser",
+    "Live provider/DB/advisory campaigns",
+    "Implementation",
+    "Installation/migration/provider settings/activation/deployment/commit/external messages"
+  ],
+  "tasks_sha256": "cb2811c09e4dc2f132dd51a94dd227ac7aa1b9e060ea06dcc0adda977de46902"
+}

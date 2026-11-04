@@ -1,7 +1,8 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { currentSession } from "@/lib/auth/server";
+import { currentSession, getAppAuth } from "@/lib/auth/server";
+import { headers } from "next/headers";
 import {
   authFailure,
   callbackEntry,
@@ -64,6 +65,17 @@ async function Complete({ searchParams }: { searchParams: Search }) {
     /* Failed exchanges return only the generic retry marker. */
   }
   if (session?.user) redirect(`${returnTo}#`);
+  if (process.env.SOLODESK_AUTH_MODE === "app") {
+    const state = await (
+      await getAppAuth()
+    ).api
+      .accountSecurityStatus({ headers: await headers() })
+      .catch(() => null);
+    if (state && state.state !== "signed-out")
+      redirect(
+        `/app/account/security?returnTo=${encodeURIComponent(returnTo)}#`,
+      );
+  }
   return redirect(`${authFailure(entry)}#`);
 }
 export default function AuthCallback({

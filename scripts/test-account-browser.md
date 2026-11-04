@@ -111,3 +111,21 @@ On the actual current Next candidate, check English/Arabic × Light/Dark/System,
 Use keyboard-only navigation through menu, retry and reload controls; verify visible focus, error announcements, reading order, RTL and mixed-script isolation. Record engine/version, real 200% browser zoom (not device scale), actual screen-reader review and fluent-Arabic review separately. Missing human reviews remain gaps. Required disclosure/legal decisions remain owner review; removing unrelated links grants no waiver.
 
 For live scenarios record the independently verified synthetic target, source/build/schema/policy identities, each expected/observed result and exact command. Keep credentials/challenges/cookie values out of evidence. Missing provider/owner evidence is BLOCKED, never a mocked PASS.
+
+## 5. Feature 008 informational account-security entry
+
+Scope: US1 entry only, FR-001–002/008/013/030–034. This section does not accept enrollment, method listing, factor sign-in or recovery. No setup/remove controls should appear. Existing sections above describe intended managed campaigns and require G1/G3/G5 evidence before execution.
+
+Use imported page tests with synthetic `loadProfile`/shell boundaries for local rendering. For browser fixtures, mount the current rendered account-page content under the actual `ApplicationRuntime` and `ApplicationShell`, with synthetic context/profile and network adapters. Record these as component fixtures, separately from actual production Next routes. Do not infer live authority from the fixture or inherited environment values.
+
+| Check | Procedure and expected observation |
+| --- | --- |
+| Findability and honest state | Open personal account; find the named Account security heading. Explain unavailable setup and unknown enabled/pending state. Inject known-enabled/pending/foreign method fields into profile fixtures: do not invent a method listing or disabled status from untrusted fields. |
+| Profile/Realtime failure | Throw from profile load; separately omit/invalidly configure the Realtime URL and fail its transport after mount. The existing failure/retry shell retains the static security explanation. App-context/identity failure still conceals the entire private boundary; do not claim independent identity-free access. |
+| Locale/theme/layout | English/Arabic × Light/Dark/System at 320/390/768/1280/1440 CSS pixels; long mixed-script profile names; real System change and reduced motion. No clipped text or horizontal overflow. Verify logical reading order and heading structure; status uses words, not color alone. |
+| Keyboard and assistive review | Use keyboard from navigation to account heading, retry and ordinary sign-out. Static explanation uses a note, without an unsolicited live alert. Verify visible focus and actual screen-reader reading/announcement with a named reviewer. Record fluent-Arabic reading separately. |
+| Actual zoom | Use browser 200% zoom, record viewport and browser/device. CSS zoom or device scale alone is insufficient. Recheck 320 CSS-pixel reflow and all recovery/sign-out controls. |
+| Lifetime | Hold A's context/profile reply, switch to B, expire/revoke A, restore Back/Forward history, then deliver A's reply. Original content stays concealed/inert and A method data never appears for B. Compare synthesized page events with actual BFCache separately. |
+| Ordinary sign-out | Exercise confirmed/error/throw/missing/lost acknowledgement even during unavailable setup/admission. The current runtime conceals immediately, never requests new factor proof, and shows retry/recheck on unconfirmed outcome. |
+
+Actual Next production-route/browser, deployed ingress, real managed accounts/factors, non-Chromium engines, actual 200% browser zoom, fluent-Arabic/assistive reviewers and SC-008 five-person supported-enrollment review remain unaccepted until recorded. Local fixture checks cannot close T015's missing human/runtime acceptance or F02.05.

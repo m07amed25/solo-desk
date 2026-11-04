@@ -27,7 +27,7 @@ type Envelope = {
   userId: string;
   sessionExpiresAt: string;
   initialData: Profile[];
-  sealedQuery: SealedLiveQuery<Profile>;
+  sealedQuery: SealedLiveQuery<Profile> | null;
 };
 type Draft = { userId: string; name: string; dirty: boolean };
 
@@ -184,7 +184,7 @@ export function LiveProfile({
       {view === "authorized" && profile ? (
         <div
           ref={protectedRoot}
-          key={`${profile.sealedQuery.expiresAt}:${draftEpoch}`}
+          key={`${profile.sealedQuery?.expiresAt ?? profile.sessionExpiresAt}:${draftEpoch}`}
         >
           <AuthorizedProfile
             profile={profile}
@@ -231,20 +231,40 @@ function AuthorizedProfile({
   revalidate: () => Promise<Envelope | undefined>;
   signOut: () => Promise<void>;
 }) {
-  const [client] = useState(() => createRealtimeClient({ url: realtimeUrl }));
+  const [client] = useState(() =>
+    profile.sealedQuery && realtimeUrl
+      ? createRealtimeClient({ url: realtimeUrl })
+      : null,
+  );
+  const props = { profile, initialName, updateDraft, deny, signOut };
+  if (!client || !profile.sealedQuery)
+    return (
+      <ProfileForm {...props} data={profile.initialData} status="snapshot" />
+    );
   // useLiveQuery owns cleanup; its last unsubscribe closes the socket and heartbeat.
   return (
     <RealtimeProvider client={client}>
-      <ProfileForm
-        profile={profile}
-        initialName={initialName}
-        updateDraft={updateDraft}
-        deny={deny}
-        revalidate={revalidate}
-        signOut={signOut}
-      />
+      <RealtimeProfile {...props} revalidate={revalidate} />
     </RealtimeProvider>
   );
+}
+
+function RealtimeProfile({
+  revalidate,
+  ...props
+}: Omit<Parameters<typeof ProfileForm>[0], "data" | "status"> & {
+  revalidate: () => Promise<Envelope | undefined>;
+}) {
+  const refreshQuery = useCallback(async () => {
+    const next = await revalidate();
+    if (!next?.sealedQuery) throw new Error("Profile unavailable");
+    return next.sealedQuery;
+  }, [revalidate]);
+  const { data, status } = useLiveQuery(props.profile.sealedQuery!, {
+    initialData: props.profile.initialData,
+    refreshQuery,
+  });
+  return <ProfileForm {...props} data={data} status={status} />;
 }
 
 function ProfileForm({
@@ -252,14 +272,16 @@ function ProfileForm({
   initialName,
   updateDraft,
   deny,
-  revalidate,
+  data,
+  status,
   signOut,
 }: {
   profile: Envelope;
   initialName: string;
   updateDraft: (name: string, dirty: boolean) => void;
   deny: () => void;
-  revalidate: () => Promise<Envelope | undefined>;
+  data: readonly Profile[] | undefined;
+  status: string;
   signOut: () => Promise<void>;
 }) {
   const t = useTranslations("Profile");
@@ -277,15 +299,6 @@ function ProfileForm({
       active.current = false;
     };
   }, []);
-  const refreshQuery = useCallback(async () => {
-    const next = await revalidate();
-    if (!next) throw new Error("Profile unavailable");
-    return next.sealedQuery;
-  }, [revalidate]);
-  const { data, status } = useLiveQuery(profile.sealedQuery, {
-    initialData: profile.initialData,
-    refreshQuery,
-  });
   const authorizedRows =
     !!data?.length && data.length === 1 && data[0].id === profile.userId;
   useEffect(() => {
@@ -329,14 +342,15 @@ function ProfileForm({
           role="status"
           className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1"
         >
-          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>
             {t(
-              status === "error"
-                ? "liveError"
-                : status === "stale"
-                  ? "stale"
-                  : "live",
+              status === "snapshot"
+                ? "current"
+                : status === "error"
+                  ? "liveError"
+                  : status === "stale"
+                    ? "stale"
+                    : "live",
             )}
           </span>
         </p>
